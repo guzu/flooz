@@ -78,6 +78,9 @@ function App() {
             categories={categories}
             onUpdate={handleTransactionUpdate}
             loading={loading}
+            availableYears={availableYears}
+            selectedYear={selectedYear}
+            onYearChange={setSelectedYear}
           />
         )
       case 'import':
@@ -117,13 +120,6 @@ function App() {
     <div className="app">
       <header className="app-header">
         <h1>💰 Budget Manager</h1>
-        <div className="header-controls">
-          <YearSelector
-            years={availableYears}
-            selectedYear={selectedYear}
-            onYearChange={setSelectedYear}
-          />
-        </div>
       </header>
 
       <div className="app-body">

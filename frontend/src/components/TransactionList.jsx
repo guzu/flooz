@@ -1,8 +1,9 @@
 import React, { useState } from 'react'
 import TransactionRow from './TransactionRow'
+import YearSelector from './Charts/YearSelector'
 import { apiService } from '../services/api'
 
-const TransactionList = ({ transactions, categories, onUpdate, loading }) => {
+const TransactionList = ({ transactions, categories, onUpdate, loading, availableYears, selectedYear, onYearChange }) => {
   const [editingId, setEditingId] = useState(null)
   const [sortConfig, setSortConfig] = useState({ key: 'date', direction: 'desc' })
 
@@ -102,9 +103,20 @@ const TransactionList = ({ transactions, categories, onUpdate, loading }) => {
   return (
     <div className="transaction-list">
       <div className="transaction-summary">
-        <p>
-          <strong>{transactions.length}</strong> transaction(s) trouvée(s)
-        </p>
+        <div className="summary-left">
+          <p>
+            <strong>{transactions.length}</strong> transaction(s) trouvée(s)
+          </p>
+        </div>
+        <div className="summary-right">
+          {availableYears && selectedYear && onYearChange && (
+            <YearSelector
+              years={availableYears}
+              selectedYear={selectedYear}
+              onYearChange={onYearChange}
+            />
+          )}
+        </div>
       </div>
 
       <div className="table-container">
