@@ -10,6 +10,12 @@ const TransactionList = ({ transactions, categories, subcategories, onUpdate, lo
   const [useFuzzyMatching, setUseFuzzyMatching] = useState(false)
   const [showRuleModal, setShowRuleModal] = useState(false)
   const [selectedCategory, setSelectedCategory] = useState('')
+  const [showBulkCategorizeModal, setShowBulkCategorizeModal] = useState(false)
+  const [bulkCategory, setBulkCategory] = useState('')
+  const [bulkSubcategory, setBulkSubcategory] = useState('')
+  const [showNewCategoryForm, setShowNewCategoryForm] = useState(false)
+  const [newCategoryName, setNewCategoryName] = useState('')
+  const [newCategoryColor, setNewCategoryColor] = useState('#667eea')
 
   // Cache for Levenshtein distance calculations
   const distanceCache = React.useRef(new Map())
@@ -230,6 +236,69 @@ const TransactionList = ({ transactions, categories, subcategories, onUpdate, lo
     }
   }
 
+  const handleBulkCategorize = () => {
+    if (filteredAndSortedTransactions.length === 0) {
+      alert('Aucune transaction à catégoriser')
+      return
+    }
+    setShowBulkCategorizeModal(true)
+  }
+
+  const handleCreateNewCategory = async () => {
+    if (!newCategoryName.trim()) {
+      alert('Veuillez saisir un nom de catégorie')
+      return
+    }
+
+    try {
+      const newCategory = await apiService.createCategory({
+        name: newCategoryName.trim(),
+        color: newCategoryColor
+      })
+
+      // Refresh categories and select the new one
+      await onUpdate() // This should reload categories
+      setBulkCategory(newCategory.id.toString())
+      setShowNewCategoryForm(false)
+      setNewCategoryName('')
+      setNewCategoryColor('#667eea')
+    } catch (error) {
+      console.error('Error creating category:', error)
+      alert('Erreur lors de la création de la catégorie')
+    }
+  }
+
+  const handleBulkCategorizeSubmit = async () => {
+    if (!bulkCategory) {
+      alert('Veuillez sélectionner une catégorie')
+      return
+    }
+
+    try {
+      const promises = filteredAndSortedTransactions.map(transaction =>
+        apiService.updateTransaction(transaction.id, {
+          category_id: parseInt(bulkCategory),
+          subcategory_id: bulkSubcategory ? parseInt(bulkSubcategory) : null
+        })
+      )
+
+      await Promise.all(promises)
+
+      setShowBulkCategorizeModal(false)
+      setBulkCategory('')
+      setBulkSubcategory('')
+      onUpdate() // Refresh transactions
+    } catch (error) {
+      console.error('Error bulk categorizing:', error)
+      alert('Erreur lors de la catégorisation en masse')
+    }
+  }
+
+  const getAvailableSubcategoriesForBulk = () => {
+    if (!bulkCategory) return []
+    return subcategories.filter(sub => sub.category_id.toString() === bulkCategory)
+  }
+
   const getSortIcon = (columnKey) => {
     if (sortConfig.key !== columnKey) {
       return '↕️'
@@ -382,6 +451,15 @@ const TransactionList = ({ transactions, categories, subcategories, onUpdate, lo
               >
                 ➕
               </button>
+              {filteredAndSortedTransactions.length > 0 && (
+                <button
+                  className="btn btn-secondary btn-sm"
+                  onClick={handleBulkCategorize}
+                  title="Catégoriser toutes les transactions filtrées"
+                >
+                  🏷️ Batch ({filteredAndSortedTransactions.length})
+                </button>
+              )}
             </>
           )}
         </div>
@@ -498,6 +576,132 @@ const TransactionList = ({ transactions, categories, subcategories, onUpdate, lo
                 disabled={!selectedCategory}
               >
                 Créer la règle
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Bulk Categorization Modal */}
+      {showBulkCategorizeModal && (
+        <div className="modal-overlay" onClick={() => setShowBulkCategorizeModal(false)}>
+          <div className="modal" onClick={(e) => e.stopPropagation()}>
+            <h3>Catégoriser en masse</h3>
+            <p>
+              Catégoriser <strong>{filteredAndSortedTransactions.length}</strong> transaction(s)
+              {labelFilter && ` correspondant à "${labelFilter}"`}
+            </p>
+
+            <div className="form-group">
+              <label htmlFor="bulk-category">Catégorie :</label>
+              <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
+                <select
+                  id="bulk-category"
+                  value={bulkCategory}
+                  onChange={(e) => {
+                    setBulkCategory(e.target.value)
+                    setBulkSubcategory('') // Reset subcategory when category changes
+                  }}
+                  className="edit-select"
+                  style={{ flex: 1 }}
+                >
+                  <option value="">Sélectionner une catégorie</option>
+                  {categories.map((category) => (
+                    <option key={category.id} value={category.id}>
+                      {category.name}
+                    </option>
+                  ))}
+                </select>
+                <button
+                  className="btn btn-outline btn-sm"
+                  onClick={() => setShowNewCategoryForm(!showNewCategoryForm)}
+                  title="Créer une nouvelle catégorie"
+                >
+                  ➕
+                </button>
+              </div>
+            </div>
+
+            {/* New Category Form */}
+            {showNewCategoryForm && (
+              <div className="form-group" style={{ background: '#f9fafb', padding: '1rem', borderRadius: '0.5rem', marginBottom: '1rem' }}>
+                <label htmlFor="new-category-name">Nouvelle catégorie :</label>
+                <input
+                  id="new-category-name"
+                  type="text"
+                  value={newCategoryName}
+                  onChange={(e) => setNewCategoryName(e.target.value)}
+                  placeholder="Nom de la catégorie"
+                  className="edit-input"
+                />
+                <label htmlFor="new-category-color" style={{ marginTop: '0.5rem' }}>Couleur :</label>
+                <input
+                  id="new-category-color"
+                  type="color"
+                  value={newCategoryColor}
+                  onChange={(e) => setNewCategoryColor(e.target.value)}
+                  style={{ width: '3rem', height: '2rem', border: 'none', borderRadius: '0.25rem' }}
+                />
+                <div style={{ marginTop: '0.5rem' }}>
+                  <button
+                    className="btn btn-success btn-sm"
+                    onClick={handleCreateNewCategory}
+                    style={{ marginRight: '0.5rem' }}
+                  >
+                    Créer
+                  </button>
+                  <button
+                    className="btn btn-secondary btn-sm"
+                    onClick={() => {
+                      setShowNewCategoryForm(false)
+                      setNewCategoryName('')
+                      setNewCategoryColor('#667eea')
+                    }}
+                  >
+                    Annuler
+                  </button>
+                </div>
+              </div>
+            )}
+
+            <div className="form-group">
+              <label htmlFor="bulk-subcategory">Sous-catégorie (optionnel) :</label>
+              <select
+                id="bulk-subcategory"
+                value={bulkSubcategory}
+                onChange={(e) => setBulkSubcategory(e.target.value)}
+                className="edit-select"
+                disabled={!bulkCategory}
+              >
+                <option value="">Aucune sous-catégorie</option>
+                {getAvailableSubcategoriesForBulk().map((subcategory) => (
+                  <option key={subcategory.id} value={subcategory.id}>
+                    {subcategory.name}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            <div className="modal-actions">
+              <button
+                className="btn btn-secondary"
+                onClick={() => {
+                  setShowBulkCategorizeModal(false)
+                  setBulkCategory('')
+                  setBulkSubcategory('')
+                  setShowNewCategoryForm(false)
+                  setNewCategoryName('')
+                  setNewCategoryColor('#667eea')
+                }}
+              >
+                Annuler
+              </button>
+              <button
+                className="btn btn-primary"
+                onClick={handleBulkCategorizeSubmit}
+                disabled={!bulkCategory}
+              >
+                Catégoriser ({filteredAndSortedTransactions.length})
               </button>
             </div>
           </div>
