@@ -3,7 +3,7 @@ import TransactionRow from './TransactionRow'
 import YearSelector from './Charts/YearSelector'
 import { apiService } from '../services/api'
 
-const TransactionList = ({ transactions, categories, subcategories, onUpdate, loading, availableYears, selectedYear, onYearChange }) => {
+const TransactionList = ({ transactions, categories, subcategories, onUpdate, loading, availableYears, selectedYear, onYearChange, onLoadAllTransactions }) => {
   const [editingId, setEditingId] = useState(null)
   const [sortConfig, setSortConfig] = useState({ key: 'date', direction: 'desc' })
   const [labelFilter, setLabelFilter] = useState('')
@@ -16,6 +16,8 @@ const TransactionList = ({ transactions, categories, subcategories, onUpdate, lo
   const [showNewCategoryForm, setShowNewCategoryForm] = useState(false)
   const [newCategoryName, setNewCategoryName] = useState('')
   const [newCategoryColor, setNewCategoryColor] = useState('#667eea')
+  const [showAllHistory, setShowAllHistory] = useState(false)
+  const [showOnlyUncategorized, setShowOnlyUncategorized] = useState(false)
 
   // Cache for Levenshtein distance calculations
   const distanceCache = React.useRef(new Map())
@@ -24,6 +26,13 @@ const TransactionList = ({ transactions, categories, subcategories, onUpdate, lo
   React.useEffect(() => {
     distanceCache.current.clear()
   }, [labelFilter])
+
+  // Handle show all history toggle
+  React.useEffect(() => {
+    if (onLoadAllTransactions) {
+      onLoadAllTransactions(showAllHistory)
+    }
+  }, [showAllHistory, onLoadAllTransactions])
 
   const handleSort = (key) => {
     let direction = 'asc'
@@ -141,6 +150,13 @@ const TransactionList = ({ transactions, categories, subcategories, onUpdate, lo
       })
     }
 
+    // Filter by category (uncategorized only)
+    if (showOnlyUncategorized) {
+      filteredTransactions = filteredTransactions.filter(transaction => {
+        return !transaction.category_id || transaction.category_name === 'Non catégorisé'
+      })
+    }
+
     // Then sort
     if (sortConfig.key) {
       filteredTransactions.sort((a, b) => {
@@ -168,7 +184,7 @@ const TransactionList = ({ transactions, categories, subcategories, onUpdate, lo
       })
     }
     return filteredTransactions
-  }, [transactions, sortConfig, labelFilter, useFuzzyMatching])
+  }, [transactions, sortConfig, labelFilter, useFuzzyMatching, showOnlyUncategorized])
 
   const handleEdit = (id) => {
     setEditingId(id)
@@ -386,6 +402,30 @@ const TransactionList = ({ transactions, categories, subcategories, onUpdate, lo
                 Trouve "CARREFOUR" avec "carr", "carrefur", etc.
               </small>
             </label>
+            <label className="checkbox-label">
+              <input
+                type="checkbox"
+                checked={showAllHistory}
+                onChange={(e) => setShowAllHistory(e.target.checked)}
+                className="filter-checkbox"
+              />
+              <span>Tout l'historique</span>
+              <small className="checkbox-hint">
+                Rechercher dans toutes les années
+              </small>
+            </label>
+            <label className="checkbox-label">
+              <input
+                type="checkbox"
+                checked={showOnlyUncategorized}
+                onChange={(e) => setShowOnlyUncategorized(e.target.checked)}
+                className="filter-checkbox"
+              />
+              <span>Non catégorisées uniquement</span>
+              <small className="checkbox-hint">
+                Afficher seulement les transactions sans catégorie
+              </small>
+            </label>
           </div>
         </div>
 
@@ -474,6 +514,30 @@ const TransactionList = ({ transactions, categories, subcategories, onUpdate, lo
             <span>Recherche floue</span>
             <small className="checkbox-hint">
               Permet de trouver "CARREFOUR" en tapant "crfr"
+            </small>
+          </label>
+          <label className="checkbox-label">
+            <input
+              type="checkbox"
+              checked={showAllHistory}
+              onChange={(e) => setShowAllHistory(e.target.checked)}
+              className="filter-checkbox"
+            />
+            <span>Tout l'historique</span>
+            <small className="checkbox-hint">
+              Rechercher dans toutes les années
+            </small>
+          </label>
+          <label className="checkbox-label">
+            <input
+              type="checkbox"
+              checked={showOnlyUncategorized}
+              onChange={(e) => setShowOnlyUncategorized(e.target.checked)}
+              className="filter-checkbox"
+            />
+            <span>Non catégorisées uniquement</span>
+            <small className="checkbox-hint">
+              Afficher seulement les transactions sans catégorie
             </small>
           </label>
         </div>

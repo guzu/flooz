@@ -20,7 +20,9 @@ export const apiService = {
   // Transactions
   async getTransactions(year = null) {
     const params = year ? { year } : {}
+    console.log('API call getTransactions with params:', params, 'year:', year)
     const response = await api.get('/transactions', { params })
+    console.log('API response:', response.data.data.length, 'transactions received')
     return response.data.data
   },
 

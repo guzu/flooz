@@ -17,6 +17,7 @@ function App() {
   const [availableYears, setAvailableYears] = useState([])
   const [loading, setLoading] = useState(false)
   const [sidebarOpen, setSidebarOpen] = useState(true)
+  const [showAllHistory, setShowAllHistory] = useState(false)
 
   useEffect(() => {
     loadInitialData()
@@ -26,7 +27,7 @@ function App() {
     if (currentView === 'transactions') {
       loadTransactions()
     }
-  }, [selectedYear, currentView])
+  }, [selectedYear, currentView, showAllHistory])
 
   const loadInitialData = async () => {
     try {
@@ -49,7 +50,11 @@ function App() {
   const loadTransactions = async () => {
     try {
       setLoading(true)
-      const data = await apiService.getTransactions(selectedYear)
+      console.log('Loading transactions with showAllHistory:', showAllHistory, 'selectedYear:', selectedYear)
+      const yearParam = showAllHistory ? null : selectedYear
+      console.log('API call with year parameter:', yearParam)
+      const data = await apiService.getTransactions(yearParam)
+      console.log('Received', data.length, 'transactions')
       setTransactions(data)
     } catch (error) {
       console.error('Error loading transactions:', error)
@@ -86,6 +91,7 @@ function App() {
             availableYears={availableYears}
             selectedYear={selectedYear}
             onYearChange={setSelectedYear}
+            onLoadAllTransactions={(showAll) => setShowAllHistory(showAll)}
           />
         )
       case 'import':
@@ -123,7 +129,19 @@ function App() {
           </div>
         )
       default:
-        return <TransactionList transactions={transactions} categories={categories} onUpdate={handleTransactionUpdate} />
+        return (
+          <TransactionList
+            transactions={transactions}
+            categories={categories}
+            subcategories={subcategories}
+            onUpdate={handleTransactionUpdate}
+            loading={loading}
+            availableYears={availableYears}
+            selectedYear={selectedYear}
+            onYearChange={setSelectedYear}
+            onLoadAllTransactions={(showAll) => setShowAllHistory(showAll)}
+          />
+        )
     }
   }
 
