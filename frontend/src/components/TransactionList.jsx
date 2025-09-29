@@ -4,7 +4,6 @@ import YearSelector from './Charts/YearSelector'
 import { apiService } from '../services/api'
 
 const TransactionList = ({ transactions, categories, subcategories, onUpdate, loading, availableYears, selectedYear, onYearChange, onLoadAllTransactions }) => {
-  const [editingId, setEditingId] = useState(null)
   const [sortConfig, setSortConfig] = useState({ key: 'date', direction: 'desc' })
   const [labelFilter, setLabelFilter] = useState('')
   const [useFuzzyMatching, setUseFuzzyMatching] = useState(false)
@@ -18,9 +17,17 @@ const TransactionList = ({ transactions, categories, subcategories, onUpdate, lo
   const [newCategoryColor, setNewCategoryColor] = useState('#667eea')
   const [showAllHistory, setShowAllHistory] = useState(false)
   const [showOnlyUncategorized, setShowOnlyUncategorized] = useState(false)
+  const [showShortcuts, setShowShortcuts] = useState(false)
+  const [showCategorizeModal, setShowCategorizeModal] = useState(false)
+  const [transactionToCategorize, setTransactionToCategorize] = useState(null)
+  const [selectedCategoryForSingle, setSelectedCategoryForSingle] = useState('')
+  const [selectedSubcategoryForSingle, setSelectedSubcategoryForSingle] = useState('')
 
   // Cache for Levenshtein distance calculations
   const distanceCache = React.useRef(new Map())
+
+  // Ref for filter input
+  const filterInputRef = React.useRef(null)
 
   // Clear cache when filter changes
   React.useEffect(() => {
@@ -33,6 +40,45 @@ const TransactionList = ({ transactions, categories, subcategories, onUpdate, lo
       onLoadAllTransactions(showAllHistory)
     }
   }, [showAllHistory, onLoadAllTransactions])
+
+  // Keyboard shortcuts
+  React.useEffect(() => {
+    const handleKeyDown = (e) => {
+      // Don't trigger shortcuts if user is typing in an input field (except our filter input)
+      if (e.target.tagName === 'INPUT' && e.target !== filterInputRef.current) return
+      if (e.target.tagName === 'TEXTAREA') return
+      if (e.target.tagName === 'SELECT') return
+
+      switch (e.key) {
+        case 'Escape':
+          e.preventDefault()
+          if (showShortcuts) {
+            setShowShortcuts(false)
+          } else if (labelFilter) {
+            setLabelFilter('')
+            filterInputRef.current?.blur()
+          }
+          break
+
+        case '?':
+          e.preventDefault()
+          setShowShortcuts(true)
+          break
+
+        case '/':
+          e.preventDefault()
+          setLabelFilter('')
+          filterInputRef.current?.focus()
+          break
+
+        default:
+          break
+      }
+    }
+
+    document.addEventListener('keydown', handleKeyDown)
+    return () => document.removeEventListener('keydown', handleKeyDown)
+  }, [labelFilter, showShortcuts])
 
   const handleSort = (key) => {
     let direction = 'asc'
@@ -186,23 +232,41 @@ const TransactionList = ({ transactions, categories, subcategories, onUpdate, lo
     return filteredTransactions
   }, [transactions, sortConfig, labelFilter, useFuzzyMatching, showOnlyUncategorized])
 
-  const handleEdit = (id) => {
-    setEditingId(id)
+  const handleCategorize = (transaction) => {
+    setTransactionToCategorize(transaction)
+    setSelectedCategoryForSingle(transaction.category_id || '')
+    setSelectedSubcategoryForSingle(transaction.subcategory_id || '')
+    setShowCategorizeModal(true)
   }
 
-  const handleSave = async (id, updatedData) => {
+  const handleSingleCategorizeSubmit = async () => {
+    if (!transactionToCategorize) return
+
     try {
-      await apiService.updateTransaction(id, updatedData)
-      setEditingId(null)
-      onUpdate()
+      await apiService.updateTransaction(transactionToCategorize.id, {
+        category_id: selectedCategoryForSingle ? parseInt(selectedCategoryForSingle) : null,
+        subcategory_id: selectedSubcategoryForSingle ? parseInt(selectedSubcategoryForSingle) : null
+      })
+
+      setShowCategorizeModal(false)
+      setTransactionToCategorize(null)
+      setSelectedCategoryForSingle('')
+      setSelectedSubcategoryForSingle('')
+      onUpdate() // Refresh transactions
     } catch (error) {
-      console.error('Error updating transaction:', error)
-      alert('Erreur lors de la mise à jour de la transaction')
+      console.error('Error categorizing transaction:', error)
+      alert('Erreur lors de la catégorisation de la transaction')
     }
   }
 
-  const handleCancel = () => {
-    setEditingId(null)
+  const getAvailableSubcategoriesForSingle = () => {
+    if (!selectedCategoryForSingle) return []
+    return subcategories.filter(sub => sub.category_id.toString() === selectedCategoryForSingle)
+  }
+
+  const handleSingleCategoryChange = (value) => {
+    setSelectedCategoryForSingle(value)
+    setSelectedSubcategoryForSingle('') // Reset subcategory when category changes
   }
 
   const handleDelete = async (id) => {
@@ -363,6 +427,7 @@ const TransactionList = ({ transactions, categories, subcategories, onUpdate, lo
           <div className="filter-group">
             <label htmlFor="label-filter">Filtrer par libellé :</label>
             <input
+              ref={filterInputRef}
               id="label-filter"
               type="text"
               value={labelFilter}
@@ -468,6 +533,7 @@ const TransactionList = ({ transactions, categories, subcategories, onUpdate, lo
         <div className="filter-group">
           <label htmlFor="label-filter">Filtrer par libellé :</label>
           <input
+            ref={filterInputRef}
             id="label-filter"
             type="text"
             value={labelFilter}
@@ -588,10 +654,7 @@ const TransactionList = ({ transactions, categories, subcategories, onUpdate, lo
                 transaction={transaction}
                 categories={categories}
                 subcategories={subcategories}
-                isEditing={editingId === transaction.id}
-                onEdit={() => handleEdit(transaction.id)}
-                onSave={(data) => handleSave(transaction.id, data)}
-                onCancel={handleCancel}
+                onCategorize={() => handleCategorize(transaction)}
                 onDelete={() => handleDelete(transaction.id)}
                 onFilter={handleFilter}
               />
@@ -766,6 +829,99 @@ const TransactionList = ({ transactions, categories, subcategories, onUpdate, lo
                 disabled={!bulkCategory}
               >
                 Catégoriser ({filteredAndSortedTransactions.length})
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Shortcuts Modal */}
+      {showShortcuts && (
+        <div className="modal-overlay" onClick={() => setShowShortcuts(false)}>
+          <div className="modal" onClick={(e) => e.stopPropagation()}>
+            <h3>Raccourcis clavier</h3>
+            <div className="shortcuts-list">
+              <div className="shortcut-item">
+                <kbd>/</kbd>
+                <span>Aller au champ de filtrage</span>
+              </div>
+              <div className="shortcut-item">
+                <kbd>Escape</kbd>
+                <span>Effacer le filtre courant / Fermer cette aide</span>
+              </div>
+              <div className="shortcut-item">
+                <kbd>?</kbd>
+                <span>Afficher cette aide</span>
+              </div>
+            </div>
+            <div className="modal-actions">
+              <button
+                className="btn btn-secondary"
+                onClick={() => setShowShortcuts(false)}
+              >
+                Fermer
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Single Transaction Categorization Modal */}
+      {showCategorizeModal && transactionToCategorize && (
+        <div className="modal-overlay" onClick={() => setShowCategorizeModal(false)}>
+          <div className="modal" onClick={(e) => e.stopPropagation()}>
+            <h3>Catégoriser la transaction</h3>
+            <div className="transaction-info">
+              <p><strong>Libellé :</strong> {transactionToCategorize.label}</p>
+              <p><strong>Montant :</strong> {transactionToCategorize.amount}€</p>
+              <p><strong>Date :</strong> {new Date(transactionToCategorize.date).toLocaleDateString('fr-FR')}</p>
+            </div>
+
+            <div className="form-group">
+              <label>Catégorie :</label>
+              <select
+                value={selectedCategoryForSingle}
+                onChange={(e) => handleSingleCategoryChange(e.target.value)}
+                className="form-select"
+              >
+                <option value="">Non catégorisé</option>
+                {categories.map((category) => (
+                  <option key={category.id} value={category.id}>
+                    {category.name}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            <div className="form-group">
+              <label>Sous-catégorie :</label>
+              <select
+                value={selectedSubcategoryForSingle}
+                onChange={(e) => setSelectedSubcategoryForSingle(e.target.value)}
+                className="form-select"
+                disabled={!selectedCategoryForSingle}
+              >
+                <option value="">-</option>
+                {getAvailableSubcategoriesForSingle().map((subcategory) => (
+                  <option key={subcategory.id} value={subcategory.id}>
+                    {subcategory.name}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            <div className="modal-actions">
+              <button
+                className="btn btn-secondary"
+                onClick={() => setShowCategorizeModal(false)}
+              >
+                Annuler
+              </button>
+              <button
+                className="btn btn-primary"
+                onClick={handleSingleCategorizeSubmit}
+              >
+                Catégoriser
               </button>
             </div>
           </div>
