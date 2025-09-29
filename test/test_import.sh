@@ -39,8 +39,32 @@ curl -s -X POST \
 echo
 echo "---"
 
+# Test bank format CSV import
+echo "5. POST /import/csv (Bank format CSV)"
+curl -s -X POST \
+  -F "file=@$TEST_DIR/test_bank_format.csv" \
+  "$BASE_URL/import/csv" | jq '.'
+echo
+echo "---"
+
+# Test bank format CSV with header
+echo "6. POST /import/csv (Bank format with header)"
+curl -s -X POST \
+  -F "file=@$TEST_DIR/test_bank_format_with_header.csv" \
+  "$BASE_URL/import/csv" | jq '.'
+echo
+echo "---"
+
+# Test bank format CSV preview
+echo "7. POST /import/preview (Bank format CSV)"
+curl -s -X POST \
+  -F "file=@$TEST_DIR/test_bank_format.csv" \
+  "$BASE_URL/import/preview" | jq '.'
+echo
+echo "---"
+
 # Test preview with invalid CSV
-echo "5. POST /import/preview (Invalid CSV)"
+echo "8. POST /import/preview (Invalid CSV)"
 curl -s -X POST \
   -F "file=@$TEST_DIR/test_import_invalid.csv" \
   "$BASE_URL/import/preview" | jq '.'
@@ -48,13 +72,13 @@ echo
 echo "---"
 
 # Test import without file
-echo "6. POST /import/csv (No file)"
+echo "9. POST /import/csv (No file)"
 curl -s -X POST "$BASE_URL/import/csv" | jq '.'
 echo
 echo "---"
 
 # Test import with wrong file type
-echo "7. POST /import/csv (Wrong file type)"
+echo "10. POST /import/csv (Wrong file type)"
 echo "This is not a CSV file" > /tmp/test.txt
 curl -s -X POST \
   -F "file=@/tmp/test.txt" \
@@ -64,7 +88,7 @@ echo
 echo "---"
 
 # Test preview without file
-echo "8. POST /import/preview (No file)"
+echo "11. POST /import/preview (No file)"
 curl -s -X POST "$BASE_URL/import/preview" | jq '.'
 echo
 

@@ -48,78 +48,188 @@ def detect_category(label):
 
     return row['id'] if row else None
 
+def detect_csv_format(file_content):
+    """Detect CSV format based on first line"""
+    first_line = file_content.split('\n')[0].strip()
+
+    # Check if it's bank format (semicolon separated, no headers, starts with date)
+    if ';' in first_line and not any(header in first_line.lower() for header in ['date', 'label', 'amount']):
+        # Check if first field looks like a date
+        first_field = first_line.split(';')[0]
+        try:
+            parse_date(first_field)
+            return 'bank'
+        except:
+            pass
+
+    return 'standard'
+
+def parse_bank_csv_line(line):
+    """Parse a line from bank CSV format"""
+    fields = line.split(';')
+
+    if len(fields) < 11:
+        raise ValueError("Invalid bank CSV format: not enough fields")
+
+    # Extract fields based on position
+    date = fields[0].strip()
+    beneficiary = fields[1].strip()
+    full_label = fields[2].strip()
+    debit_amount_str = fields[8].strip()  # Dépenses (négatif)
+    credit_amount_str = fields[9].strip()  # Crédit (positif)
+
+    # Use beneficiary + full_label as transaction label
+    label = f"{beneficiary} - {full_label}" if beneficiary != full_label else full_label
+
+    # Determine amount and type
+    if credit_amount_str and credit_amount_str != '':
+        # Credit (incoming money) - positive amount in our system means expense, so we need to handle this
+        amount = float(credit_amount_str.replace(',', '.'))
+        # For credits, we store as negative to indicate income
+        amount = -amount
+    elif debit_amount_str and debit_amount_str != '':
+        # Debit (outgoing money) - convert to positive for expenses
+        amount = float(debit_amount_str.replace(',', '.'))
+        if amount < 0:
+            amount = abs(amount)
+    else:
+        raise ValueError("No amount found in debit or credit columns")
+
+    return {
+        'date': date,
+        'label': label,
+        'amount': amount
+    }
+
 def import_csv(file_content):
     """Import transactions from CSV content"""
     results = {
         'imported': 0,
         'duplicates': 0,
-        'errors': []
+        'errors': [],
+        'format': None
     }
 
     try:
-        csv_data = StringIO(file_content)
-        reader = csv.DictReader(csv_data)
+        # Detect CSV format
+        csv_format = detect_csv_format(file_content)
+        results['format'] = csv_format
 
-        for row_num, row in enumerate(reader, start=2):
-            try:
-                # Required fields
-                if 'date' not in row or 'label' not in row or 'amount' not in row:
-                    results['errors'].append(f"Row {row_num}: Missing required fields")
-                    continue
+        if csv_format == 'bank':
+            # Process bank format (first line is header, semicolon separated)
+            lines = [line.strip() for line in file_content.split('\n') if line.strip()]
 
-                # Parse and validate data
-                date = parse_date(row['date'])
-                label = row['label'].strip()
-                amount = float(row['amount'])
+            # Skip first line (header)
+            if lines:
+                lines = lines[1:]
 
-                if not label:
-                    results['errors'].append(f"Row {row_num}: Empty label")
-                    continue
+            for row_num, line in enumerate(lines, start=2):
+                try:
+                    # Parse bank CSV line
+                    data = parse_bank_csv_line(line)
 
-                # Calculate hash for duplicate detection
-                transaction_hash = calculate_transaction_hash(date, label, amount)
+                    # Parse and validate data
+                    date = parse_date(data['date'])
+                    label = data['label'].strip()
+                    amount = data['amount']
 
-                # Check for duplicates
-                if Transaction.exists_by_hash(transaction_hash):
-                    results['duplicates'] += 1
-                    continue
+                    if not label:
+                        results['errors'].append(f"Row {row_num}: Empty label")
+                        continue
 
-                # Determine category
-                category_id = None
-                if 'category' in row and row['category']:
-                    # Try to find category by name
-                    conn = get_db_connection()
-                    cursor = conn.cursor()
-                    cursor.execute('SELECT id FROM categories WHERE name = ?', (row['category'],))
-                    category_row = cursor.fetchone()
-                    conn.close()
+                    # Calculate hash for duplicate detection
+                    transaction_hash = calculate_transaction_hash(date, label, amount)
 
-                    if category_row:
-                        category_id = category_row['id']
+                    # Check for duplicates
+                    if Transaction.exists_by_hash(transaction_hash):
+                        results['duplicates'] += 1
+                        continue
 
-                # If no category provided or found, auto-detect
-                if category_id is None:
+                    # Auto-detect category based on label
                     category_id = detect_category(label)
 
-                # Get notes if provided
-                notes = row.get('notes', '').strip() if 'notes' in row else None
+                    # Create transaction
+                    Transaction.create(
+                        date=date,
+                        label=label,
+                        amount=amount,
+                        category_id=category_id,
+                        hash=transaction_hash,
+                        notes=None
+                    )
 
-                # Create transaction
-                Transaction.create(
-                    date=date,
-                    label=label,
-                    amount=amount,
-                    category_id=category_id,
-                    hash=transaction_hash,
-                    notes=notes
-                )
+                    results['imported'] += 1
 
-                results['imported'] += 1
+                except ValueError as e:
+                    results['errors'].append(f"Row {row_num}: {str(e)}")
+                except Exception as e:
+                    results['errors'].append(f"Row {row_num}: Unexpected error - {str(e)}")
 
-            except ValueError as e:
-                results['errors'].append(f"Row {row_num}: {str(e)}")
-            except Exception as e:
-                results['errors'].append(f"Row {row_num}: Unexpected error - {str(e)}")
+        else:
+            # Process standard format (headers, comma separated)
+            csv_data = StringIO(file_content)
+            reader = csv.DictReader(csv_data)
+
+            for row_num, row in enumerate(reader, start=2):
+                try:
+                    # Required fields
+                    if 'date' not in row or 'label' not in row or 'amount' not in row:
+                        results['errors'].append(f"Row {row_num}: Missing required fields")
+                        continue
+
+                    # Parse and validate data
+                    date = parse_date(row['date'])
+                    label = row['label'].strip()
+                    amount = float(row['amount'])
+
+                    if not label:
+                        results['errors'].append(f"Row {row_num}: Empty label")
+                        continue
+
+                    # Calculate hash for duplicate detection
+                    transaction_hash = calculate_transaction_hash(date, label, amount)
+
+                    # Check for duplicates
+                    if Transaction.exists_by_hash(transaction_hash):
+                        results['duplicates'] += 1
+                        continue
+
+                    # Determine category
+                    category_id = None
+                    if 'category' in row and row['category']:
+                        # Try to find category by name
+                        conn = get_db_connection()
+                        cursor = conn.cursor()
+                        cursor.execute('SELECT id FROM categories WHERE name = ?', (row['category'],))
+                        category_row = cursor.fetchone()
+                        conn.close()
+
+                        if category_row:
+                            category_id = category_row['id']
+
+                    # If no category provided or found, auto-detect
+                    if category_id is None:
+                        category_id = detect_category(label)
+
+                    # Get notes if provided
+                    notes = row.get('notes', '').strip() if 'notes' in row else None
+
+                    # Create transaction
+                    Transaction.create(
+                        date=date,
+                        label=label,
+                        amount=amount,
+                        category_id=category_id,
+                        hash=transaction_hash,
+                        notes=notes
+                    )
+
+                    results['imported'] += 1
+
+                except ValueError as e:
+                    results['errors'].append(f"Row {row_num}: {str(e)}")
+                except Exception as e:
+                    results['errors'].append(f"Row {row_num}: Unexpected error - {str(e)}")
 
     except Exception as e:
         results['errors'].append(f"File parsing error: {str(e)}")
