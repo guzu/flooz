@@ -5,6 +5,11 @@ from models.transaction import Transaction
 from models.database import get_db_connection
 from utils.hash_utils import calculate_transaction_hash
 import re
+import logging
+
+# Configure logging
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
 
 def parse_date(date_str):
     """Parse date from various formats"""
@@ -51,6 +56,7 @@ def detect_category(label):
 def detect_csv_format(file_content):
     """Detect CSV format based on first line"""
     first_line = file_content.split('\n')[0].strip()
+    logger.info(f"Detecting CSV format. First line: '{first_line[:100]}...' (truncated)")
 
     # Check if it's bank format (semicolon separated, no headers, starts with date)
     if ';' in first_line and not any(header in first_line.lower() for header in ['date', 'label', 'amount']):
@@ -58,18 +64,23 @@ def detect_csv_format(file_content):
         first_field = first_line.split(';')[0]
         try:
             parse_date(first_field)
+            logger.info("Detected format: BANK (semicolon separated with date in first field)")
             return 'bank'
-        except:
+        except Exception as e:
+            logger.warning(f"First field '{first_field}' is not a date: {e}")
             pass
 
+    logger.info("Detected format: STANDARD (comma separated with headers)")
     return 'standard'
 
 def parse_bank_csv_line(line):
     """Parse a line from bank CSV format"""
     fields = line.split(';')
+    logger.debug(f"Parsing bank CSV line with {len(fields)} fields: {fields[:5]}...")
 
     if len(fields) < 11:
-        raise ValueError("Invalid bank CSV format: not enough fields")
+        logger.error(f"Invalid bank CSV format: only {len(fields)} fields, expected at least 11")
+        raise ValueError(f"Invalid bank CSV format: only {len(fields)} fields, expected at least 11")
 
     # Extract fields based on position
     date = fields[0].strip()
@@ -77,6 +88,8 @@ def parse_bank_csv_line(line):
     full_label = fields[2].strip()
     debit_amount_str = fields[8].strip()  # Dépenses (négatif)
     credit_amount_str = fields[9].strip()  # Crédit (positif)
+
+    logger.debug(f"Extracted: date='{date}', beneficiary='{beneficiary}', debit='{debit_amount_str}', credit='{credit_amount_str}'")
 
     # Use beneficiary + full_label as transaction label
     label = f"{beneficiary} - {full_label}" if beneficiary != full_label else full_label
@@ -87,12 +100,15 @@ def parse_bank_csv_line(line):
         amount = float(credit_amount_str.replace(',', '.'))
         # For credits, we store as negative to indicate income
         amount = -amount
+        logger.debug(f"Credit transaction: {amount} (income)")
     elif debit_amount_str and debit_amount_str != '':
         # Debit (outgoing money) - convert to positive for expenses
         amount = float(debit_amount_str.replace(',', '.'))
         if amount < 0:
             amount = abs(amount)
+        logger.debug(f"Debit transaction: {amount} (expense)")
     else:
+        logger.error("No amount found in debit or credit columns")
         raise ValueError("No amount found in debit or credit columns")
 
     return {
@@ -103,6 +119,8 @@ def parse_bank_csv_line(line):
 
 def import_csv(file_content):
     """Import transactions from CSV content"""
+    logger.info("Starting CSV import process")
+
     results = {
         'imported': 0,
         'duplicates': 0,
@@ -114,16 +132,20 @@ def import_csv(file_content):
         # Detect CSV format
         csv_format = detect_csv_format(file_content)
         results['format'] = csv_format
+        logger.info(f"CSV format detected: {csv_format}")
 
         if csv_format == 'bank':
             # Process bank format (first line is header, semicolon separated)
             lines = [line.strip() for line in file_content.split('\n') if line.strip()]
+            logger.info(f"Processing bank format CSV with {len(lines)} total lines")
 
             # Skip first line (header)
             if lines:
                 lines = lines[1:]
+                logger.info(f"Skipped header, processing {len(lines)} data lines")
 
             for row_num, line in enumerate(lines, start=2):
+                logger.debug(f"Processing line {row_num}: {line[:50]}...")
                 try:
                     # Parse bank CSV line
                     data = parse_bank_csv_line(line)
@@ -161,16 +183,21 @@ def import_csv(file_content):
                     results['imported'] += 1
 
                 except ValueError as e:
+                    logger.warning(f"ValueError on line {row_num}: {str(e)}")
                     results['errors'].append(f"Row {row_num}: {str(e)}")
                 except Exception as e:
+                    logger.error(f"Unexpected error on line {row_num}: {str(e)}")
                     results['errors'].append(f"Row {row_num}: Unexpected error - {str(e)}")
 
         else:
             # Process standard format (headers, comma separated)
+            logger.info("Processing standard format CSV")
             csv_data = StringIO(file_content)
             reader = csv.DictReader(csv_data)
+            logger.info(f"CSV headers detected: {reader.fieldnames}")
 
             for row_num, row in enumerate(reader, start=2):
+                logger.debug(f"Processing row {row_num}: {dict(row)}")
                 try:
                     # Required fields
                     if 'date' not in row or 'label' not in row or 'amount' not in row:
@@ -227,11 +254,18 @@ def import_csv(file_content):
                     results['imported'] += 1
 
                 except ValueError as e:
+                    logger.warning(f"ValueError on standard CSV row {row_num}: {str(e)}")
                     results['errors'].append(f"Row {row_num}: {str(e)}")
                 except Exception as e:
+                    logger.error(f"Unexpected error on standard CSV row {row_num}: {str(e)}")
                     results['errors'].append(f"Row {row_num}: Unexpected error - {str(e)}")
 
     except Exception as e:
+        logger.error(f"File parsing error: {str(e)}")
         results['errors'].append(f"File parsing error: {str(e)}")
+
+    logger.info(f"CSV import completed: {results['imported']} imported, {results['duplicates']} duplicates, {len(results['errors'])} errors")
+    if results['errors']:
+        logger.warning(f"Import errors: {results['errors']}")
 
     return results

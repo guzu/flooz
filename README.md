@@ -19,7 +19,7 @@ budget-manager/
 │   ├── services/      # Logique métier
 │   ├── routes/        # Endpoints API
 │   └── utils/         # Utilitaires (hash, etc.)
-├── frontend/          # Interface React (à implémenter)
+├── frontend/          # Interface React + Vite
 ├── test/              # Scripts de tests API
 └── data/              # Base SQLite (créée automatiquement)
 ```
@@ -29,6 +29,7 @@ budget-manager/
 ### Prérequis
 
 - Python 3.8+
+- Node.js 18+ et npm
 - pip/venv
 
 ### Backend (API)
@@ -49,6 +50,43 @@ python app.py
 ```
 
 Le serveur démarre sur **http://localhost:5000** avec l'API REST disponible.
+
+### Frontend (Interface utilisateur)
+
+```bash
+# 1. Ouvrir un nouveau terminal et accéder au frontend
+cd frontend
+
+# 2. Installer les dépendances Node.js
+npm install
+
+# 3. Démarrer le serveur de développement
+npm run dev
+```
+
+Le frontend se lance sur **http://localhost:3000** avec proxy automatique vers l'API backend.
+
+### 🚀 Démarrage complet de l'application
+
+**Option 1 : Deux terminaux séparés**
+```bash
+# Terminal 1 - Backend
+cd backend
+source venv/bin/activate
+python app.py
+
+# Terminal 2 - Frontend
+cd frontend
+npm run dev
+```
+
+**Option 2 : Script automatique**
+```bash
+# Lancer les deux services avec un seul script
+./start.sh
+```
+
+Le script `start.sh` démarre automatiquement le backend et le frontend, puis attend Ctrl+C pour les arrêter proprement.
 
 ### Base de données
 
@@ -97,18 +135,31 @@ sudo apt install jq
 
 ## 📄 Format CSV
 
+### Format standard
 ```csv
 date,label,amount,notes
 2025-01-15,CARREFOUR PARIS,45.30,Courses alimentaires
 2025-01-16,RATP NAVIGO,75.20,Transport mensuel
 ```
 
-**Colonnes supportées :**
+### Format bancaire (avec en-têtes)
+```csv
+Date;Bénéficiaire;Libellé;Référence;...;Débit;Crédit;...
+24/09/2025;PICARD;PICARD 0738 FR VILLE;...;-29,08;;...
+30/09/2025;VIREMENT;SALAIRE SEPTEMBRE;...;;2500,00;...
+```
+
+**Colonnes supportées (format standard) :**
 - `date` (requis) : YYYY-MM-DD ou DD/MM/YYYY
 - `label` (requis) : Libellé de la transaction
 - `amount` (requis) : Montant (positif pour dépenses)
 - `notes` (optionnel) : Commentaires
 - `category` (optionnel) : Nom de catégorie
+
+**Format bancaire :**
+- Détection automatique du format (séparateur `;`)
+- Support colonnes débit/crédit séparées
+- Première ligne d'en-têtes ignorée automatiquement
 
 ## 🔧 Configuration
 
@@ -129,12 +180,21 @@ Hash SHA256 calculé sur `date + label + amount` pour éviter les imports multip
 - **Routes** : Endpoints REST avec gestion d'erreurs
 - **Tests** : Scripts bash avec curl pour validation complète
 
-### Prochaines étapes
+### Fonctionnalités disponibles
 
-1. **Frontend React** : Interface utilisateur complète
-2. **Docker** : Conteneurisation pour déploiement
-3. **Authentification** : Gestion multi-utilisateurs
-4. **Export** : PDF, Excel des statistiques
+✅ **Frontend React complet** : Interface utilisateur moderne et responsive
+✅ **Import CSV intelligent** : Support formats bancaire et standard
+✅ **Catégorisation automatique** : Règles configurables
+✅ **Graphiques interactifs** : Recharts avec visualisations mensuelles et par catégorie
+✅ **Édition inline** : Modification directe des transactions
+✅ **Gestion des catégories** : CRUD complet avec couleurs personnalisées
+
+### Prochaines étapes possibles
+
+1. **Docker** : Conteneurisation pour déploiement
+2. **Authentification** : Gestion multi-utilisateurs
+3. **Export** : PDF, Excel des statistiques
+4. **Sauvegarde** : Backup automatique de la base de données
 
 ## 📝 License
 
