@@ -8,6 +8,8 @@ const TransactionList = ({ transactions, categories, subcategories, onUpdate, lo
   const [sortConfig, setSortConfig] = useState({ key: 'date', direction: 'desc' })
   const [labelFilter, setLabelFilter] = useState('')
   const [useFuzzyMatching, setUseFuzzyMatching] = useState(false)
+  const [showRuleModal, setShowRuleModal] = useState(false)
+  const [selectedCategory, setSelectedCategory] = useState('')
 
   // Cache for Levenshtein distance calculations
   const distanceCache = React.useRef(new Map())
@@ -199,6 +201,35 @@ const TransactionList = ({ transactions, categories, subcategories, onUpdate, lo
     setUseFuzzyMatching(true)
   }
 
+  const handleCreateRule = () => {
+    if (!labelFilter.trim()) {
+      alert('Aucun filtre actif pour créer une règle')
+      return
+    }
+    setShowRuleModal(true)
+  }
+
+  const handleRuleSubmit = async () => {
+    if (!selectedCategory) {
+      alert('Veuillez sélectionner une catégorie')
+      return
+    }
+
+    try {
+      await apiService.createCategorizationRule({
+        pattern: labelFilter.trim(),
+        category_id: parseInt(selectedCategory),
+        priority: 10 // Default priority
+      })
+
+      setShowRuleModal(false)
+      setSelectedCategory('')
+    } catch (error) {
+      console.error('Error creating rule:', error)
+      alert('Erreur lors de la création de la règle')
+    }
+  }
+
   const getSortIcon = (columnKey) => {
     if (sortConfig.key !== columnKey) {
       return '↕️'
@@ -254,6 +285,24 @@ const TransactionList = ({ transactions, categories, subcategories, onUpdate, lo
               placeholder={useFuzzyMatching ? "Recherche intelligente (tolère les fautes de frappe)..." : "Rechercher dans les libellés..."}
               className="filter-input"
             />
+            {labelFilter.trim() && (
+              <>
+                <button
+                  className="btn btn-primary btn-sm"
+                  onClick={handleCreateRule}
+                  title="Créer une règle de catégorisation automatique"
+                >
+                  🏷️ Règle
+                </button>
+                <button
+                  className="btn btn-outline btn-sm"
+                  onClick={() => setLabelFilter('')}
+                  title="Effacer le filtre"
+                >
+                  ✕
+                </button>
+              </>
+            )}
           </div>
           <div className="filter-options">
             <label className="checkbox-label">
@@ -318,13 +367,22 @@ const TransactionList = ({ transactions, categories, subcategories, onUpdate, lo
             className="filter-input"
           />
           {labelFilter.trim() && (
-            <button
-              className="btn btn-outline btn-sm"
-              onClick={() => setLabelFilter('')}
-              title="Effacer le filtre"
-            >
-              ✕
-            </button>
+            <>
+              <button
+                className="btn btn-primary btn-sm"
+                onClick={handleCreateRule}
+                title="Créer une règle de catégorisation automatique"
+              >
+                🏷️ Règle
+              </button>
+              <button
+                className="btn btn-outline btn-sm"
+                onClick={() => setLabelFilter('')}
+                title="Effacer le filtre"
+              >
+                ✕
+              </button>
+            </>
           )}
         </div>
         <div className="filter-options">
@@ -399,6 +457,52 @@ const TransactionList = ({ transactions, categories, subcategories, onUpdate, lo
           </tbody>
         </table>
       </div>
+
+      {/* Rule Creation Modal */}
+      {showRuleModal && (
+        <div className="modal-overlay" onClick={() => setShowRuleModal(false)}>
+          <div className="modal" onClick={(e) => e.stopPropagation()}>
+            <h3>Créer une règle de catégorisation</h3>
+            <p>
+              Créer une règle pour catégoriser automatiquement les transactions contenant
+              "<strong>{labelFilter}</strong>" lors des futurs imports.
+            </p>
+
+            <div className="form-group">
+              <label htmlFor="rule-category">Catégorie :</label>
+              <select
+                id="rule-category"
+                value={selectedCategory}
+                onChange={(e) => setSelectedCategory(e.target.value)}
+                className="edit-select"
+              >
+                <option value="">Sélectionner une catégorie</option>
+                {categories.map((category) => (
+                  <option key={category.id} value={category.id}>
+                    {category.name}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            <div className="modal-actions">
+              <button
+                className="btn btn-secondary"
+                onClick={() => setShowRuleModal(false)}
+              >
+                Annuler
+              </button>
+              <button
+                className="btn btn-primary"
+                onClick={handleRuleSubmit}
+                disabled={!selectedCategory}
+              >
+                Créer la règle
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   )
 }

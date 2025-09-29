@@ -996,14 +996,45 @@ input:focus, select:focus, textarea:focus {
   margin: 0 auto;
 }
 
-.category-manager-header {
+/* Rules Manager */
+.rules-manager {
+  max-width: 1000px;
+  margin: 0 auto;
+}
+
+.category-manager-header, .rules-manager-header {
   margin-bottom: 2rem;
 }
 
-.category-manager-header h2 {
+.category-manager-header h2, .rules-manager-header h2 {
   font-size: 2rem;
   margin-bottom: 1rem;
   color: #374151;
+}
+
+.rules-manager-header p {
+  color: #6b7280;
+  font-size: 0.95rem;
+  margin-bottom: 0;
+}
+
+.rules-summary {
+  margin-bottom: 1.5rem;
+  padding: 1rem;
+  background: #f9fafb;
+  border-radius: 0.5rem;
+  border: 1px solid #e5e7eb;
+}
+
+.rules-summary p {
+  margin: 0;
+  color: #374151;
+  font-weight: 500;
+}
+
+.rules-grid {
+  display: grid;
+  gap: 1rem;
 }
 
 .tabs {
@@ -1171,6 +1202,15 @@ input:focus, select:focus, textarea:focus {
 
 .rule-actions {
   margin-left: 1rem;
+}
+
+.rule-created {
+  margin-top: 0.5rem;
+}
+
+.rule-created small {
+  color: #9ca3af;
+  font-style: italic;
 }
 
 /* Modal */

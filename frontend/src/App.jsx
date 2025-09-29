@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react'
 import TransactionList from './components/TransactionList'
 import ImportPanel from './components/ImportPanel'
 import CategoryManager from './components/CategoryManager'
+import RulesManager from './components/RulesManager'
 import MonthlyChart from './components/Charts/MonthlyChart'
 import CategoryChart from './components/Charts/CategoryChart'
 import YearSelector from './components/Charts/YearSelector'
@@ -100,6 +101,12 @@ function App() {
             onUpdate={handleCategoryUpdate}
           />
         )
+      case 'rules':
+        return (
+          <RulesManager
+            categories={categories}
+          />
+        )
       case 'stats':
         return (
           <div className="stats-container">
@@ -158,6 +165,13 @@ function App() {
             >
               <span className="nav-icon">🏷️</span>
               {sidebarOpen && <span className="nav-label">Catégories</span>}
+            </button>
+            <button
+              className={currentView === 'rules' ? 'active' : ''}
+              onClick={() => setCurrentView('rules')}
+            >
+              <span className="nav-icon">⚙️</span>
+              {sidebarOpen && <span className="nav-label">Règles</span>}
             </button>
             <button
               className={currentView === 'stats' ? 'active' : ''}
