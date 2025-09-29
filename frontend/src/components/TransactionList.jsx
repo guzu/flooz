@@ -288,18 +288,18 @@ const TransactionList = ({ transactions, categories, subcategories, onUpdate, lo
             {labelFilter.trim() && (
               <>
                 <button
-                  className="btn btn-primary btn-sm"
-                  onClick={handleCreateRule}
-                  title="Créer une règle de catégorisation automatique"
-                >
-                  🏷️ Règle
-                </button>
-                <button
                   className="btn btn-outline btn-sm"
                   onClick={() => setLabelFilter('')}
                   title="Effacer le filtre"
                 >
                   ✕
+                </button>
+                <button
+                  className="btn btn-primary btn-sm"
+                  onClick={handleCreateRule}
+                  title="Créer une règle de catégorisation automatique"
+                >
+                  ➕
                 </button>
               </>
             )}
@@ -369,18 +369,18 @@ const TransactionList = ({ transactions, categories, subcategories, onUpdate, lo
           {labelFilter.trim() && (
             <>
               <button
-                className="btn btn-primary btn-sm"
-                onClick={handleCreateRule}
-                title="Créer une règle de catégorisation automatique"
-              >
-                🏷️ Règle
-              </button>
-              <button
                 className="btn btn-outline btn-sm"
                 onClick={() => setLabelFilter('')}
                 title="Effacer le filtre"
               >
                 ✕
+              </button>
+              <button
+                className="btn btn-primary btn-sm create-rule-btn"
+                onClick={handleCreateRule}
+                title="Créer une règle de catégorisation automatique"
+              >
+                ➕
               </button>
             </>
           )}

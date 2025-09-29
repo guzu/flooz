@@ -434,6 +434,19 @@ input:focus, select:focus, textarea:focus {
   box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
 }
 
+.btn.create-rule-btn {
+  margin-left: 2em !important;
+  background-color: #4caf5082 !important;
+  border-color: #4caf50 !important;
+  color: white !important;
+}
+
+.btn.create-rule-btn:hover:not(:disabled) {
+  background-color: #4caf50 !important;
+  border-color: #45a049 !important;
+  color: white !important;
+}
+
 .filter-options {
   margin-top: 0.5rem;
 }
