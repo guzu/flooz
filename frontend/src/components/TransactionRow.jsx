@@ -191,10 +191,10 @@ const TransactionRow = ({
           </button>
           <button
             onClick={onDelete}
-            className="btn btn-danger btn-sm"
+            className="btn btn-outline btn-sm"
             title="Supprimer"
           >
-            🗑️
+            ❌
           </button>
         </div>
       </td>

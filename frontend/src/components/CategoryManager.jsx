@@ -165,11 +165,11 @@ const CategoryManager = ({ categories, onUpdate }) => {
                 </button>
                 <button
                   onClick={() => handleDeleteCategory(category.id, category.name)}
-                  className="btn btn-danger btn-sm"
+                  className="btn btn-outline btn-sm"
                   title="Supprimer"
                   disabled={category.transaction_count > 0}
                 >
-                  🗑️
+                  ❌
                 </button>
               </div>
             </div>
@@ -332,10 +332,10 @@ const CategoryManager = ({ categories, onUpdate }) => {
                 <div className="rule-actions">
                   <button
                     onClick={() => handleDeleteRule(rule.id)}
-                    className="btn btn-danger btn-sm"
+                    className="btn btn-outline btn-sm"
                     title="Supprimer"
                   >
-                    🗑️
+                    ❌
                   </button>
                 </div>
               </div>
