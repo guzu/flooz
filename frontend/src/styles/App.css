@@ -385,6 +385,7 @@ input:focus, select:focus, textarea:focus {
 .transactions-table {
   width: 100%;
   border-collapse: collapse;
+  table-layout: fixed;
 }
 
 .transactions-table th {
@@ -411,6 +412,8 @@ input:focus, select:focus, textarea:focus {
   border-bottom: 1px solid #f3f4f6;
   vertical-align: top;
   font-size: smaller;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .transaction-row:hover {
@@ -426,11 +429,19 @@ input:focus, select:focus, textarea:focus {
 }
 
 .date-col {
-  min-width: 100px;
+  width: 8em;
+  min-width: 8em;
+  padding-right: 0.5rem;
 }
 
 .amount-col {
-  min-width: 120px;
+  width: 10em;
+  min-width: 10em;
+  text-align: right;
+}
+
+/* Header alignment for amount column */
+.transactions-table th.amount-col {
   text-align: right;
 }
 
@@ -440,8 +451,12 @@ input:focus, select:focus, textarea:focus {
 }
 
 .label-col {
+  /* Label column takes remaining space */
+  width: calc(100% - 385px); /* 75+100+130+110+70 = 385px total for other columns */
   min-width: 200px;
-  max-width: 300px;
+  overflow: visible;
+  text-overflow: unset;
+  white-space: normal;
 }
 
 .label-container {
@@ -461,11 +476,13 @@ input:focus, select:focus, textarea:focus {
 }
 
 .category-col {
-  min-width: 150px;
+  width: 10em;
+  min-width: 10em;
 }
 
 .subcategory-col {
-  min-width: 120px;
+  width: 10em;
+  min-width: 10em;
   font-style: italic;
   color: #6b7280;
 }
@@ -479,12 +496,22 @@ input:focus, select:focus, textarea:focus {
 }
 
 .actions-col {
-  min-width: 100px;
+  width: 10em;
+  min-width: 10em;
+  max-width: 10em;
+  padding: 0.3rem 0.5rem;
 }
 
 .action-buttons, .edit-actions {
   display: flex;
-  gap: 0.5rem;
+  gap: 0.25rem;
+  justify-content: center;
+}
+
+.actions-col .btn-sm {
+  padding: 0.2rem 0.3rem;
+  font-size: 0.75rem;
+  min-width: unset;
 }
 
 /* Edit inputs */

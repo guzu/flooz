@@ -125,13 +125,13 @@ const TransactionList = ({ transactions, categories, subcategories, onUpdate, lo
             <tr>
               <th
                 onClick={() => handleSort('date')}
-                className="sortable"
+                className="sortable date-col"
               >
                 Date {getSortIcon('date')}
               </th>
               <th
                 onClick={() => handleSort('label')}
-                className="sortable"
+                className="sortable label-col"
               >
                 Libellé {getSortIcon('label')}
               </th>
@@ -143,17 +143,18 @@ const TransactionList = ({ transactions, categories, subcategories, onUpdate, lo
               </th>
               <th
                 onClick={() => handleSort('category_name')}
-                className="sortable"
+                className="sortable category-col"
               >
                 Catégorie {getSortIcon('category_name')}
               </th>
               <th
                 onClick={() => handleSort('subcategory_name')}
-                className="sortable"
+                className="sortable subcategory-col"
               >
                 Sous-catégorie {getSortIcon('subcategory_name')}
               </th>
-              <th>Actions</th>
+              <th className="actions-col"
+	  	>Actions</th>
             </tr>
           </thead>
           <tbody>
