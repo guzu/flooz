@@ -19,6 +19,7 @@ const TransactionRow = ({
     subcategory_id: '',
     notes: '',
   })
+  const [contextMenu, setContextMenu] = useState({ visible: false, x: 0, y: 0 })
 
   useEffect(() => {
     if (isEditing) {
@@ -32,6 +33,15 @@ const TransactionRow = ({
       })
     }
   }, [isEditing, transaction])
+
+  // Close context menu when clicking elsewhere
+  useEffect(() => {
+    const handleClickOutside = () => setContextMenu({ visible: false, x: 0, y: 0 })
+    if (contextMenu.visible) {
+      document.addEventListener('click', handleClickOutside)
+      return () => document.removeEventListener('click', handleClickOutside)
+    }
+  }, [contextMenu.visible])
 
   const handleInputChange = (field, value) => {
     setEditData(prev => ({
@@ -66,6 +76,29 @@ const TransactionRow = ({
     } else if (e.key === 'Escape') {
       onCancel()
     }
+  }
+
+  const handleRightClick = (e) => {
+    e.preventDefault()
+    if (isEditing) return // Don't show context menu while editing
+
+    setContextMenu({
+      visible: true,
+      x: e.clientX,
+      y: e.clientY
+    })
+  }
+
+  const handleContextMenuEdit = (e) => {
+    e.stopPropagation()
+    setContextMenu({ visible: false, x: 0, y: 0 })
+    onEdit()
+  }
+
+  const handleContextMenuDelete = (e) => {
+    e.stopPropagation()
+    setContextMenu({ visible: false, x: 0, y: 0 })
+    onDelete()
   }
 
   const getCategoryInfo = () => {
@@ -185,7 +218,8 @@ const TransactionRow = ({
   const subcategoryInfo = getSubcategoryInfo()
 
   return (
-    <tr className="transaction-row" onDoubleClick={onEdit}>
+    <>
+      <tr className="transaction-row" onDoubleClick={onEdit} onContextMenu={handleRightClick}>
       <td className="date-col">
         {formatDate(transaction.date)}
       </td>
@@ -240,7 +274,29 @@ const TransactionRow = ({
           </button>
         </div>
       </td>
-    </tr>
+      </tr>
+
+      {/* Context Menu */}
+      {contextMenu.visible && (
+        <div
+          className="context-menu"
+          style={{
+            position: 'fixed',
+            left: contextMenu.x,
+            top: contextMenu.y,
+            zIndex: 1000
+          }}
+          onClick={(e) => e.stopPropagation()}
+        >
+          <div className="context-menu-item" onClick={handleContextMenuEdit}>
+            ✏️ Modifier
+          </div>
+          <div className="context-menu-item" onClick={handleContextMenuDelete}>
+            ❌ Supprimer
+          </div>
+        </div>
+      )}
+    </>
   )
 }
 
