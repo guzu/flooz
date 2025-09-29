@@ -10,6 +10,7 @@ const TransactionRow = ({
   onSave,
   onCancel,
   onDelete,
+  onFilter,
 }) => {
   const [editData, setEditData] = useState({
     date: '',
@@ -99,6 +100,12 @@ const TransactionRow = ({
     e.stopPropagation()
     setContextMenu({ visible: false, x: 0, y: 0 })
     onDelete()
+  }
+
+  const handleContextMenuFilter = (e) => {
+    e.stopPropagation()
+    setContextMenu({ visible: false, x: 0, y: 0 })
+    onFilter(transaction.label)
   }
 
   const getCategoryInfo = () => {
@@ -266,6 +273,13 @@ const TransactionRow = ({
             ✏️
           </button>
           <button
+            onClick={() => onFilter(transaction.label)}
+            className="btn btn-outline btn-sm"
+            title="Filtrer par ce libellé"
+          >
+            🔍
+          </button>
+          <button
             onClick={onDelete}
             className="btn btn-outline btn-sm"
             title="Supprimer"
@@ -290,6 +304,9 @@ const TransactionRow = ({
         >
           <div className="context-menu-item" onClick={handleContextMenuEdit}>
             ✏️ Modifier
+          </div>
+          <div className="context-menu-item" onClick={handleContextMenuFilter}>
+            🔍 Filtrer
           </div>
           <div className="context-menu-item" onClick={handleContextMenuDelete}>
             ❌ Supprimer

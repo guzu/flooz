@@ -193,6 +193,12 @@ const TransactionList = ({ transactions, categories, subcategories, onUpdate, lo
     }
   }
 
+  const handleFilter = (label) => {
+    setLabelFilter(label)
+    // Auto-enable intelligent search for better filtering experience
+    setUseFuzzyMatching(true)
+  }
+
   const getSortIcon = (columnKey) => {
     if (sortConfig.key !== columnKey) {
       return '↕️'
@@ -387,6 +393,7 @@ const TransactionList = ({ transactions, categories, subcategories, onUpdate, lo
                 onSave={(data) => handleSave(transaction.id, data)}
                 onCancel={handleCancel}
                 onDelete={() => handleDelete(transaction.id)}
+                onFilter={handleFilter}
               />
             ))}
           </tbody>

@@ -522,7 +522,7 @@ input:focus, select:focus, textarea:focus {
 
 .label-col {
   /* Label column takes remaining space */
-  width: calc(100% - 385px); /* 75+100+130+110+70 = 385px total for other columns */
+  width: calc(100% - 50em); /* 8+10+10+10+12 = 50em total for other columns */
   min-width: 200px;
   overflow: visible;
   text-overflow: unset;
@@ -566,9 +566,9 @@ input:focus, select:focus, textarea:focus {
 }
 
 .actions-col {
-  width: 10em;
-  min-width: 10em;
-  max-width: 10em;
+  width: 12em;
+  min-width: 12em;
+  max-width: 12em;
   padding: 0.3rem 0.5rem;
 }
 
