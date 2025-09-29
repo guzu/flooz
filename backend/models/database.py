@@ -35,6 +35,19 @@ def init_db():
         )
     ''')
 
+    # Create subcategories table
+    conn.execute('''
+        CREATE TABLE IF NOT EXISTS subcategories (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            name TEXT NOT NULL,
+            category_id INTEGER NOT NULL,
+            color TEXT,
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+            FOREIGN KEY (category_id) REFERENCES categories(id),
+            UNIQUE(name, category_id)
+        )
+    ''')
+
     # Create categorization_rules table
     conn.execute('''
         CREATE TABLE IF NOT EXISTS categorization_rules (
@@ -47,10 +60,19 @@ def init_db():
         )
     ''')
 
+    # Add subcategory_id column to transactions table if it doesn't exist
+    try:
+        conn.execute('ALTER TABLE transactions ADD COLUMN subcategory_id INTEGER REFERENCES subcategories(id)')
+        logger.info("Added subcategory_id column to transactions table")
+    except Exception as e:
+        if "duplicate column name" not in str(e):
+            logger.warning(f"Could not add subcategory_id column: {e}")
+
     # Create indexes
     conn.execute('CREATE INDEX IF NOT EXISTS idx_date ON transactions(date)')
     conn.execute('CREATE INDEX IF NOT EXISTS idx_hash ON transactions(hash)')
     conn.execute('CREATE INDEX IF NOT EXISTS idx_category ON transactions(category_id)')
+    conn.execute('CREATE INDEX IF NOT EXISTS idx_subcategory ON transactions(subcategory_id)')
 
     # Insert default categories if not exist
     categories = [
@@ -86,6 +108,49 @@ def init_db():
                     'INSERT INTO categorization_rules (pattern, category_id, priority) VALUES (?, ?, ?)',
                     (pattern, category_id, priority)
                 )
+
+    # Insert default subcategories
+    subcategories_data = [
+        # Alimentation subcategories
+        ('Courses', 'Alimentation'),
+        ('Restaurant', 'Alimentation'),
+        ('Boulangerie', 'Alimentation'),
+        ('Livraison', 'Alimentation'),
+
+        # Transport subcategories
+        ('Transports en commun', 'Transport'),
+        ('Carburant', 'Transport'),
+        ('Parking', 'Transport'),
+        ('Taxi/VTC', 'Transport'),
+
+        # Logement subcategories
+        ('Loyer', 'Logement'),
+        ('Électricité', 'Logement'),
+        ('Gaz', 'Logement'),
+        ('Internet', 'Logement'),
+        ('Assurance habitation', 'Logement'),
+
+        # Loisirs subcategories
+        ('Cinéma', 'Loisirs'),
+        ('Sport', 'Loisirs'),
+        ('Sortie', 'Loisirs'),
+        ('Voyage', 'Loisirs'),
+
+        # Santé subcategories
+        ('Médecin', 'Santé'),
+        ('Pharmacie', 'Santé'),
+        ('Dentiste', 'Santé'),
+        ('Mutuelle', 'Santé'),
+    ]
+
+    for subcategory_name, category_name in subcategories_data:
+        cursor.execute('SELECT id FROM categories WHERE name = ?', (category_name,))
+        category_row = cursor.fetchone()
+        if category_row:
+            category_id = category_row['id']
+            cursor.execute('SELECT id FROM subcategories WHERE name = ? AND category_id = ?', (subcategory_name, category_id))
+            if not cursor.fetchone():
+                cursor.execute('INSERT INTO subcategories (name, category_id) VALUES (?, ?)', (subcategory_name, category_id))
 
     conn.commit()
     conn.close()

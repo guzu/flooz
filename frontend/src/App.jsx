@@ -12,6 +12,7 @@ function App() {
   const [selectedYear, setSelectedYear] = useState(new Date().getFullYear())
   const [transactions, setTransactions] = useState([])
   const [categories, setCategories] = useState([])
+  const [subcategories, setSubcategories] = useState([])
   const [availableYears, setAvailableYears] = useState([])
   const [loading, setLoading] = useState(false)
   const [sidebarOpen, setSidebarOpen] = useState(true)
@@ -29,11 +30,13 @@ function App() {
   const loadInitialData = async () => {
     try {
       setLoading(true)
-      const [categoriesData, yearsData] = await Promise.all([
+      const [categoriesData, subcategoriesData, yearsData] = await Promise.all([
         apiService.getCategories(),
+        apiService.getSubcategories(),
         apiService.getAvailableYears()
       ])
       setCategories(categoriesData)
+      setSubcategories(subcategoriesData)
       setAvailableYears(yearsData)
     } catch (error) {
       console.error('Error loading initial data:', error)
@@ -76,6 +79,7 @@ function App() {
           <TransactionList
             transactions={transactions}
             categories={categories}
+            subcategories={subcategories}
             onUpdate={handleTransactionUpdate}
             loading={loading}
             availableYears={availableYears}

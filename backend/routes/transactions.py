@@ -86,6 +86,7 @@ def create_transaction():
             label=data['label'],
             amount=float(data['amount']),
             category_id=data.get('category_id'),
+            subcategory_id=data.get('subcategory_id'),
             hash=transaction_hash,
             notes=data.get('notes')
         )
@@ -134,6 +135,7 @@ def update_transaction(transaction_id):
             label=data.get('label'),
             amount=float(data['amount']) if 'amount' in data else None,
             category_id=data.get('category_id'),
+            subcategory_id=data.get('subcategory_id'),
             notes=data.get('notes')
         )
 

@@ -464,6 +464,12 @@ input:focus, select:focus, textarea:focus {
   min-width: 150px;
 }
 
+.subcategory-col {
+  min-width: 120px;
+  font-style: italic;
+  color: #6b7280;
+}
+
 .category-badge {
   display: inline-block;
   padding: 0.10rem 0.5rem;

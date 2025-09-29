@@ -2,12 +2,13 @@ from datetime import datetime
 from models.database import get_db_connection
 
 class Transaction:
-    def __init__(self, id=None, date=None, label=None, amount=None, category_id=None, hash=None, notes=None, created_at=None):
+    def __init__(self, id=None, date=None, label=None, amount=None, category_id=None, subcategory_id=None, hash=None, notes=None, created_at=None):
         self.id = id
         self.date = date
         self.label = label
         self.amount = amount
         self.category_id = category_id
+        self.subcategory_id = subcategory_id
         self.hash = hash
         self.notes = notes
         self.created_at = created_at
@@ -19,20 +20,21 @@ class Transaction:
             'label': self.label,
             'amount': self.amount,
             'category_id': self.category_id,
+            'subcategory_id': self.subcategory_id,
             'hash': self.hash,
             'notes': self.notes,
             'created_at': self.created_at
         }
 
     @staticmethod
-    def create(date, label, amount, category_id=None, hash=None, notes=None):
+    def create(date, label, amount, category_id=None, subcategory_id=None, hash=None, notes=None):
         conn = get_db_connection()
         cursor = conn.cursor()
 
         cursor.execute('''
-            INSERT INTO transactions (date, label, amount, category_id, hash, notes)
-            VALUES (?, ?, ?, ?, ?, ?)
-        ''', (date, label, amount, category_id, hash, notes))
+            INSERT INTO transactions (date, label, amount, category_id, subcategory_id, hash, notes)
+            VALUES (?, ?, ?, ?, ?, ?, ?)
+        ''', (date, label, amount, category_id, subcategory_id, hash, notes))
 
         transaction_id = cursor.lastrowid
         conn.commit()
@@ -50,12 +52,19 @@ class Transaction:
         conn.close()
 
         if row:
+            # Handle subcategory_id safely in case column doesn't exist yet
+            try:
+                subcategory_id = row['subcategory_id']
+            except (KeyError, IndexError):
+                subcategory_id = None
+
             return Transaction(
                 id=row['id'],
                 date=row['date'],
                 label=row['label'],
                 amount=row['amount'],
                 category_id=row['category_id'],
+                subcategory_id=subcategory_id,
                 hash=row['hash'],
                 notes=row['notes'],
                 created_at=row['created_at']
@@ -69,17 +78,21 @@ class Transaction:
 
         if year:
             cursor.execute('''
-                SELECT t.*, c.name as category_name, c.color as category_color
+                SELECT t.*, c.name as category_name, c.color as category_color,
+                       s.name as subcategory_name
                 FROM transactions t
                 LEFT JOIN categories c ON t.category_id = c.id
+                LEFT JOIN subcategories s ON t.subcategory_id = s.id
                 WHERE strftime('%Y', t.date) = ?
                 ORDER BY t.date DESC
             ''', (str(year),))
         else:
             cursor.execute('''
-                SELECT t.*, c.name as category_name, c.color as category_color
+                SELECT t.*, c.name as category_name, c.color as category_color,
+                       s.name as subcategory_name
                 FROM transactions t
                 LEFT JOIN categories c ON t.category_id = c.id
+                LEFT JOIN subcategories s ON t.subcategory_id = s.id
                 ORDER BY t.date DESC
             ''')
 
@@ -88,12 +101,24 @@ class Transaction:
 
         transactions = []
         for row in rows:
+            # Handle subcategory fields safely
+            try:
+                subcategory_id = row['subcategory_id']
+            except (KeyError, IndexError):
+                subcategory_id = None
+
+            try:
+                subcategory_name = row['subcategory_name']
+            except (KeyError, IndexError):
+                subcategory_name = None
+
             transaction = Transaction(
                 id=row['id'],
                 date=row['date'],
                 label=row['label'],
                 amount=row['amount'],
                 category_id=row['category_id'],
+                subcategory_id=subcategory_id,
                 hash=row['hash'],
                 notes=row['notes'],
                 created_at=row['created_at']
@@ -101,12 +126,13 @@ class Transaction:
             transaction_dict = transaction.to_dict()
             transaction_dict['category_name'] = row['category_name']
             transaction_dict['category_color'] = row['category_color']
+            transaction_dict['subcategory_name'] = subcategory_name
             transactions.append(transaction_dict)
 
         return transactions
 
     @staticmethod
-    def update(transaction_id, date=None, label=None, amount=None, category_id=None, notes=None):
+    def update(transaction_id, date=None, label=None, amount=None, category_id=None, subcategory_id=None, notes=None):
         conn = get_db_connection()
         cursor = conn.cursor()
 
@@ -125,6 +151,9 @@ class Transaction:
         if category_id is not None:
             fields.append('category_id = ?')
             values.append(category_id)
+        if subcategory_id is not None:
+            fields.append('subcategory_id = ?')
+            values.append(subcategory_id)
         if notes is not None:
             fields.append('notes = ?')
             values.append(notes)

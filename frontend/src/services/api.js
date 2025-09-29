@@ -86,6 +86,17 @@ export const apiService = {
     return response.data
   },
 
+  // Subcategories
+  async getSubcategories() {
+    const response = await api.get('/subcategories')
+    return response.data.data
+  },
+
+  async getSubcategoriesByCategory(categoryId) {
+    const response = await api.get(`/categories/${categoryId}/subcategories`)
+    return response.data.data
+  },
+
   // Import
   async previewCsv(file) {
     const formData = new FormData()

@@ -4,6 +4,7 @@ import { formatAmount, formatDate, formatDateForInput, getAmountColor } from '..
 const TransactionRow = ({
   transaction,
   categories,
+  subcategories,
   isEditing,
   onEdit,
   onSave,
@@ -15,6 +16,7 @@ const TransactionRow = ({
     label: '',
     amount: '',
     category_id: '',
+    subcategory_id: '',
     notes: '',
   })
 
@@ -25,6 +27,7 @@ const TransactionRow = ({
         label: transaction.label,
         amount: Math.abs(transaction.amount).toString(),
         category_id: transaction.category_id || '',
+        subcategory_id: transaction.subcategory_id || '',
         notes: transaction.notes || '',
       })
     }
@@ -52,6 +55,7 @@ const TransactionRow = ({
       label: editData.label.trim(),
       amount: finalAmount,
       category_id: editData.category_id || null,
+      subcategory_id: editData.subcategory_id || null,
       notes: editData.notes.trim() || null,
     })
   }
@@ -70,6 +74,24 @@ const TransactionRow = ({
       name: transaction.category_name || 'Non catégorisé',
       color: transaction.category_color || '#6b7280'
     }
+  }
+
+  const getSubcategoryInfo = () => {
+    if (!transaction.subcategory_id) return { name: '-' }
+    return {
+      name: transaction.subcategory_name || '-'
+    }
+  }
+
+  const getAvailableSubcategories = () => {
+    if (!editData.category_id) return []
+    return subcategories.filter(sub => sub.category_id.toString() === editData.category_id)
+  }
+
+  // Reset subcategory when category changes
+  const handleCategoryChange = (value) => {
+    handleInputChange('category_id', value)
+    handleInputChange('subcategory_id', '') // Reset subcategory when category changes
   }
 
   if (isEditing) {
@@ -109,7 +131,7 @@ const TransactionRow = ({
         <td>
           <select
             value={editData.category_id}
-            onChange={(e) => handleInputChange('category_id', e.target.value)}
+            onChange={(e) => handleCategoryChange(e.target.value)}
             onKeyDown={handleKeyDown}
             className="edit-select"
           >
@@ -117,6 +139,22 @@ const TransactionRow = ({
             {categories.map((category) => (
               <option key={category.id} value={category.id}>
                 {category.name}
+              </option>
+            ))}
+          </select>
+        </td>
+        <td>
+          <select
+            value={editData.subcategory_id}
+            onChange={(e) => handleInputChange('subcategory_id', e.target.value)}
+            onKeyDown={handleKeyDown}
+            className="edit-select"
+            disabled={!editData.category_id}
+          >
+            <option value="">-</option>
+            {getAvailableSubcategories().map((subcategory) => (
+              <option key={subcategory.id} value={subcategory.id}>
+                {subcategory.name}
               </option>
             ))}
           </select>
@@ -144,6 +182,7 @@ const TransactionRow = ({
   }
 
   const categoryInfo = getCategoryInfo()
+  const subcategoryInfo = getSubcategoryInfo()
 
   return (
     <tr className="transaction-row" onDoubleClick={onEdit}>
@@ -179,6 +218,9 @@ const TransactionRow = ({
         >
           {categoryInfo.name}
         </span>
+      </td>
+      <td className="subcategory-col">
+        {subcategoryInfo.name}
       </td>
       <td className="actions-col">
         <div className="action-buttons">

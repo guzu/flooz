@@ -3,7 +3,7 @@ import TransactionRow from './TransactionRow'
 import YearSelector from './Charts/YearSelector'
 import { apiService } from '../services/api'
 
-const TransactionList = ({ transactions, categories, onUpdate, loading, availableYears, selectedYear, onYearChange }) => {
+const TransactionList = ({ transactions, categories, subcategories, onUpdate, loading, availableYears, selectedYear, onYearChange }) => {
   const [editingId, setEditingId] = useState(null)
   const [sortConfig, setSortConfig] = useState({ key: 'date', direction: 'desc' })
 
@@ -147,6 +147,12 @@ const TransactionList = ({ transactions, categories, onUpdate, loading, availabl
               >
                 Catégorie {getSortIcon('category_name')}
               </th>
+              <th
+                onClick={() => handleSort('subcategory_name')}
+                className="sortable"
+              >
+                Sous-catégorie {getSortIcon('subcategory_name')}
+              </th>
               <th>Actions</th>
             </tr>
           </thead>
@@ -156,6 +162,7 @@ const TransactionList = ({ transactions, categories, onUpdate, loading, availabl
                 key={transaction.id}
                 transaction={transaction}
                 categories={categories}
+                subcategories={subcategories}
                 isEditing={editingId === transaction.id}
                 onEdit={() => handleEdit(transaction.id)}
                 onSave={(data) => handleSave(transaction.id, data)}
