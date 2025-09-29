@@ -14,6 +14,7 @@ function App() {
   const [categories, setCategories] = useState([])
   const [availableYears, setAvailableYears] = useState([])
   const [loading, setLoading] = useState(false)
+  const [sidebarOpen, setSidebarOpen] = useState(true)
 
   useEffect(() => {
     loadInitialData()
@@ -125,36 +126,53 @@ function App() {
         </div>
       </header>
 
-      <nav className="app-nav">
-        <button
-          className={currentView === 'transactions' ? 'active' : ''}
-          onClick={() => setCurrentView('transactions')}
-        >
-          📋 Transactions
-        </button>
-        <button
-          className={currentView === 'import' ? 'active' : ''}
-          onClick={() => setCurrentView('import')}
-        >
-          📤 Import CSV
-        </button>
-        <button
-          className={currentView === 'categories' ? 'active' : ''}
-          onClick={() => setCurrentView('categories')}
-        >
-          🏷️ Catégories
-        </button>
-        <button
-          className={currentView === 'stats' ? 'active' : ''}
-          onClick={() => setCurrentView('stats')}
-        >
-          📊 Statistiques
-        </button>
-      </nav>
+      <div className="app-body">
+        <aside className={`app-sidebar ${sidebarOpen ? 'open' : 'closed'}`}>
+          <div className="sidebar-header">
+            <button
+              className="sidebar-toggle"
+              onClick={() => setSidebarOpen(!sidebarOpen)}
+              title={sidebarOpen ? 'Réduire le menu' : 'Ouvrir le menu'}
+            >
+              ☰
+            </button>
+          </div>
+          <nav className="sidebar-nav">
+            <button
+              className={currentView === 'transactions' ? 'active' : ''}
+              onClick={() => setCurrentView('transactions')}
+            >
+              <span className="nav-icon">📋</span>
+              {sidebarOpen && <span className="nav-label">Transactions</span>}
+            </button>
+            <button
+              className={currentView === 'import' ? 'active' : ''}
+              onClick={() => setCurrentView('import')}
+            >
+              <span className="nav-icon">📤</span>
+              {sidebarOpen && <span className="nav-label">Import CSV</span>}
+            </button>
+            <button
+              className={currentView === 'categories' ? 'active' : ''}
+              onClick={() => setCurrentView('categories')}
+            >
+              <span className="nav-icon">🏷️</span>
+              {sidebarOpen && <span className="nav-label">Catégories</span>}
+            </button>
+            <button
+              className={currentView === 'stats' ? 'active' : ''}
+              onClick={() => setCurrentView('stats')}
+            >
+              <span className="nav-icon">📊</span>
+              {sidebarOpen && <span className="nav-label">Statistiques</span>}
+            </button>
+          </nav>
+        </aside>
 
-      <main className="app-main">
-        {renderContent()}
-      </main>
+        <main className="app-main">
+          {renderContent()}
+        </main>
+      </div>
     </div>
   )
 }
