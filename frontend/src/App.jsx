@@ -145,41 +145,45 @@ function App() {
             </button>
           </div>
           <nav className="sidebar-nav">
-            <button
-              className={currentView === 'transactions' ? 'active' : ''}
-              onClick={() => setCurrentView('transactions')}
-            >
-              <span className="nav-icon">📋</span>
-              {sidebarOpen && <span className="nav-label">Transactions</span>}
-            </button>
-            <button
-              className={currentView === 'import' ? 'active' : ''}
-              onClick={() => setCurrentView('import')}
-            >
-              <span className="nav-icon">📤</span>
-              {sidebarOpen && <span className="nav-label">Import CSV</span>}
-            </button>
-            <button
-              className={currentView === 'categories' ? 'active' : ''}
-              onClick={() => setCurrentView('categories')}
-            >
-              <span className="nav-icon">🏷️</span>
-              {sidebarOpen && <span className="nav-label">Catégories</span>}
-            </button>
-            <button
-              className={currentView === 'rules' ? 'active' : ''}
-              onClick={() => setCurrentView('rules')}
-            >
-              <span className="nav-icon">⚙️</span>
-              {sidebarOpen && <span className="nav-label">Règles</span>}
-            </button>
-            <button
-              className={currentView === 'stats' ? 'active' : ''}
-              onClick={() => setCurrentView('stats')}
-            >
-              <span className="nav-icon">📊</span>
-              {sidebarOpen && <span className="nav-label">Statistiques</span>}
-            </button>
+            <div className="nav-main">
+              <button
+                className={currentView === 'transactions' ? 'active' : ''}
+                onClick={() => setCurrentView('transactions')}
+              >
+                <span className="nav-icon">📋</span>
+                {sidebarOpen && <span className="nav-label">Transactions</span>}
+              </button>
+              <button
+                className={currentView === 'categories' ? 'active' : ''}
+                onClick={() => setCurrentView('categories')}
+              >
+                <span className="nav-icon">🏷️</span>
+                {sidebarOpen && <span className="nav-label">Catégories</span>}
+              </button>
+              <button
+                className={currentView === 'stats' ? 'active' : ''}
+                onClick={() => setCurrentView('stats')}
+              >
+                <span className="nav-icon">📊</span>
+                {sidebarOpen && <span className="nav-label">Statistiques</span>}
+              </button>
+            </div>
+            <div className="nav-admin">
+              <button
+                className={currentView === 'import' ? 'active' : ''}
+                onClick={() => setCurrentView('import')}
+              >
+                <span className="nav-icon">📤</span>
+                {sidebarOpen && <span className="nav-label">Import CSV</span>}
+              </button>
+              <button
+                className={currentView === 'rules' ? 'active' : ''}
+                onClick={() => setCurrentView('rules')}
+              >
+                <span className="nav-icon">⚙️</span>
+                {sidebarOpen && <span className="nav-label">Règles</span>}
+              </button>
+            </div>
           </nav>
         </aside>
 

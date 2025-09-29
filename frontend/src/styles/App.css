@@ -18,7 +18,7 @@ body {
 
 /* App layout */
 .app {
-  min-height: 100vh;
+  height: 100vh;
   display: flex;
   flex-direction: column;
 }
@@ -90,6 +90,7 @@ body {
   flex: 1;
   display: flex;
   overflow: hidden;
+  height: 0; /* Force flexbox to respect height constraints */
 }
 
 .app-sidebar {
@@ -99,6 +100,9 @@ body {
   transition: all 0.3s ease;
   overflow: hidden;
   z-index: 50;
+  display: flex;
+  flex-direction: column;
+  height: 100%;
 }
 
 .app-sidebar.open {
@@ -113,7 +117,23 @@ body {
   padding: 1rem 0;
   display: flex;
   flex-direction: column;
+  flex: 1;
   gap: 0.25rem;
+}
+
+.nav-main {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.nav-admin {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  margin-top: auto;
+  padding-top: 1rem;
+  border-top: 1px solid #e5e7eb;
 }
 
 .sidebar-nav button {
