@@ -1,0 +1,29 @@
+# Python
+__pycache__/
+*.pyc
+*.pyo
+
+# Virtual environments
+backend/venv/
+
+# IDE
+.vscode/
+.idea/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Database
+data/budget.db
+data/budget.db-journal
+
+# Environment variables
+.env
+
+# Node.js (future frontend)
+frontend/node_modules/
+frontend/dist/
+
+# Logs
+*.log
