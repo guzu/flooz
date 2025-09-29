@@ -6,6 +6,7 @@ import { apiService } from '../services/api'
 const TransactionList = ({ transactions, categories, subcategories, onUpdate, loading, availableYears, selectedYear, onYearChange }) => {
   const [editingId, setEditingId] = useState(null)
   const [sortConfig, setSortConfig] = useState({ key: 'date', direction: 'desc' })
+  const [labelFilter, setLabelFilter] = useState('')
 
   const handleSort = (key) => {
     let direction = 'asc'
@@ -15,10 +16,19 @@ const TransactionList = ({ transactions, categories, subcategories, onUpdate, lo
     setSortConfig({ key, direction })
   }
 
-  const sortedTransactions = React.useMemo(() => {
-    let sortableTransactions = [...transactions]
+  const filteredAndSortedTransactions = React.useMemo(() => {
+    // First filter by label
+    let filteredTransactions = [...transactions]
+    if (labelFilter.trim()) {
+      const filterLower = labelFilter.toLowerCase().trim()
+      filteredTransactions = filteredTransactions.filter(transaction =>
+        transaction.label.toLowerCase().includes(filterLower)
+      )
+    }
+
+    // Then sort
     if (sortConfig.key) {
-      sortableTransactions.sort((a, b) => {
+      filteredTransactions.sort((a, b) => {
         let aValue = a[sortConfig.key]
         let bValue = b[sortConfig.key]
 
@@ -42,8 +52,8 @@ const TransactionList = ({ transactions, categories, subcategories, onUpdate, lo
         return 0
       })
     }
-    return sortableTransactions
-  }, [transactions, sortConfig])
+    return filteredTransactions
+  }, [transactions, sortConfig, labelFilter])
 
   const handleEdit = (id) => {
     setEditingId(id)
@@ -100,12 +110,62 @@ const TransactionList = ({ transactions, categories, subcategories, onUpdate, lo
     )
   }
 
+  if (filteredAndSortedTransactions.length === 0 && labelFilter.trim()) {
+    return (
+      <div className="transaction-list">
+        <div className="transaction-summary">
+          <div className="summary-left">
+            <p>
+              <strong>{transactions.length}</strong> transaction(s) au total
+            </p>
+          </div>
+          <div className="summary-right">
+            {availableYears && selectedYear && onYearChange && (
+              <YearSelector
+                years={availableYears}
+                selectedYear={selectedYear}
+                onYearChange={onYearChange}
+              />
+            )}
+          </div>
+        </div>
+
+        <div className="filter-section">
+          <div className="filter-group">
+            <label htmlFor="label-filter">Filtrer par libellé :</label>
+            <input
+              id="label-filter"
+              type="text"
+              value={labelFilter}
+              onChange={(e) => setLabelFilter(e.target.value)}
+              placeholder="Rechercher dans les libellés..."
+              className="filter-input"
+            />
+          </div>
+        </div>
+
+        <div className="empty-state">
+          <p>Aucune transaction ne correspond au filtre "<strong>{labelFilter}</strong>".</p>
+          <button
+            className="btn btn-outline btn-sm"
+            onClick={() => setLabelFilter('')}
+          >
+            Effacer le filtre
+          </button>
+        </div>
+      </div>
+    )
+  }
+
   return (
     <div className="transaction-list">
       <div className="transaction-summary">
         <div className="summary-left">
           <p>
-            <strong>{transactions.length}</strong> transaction(s) trouvée(s)
+            <strong>{filteredAndSortedTransactions.length}</strong> transaction(s) affichée(s)
+            {labelFilter.trim() && (
+              <span> sur <strong>{transactions.length}</strong> au total</span>
+            )}
           </p>
         </div>
         <div className="summary-right">
@@ -115,6 +175,29 @@ const TransactionList = ({ transactions, categories, subcategories, onUpdate, lo
               selectedYear={selectedYear}
               onYearChange={onYearChange}
             />
+          )}
+        </div>
+      </div>
+
+      <div className="filter-section">
+        <div className="filter-group">
+          <label htmlFor="label-filter">Filtrer par libellé :</label>
+          <input
+            id="label-filter"
+            type="text"
+            value={labelFilter}
+            onChange={(e) => setLabelFilter(e.target.value)}
+            placeholder="Rechercher dans les libellés..."
+            className="filter-input"
+          />
+          {labelFilter.trim() && (
+            <button
+              className="btn btn-outline btn-sm"
+              onClick={() => setLabelFilter('')}
+              title="Effacer le filtre"
+            >
+              ✕
+            </button>
           )}
         </div>
       </div>
@@ -158,7 +241,7 @@ const TransactionList = ({ transactions, categories, subcategories, onUpdate, lo
             </tr>
           </thead>
           <tbody>
-            {sortedTransactions.map((transaction) => (
+            {filteredAndSortedTransactions.map((transaction) => (
               <TransactionRow
                 key={transaction.id}
                 transaction={transaction}
