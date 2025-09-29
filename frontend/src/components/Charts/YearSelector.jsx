@@ -1,7 +1,7 @@
 import React from 'react'
 
 const YearSelector = ({ years, selectedYear, onYearChange }) => {
-  if (years.length === 0) {
+  if (!years || years.length === 0) {
     return null
   }
 

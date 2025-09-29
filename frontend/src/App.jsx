@@ -116,6 +116,14 @@ function App() {
       case 'stats':
         return (
           <div className="stats-container">
+            <div className="stats-header">
+              <h2>Statistiques</h2>
+              <YearSelector
+                years={availableYears}
+                selectedYear={selectedYear}
+                onYearChange={setSelectedYear}
+              />
+            </div>
             <div className="charts-grid">
               <div className="chart-section">
                 <h3>Dépenses mensuelles</h3>
