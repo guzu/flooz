@@ -525,6 +525,15 @@ input:focus, select:focus, textarea:focus {
   background-color: #f9fafb;
 }
 
+.transaction-row.selected {
+  background-color: #dbeafe !important;
+  border-left: 3px solid #3b82f6;
+}
+
+.transaction-row.selected:hover {
+  background-color: #bfdbfe !important;
+}
+
 .transaction-row.editing {
   background-color: #fef3c7;
 }
@@ -661,6 +670,17 @@ input:focus, select:focus, textarea:focus {
 .context-menu-item:hover {
   background-color: #f9fafb;
   color: #1f2937;
+}
+
+.context-menu-item.disabled {
+  color: #9ca3af;
+  cursor: not-allowed;
+  opacity: 0.5;
+}
+
+.context-menu-item.disabled:hover {
+  background-color: transparent;
+  color: #9ca3af;
 }
 
 /* Import Panel */

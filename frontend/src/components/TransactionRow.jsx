@@ -8,6 +8,10 @@ const TransactionRow = ({
   onCategorize,
   onDelete,
   onFilter,
+  isSelected,
+  onSelect,
+  index,
+  hasMultipleSelected,
 }) => {
   const [contextMenu, setContextMenu] = useState({ visible: false, x: 0, y: 0 })
 
@@ -22,11 +26,19 @@ const TransactionRow = ({
 
   const handleRightClick = (e) => {
     e.preventDefault()
+    // Select this transaction if not already selected
+    if (!isSelected) {
+      onSelect(transaction, index, e)
+    }
     setContextMenu({
       visible: true,
       x: e.clientX,
       y: e.clientY
     })
+  }
+
+  const handleClick = (e) => {
+    onSelect(transaction, index, e)
   }
 
   const handleContextMenuCategorize = (e) => {
@@ -67,7 +79,11 @@ const TransactionRow = ({
 
   return (
     <>
-      <tr className="transaction-row" onContextMenu={handleRightClick}>
+      <tr
+        className={`transaction-row ${isSelected ? 'selected' : ''}`}
+        onContextMenu={handleRightClick}
+        onClick={handleClick}
+      >
       <td className="date-col">
         {formatDate(transaction.date)}
       </td>
@@ -146,10 +162,16 @@ const TransactionRow = ({
           <div className="context-menu-item" onClick={handleContextMenuCategorize}>
             🏷️ Catégoriser
           </div>
-          <div className="context-menu-item" onClick={handleContextMenuFilter}>
+          <div
+            className={`context-menu-item ${hasMultipleSelected ? 'disabled' : ''}`}
+            onClick={hasMultipleSelected ? undefined : handleContextMenuFilter}
+          >
             🔍 Filtrer
           </div>
-          <div className="context-menu-item" onClick={handleContextMenuDelete}>
+          <div
+            className={`context-menu-item ${hasMultipleSelected ? 'disabled' : ''}`}
+            onClick={hasMultipleSelected ? undefined : handleContextMenuDelete}
+          >
             ❌ Supprimer
           </div>
         </div>

@@ -22,6 +22,8 @@ const TransactionList = ({ transactions, categories, subcategories, onUpdate, lo
   const [transactionToCategorize, setTransactionToCategorize] = useState(null)
   const [selectedCategoryForSingle, setSelectedCategoryForSingle] = useState('')
   const [selectedSubcategoryForSingle, setSelectedSubcategoryForSingle] = useState('')
+  const [selectedTransactions, setSelectedTransactions] = useState(new Set())
+  const [lastSelectedIndex, setLastSelectedIndex] = useState(null)
 
   // Cache for Levenshtein distance calculations
   const distanceCache = React.useRef(new Map())
@@ -69,6 +71,14 @@ const TransactionList = ({ transactions, categories, subcategories, onUpdate, lo
           e.preventDefault()
           setLabelFilter('')
           filterInputRef.current?.focus()
+          break
+
+        case 'a':
+          if (e.ctrlKey || e.metaKey) {
+            e.preventDefault()
+            // Select all visible transactions
+            setSelectedTransactions(new Set(filteredAndSortedTransactions.map(t => t.id)))
+          }
           break
 
         default:
@@ -232,11 +242,25 @@ const TransactionList = ({ transactions, categories, subcategories, onUpdate, lo
     return filteredTransactions
   }, [transactions, sortConfig, labelFilter, useFuzzyMatching, showOnlyUncategorized])
 
-  const handleCategorize = (transaction) => {
-    setTransactionToCategorize(transaction)
-    setSelectedCategoryForSingle(transaction.category_id || '')
-    setSelectedSubcategoryForSingle(transaction.subcategory_id || '')
-    setShowCategorizeModal(true)
+  const handleCategorize = (transaction = null) => {
+    if (selectedTransactions.size > 1) {
+      // Multiple transactions selected - use bulk categorization
+      setShowBulkCategorizeModal(true)
+    } else if (selectedTransactions.size === 1) {
+      // Single transaction selected from multi-selection
+      const selectedId = Array.from(selectedTransactions)[0]
+      const selectedTransaction = filteredAndSortedTransactions.find(t => t.id === selectedId)
+      setTransactionToCategorize(selectedTransaction)
+      setSelectedCategoryForSingle(selectedTransaction.category_id || '')
+      setSelectedSubcategoryForSingle(selectedTransaction.subcategory_id || '')
+      setShowCategorizeModal(true)
+    } else if (transaction) {
+      // Single transaction from button click
+      setTransactionToCategorize(transaction)
+      setSelectedCategoryForSingle(transaction.category_id || '')
+      setSelectedSubcategoryForSingle(transaction.subcategory_id || '')
+      setShowCategorizeModal(true)
+    }
   }
 
   const handleSingleCategorizeSubmit = async () => {
@@ -267,6 +291,47 @@ const TransactionList = ({ transactions, categories, subcategories, onUpdate, lo
   const handleSingleCategoryChange = (value) => {
     setSelectedCategoryForSingle(value)
     setSelectedSubcategoryForSingle('') // Reset subcategory when category changes
+  }
+
+  const handleTransactionSelection = (transaction, index, event) => {
+    const transactionId = transaction.id
+
+    if (event.ctrlKey || event.metaKey) {
+      // Ctrl/Cmd + click: toggle selection
+      setSelectedTransactions(prev => {
+        const newSet = new Set(prev)
+        if (newSet.has(transactionId)) {
+          newSet.delete(transactionId)
+        } else {
+          newSet.add(transactionId)
+        }
+        return newSet
+      })
+      setLastSelectedIndex(index)
+    } else if (event.shiftKey && lastSelectedIndex !== null) {
+      // Shift + click: select range
+      const startIndex = Math.min(lastSelectedIndex, index)
+      const endIndex = Math.max(lastSelectedIndex, index)
+
+      setSelectedTransactions(prev => {
+        const newSet = new Set(prev)
+        for (let i = startIndex; i <= endIndex; i++) {
+          if (filteredAndSortedTransactions[i]) {
+            newSet.add(filteredAndSortedTransactions[i].id)
+          }
+        }
+        return newSet
+      })
+    } else {
+      // Normal click: select only this transaction
+      setSelectedTransactions(new Set([transactionId]))
+      setLastSelectedIndex(index)
+    }
+  }
+
+  const clearSelection = () => {
+    setSelectedTransactions(new Set())
+    setLastSelectedIndex(null)
   }
 
   const handleDelete = async (id) => {
@@ -317,11 +382,14 @@ const TransactionList = ({ transactions, categories, subcategories, onUpdate, lo
   }
 
   const handleBulkCategorize = () => {
-    if (filteredAndSortedTransactions.length === 0) {
+    if (selectedTransactions.size > 0) {
+      setShowBulkCategorizeModal(true)
+    } else if (filteredAndSortedTransactions.length === 0) {
       alert('Aucune transaction à catégoriser')
       return
+    } else {
+      setShowBulkCategorizeModal(true)
     }
-    setShowBulkCategorizeModal(true)
   }
 
   const handleCreateNewCategory = async () => {
@@ -355,7 +423,12 @@ const TransactionList = ({ transactions, categories, subcategories, onUpdate, lo
     }
 
     try {
-      const promises = filteredAndSortedTransactions.map(transaction =>
+      // Use selected transactions if any, otherwise use filtered transactions
+      const transactionsToUpdate = selectedTransactions.size > 0
+        ? filteredAndSortedTransactions.filter(t => selectedTransactions.has(t.id))
+        : filteredAndSortedTransactions
+
+      const promises = transactionsToUpdate.map(transaction =>
         apiService.updateTransaction(transaction.id, {
           category_id: parseInt(bulkCategory),
           subcategory_id: bulkSubcategory ? parseInt(bulkSubcategory) : null
@@ -367,6 +440,7 @@ const TransactionList = ({ transactions, categories, subcategories, onUpdate, lo
       setShowBulkCategorizeModal(false)
       setBulkCategory('')
       setBulkSubcategory('')
+      clearSelection() // Clear selection after bulk operation
       onUpdate() // Refresh transactions
     } catch (error) {
       console.error('Error bulk categorizing:', error)
@@ -513,6 +587,9 @@ const TransactionList = ({ transactions, categories, subcategories, onUpdate, lo
         <div className="summary-left">
           <p>
             <strong>{filteredAndSortedTransactions.length}</strong> transaction(s) affichée(s)
+            {selectedTransactions.size > 0 && (
+              <span> | <strong>{selectedTransactions.size}</strong> sélectionnée(s)</span>
+            )}
             {labelFilter.trim() && (
               <span> sur <strong>{transactions.length}</strong> au total</span>
             )}
@@ -563,7 +640,16 @@ const TransactionList = ({ transactions, categories, subcategories, onUpdate, lo
                   onClick={handleBulkCategorize}
                   title="Catégoriser toutes les transactions filtrées"
                 >
-                  🏷️ Batch ({filteredAndSortedTransactions.length})
+                  🏷️ Batch ({selectedTransactions.size > 0 ? selectedTransactions.size : filteredAndSortedTransactions.length})
+                </button>
+              )}
+              {selectedTransactions.size > 0 && (
+                <button
+                  className="btn btn-outline btn-sm"
+                  onClick={clearSelection}
+                  title="Désélectionner toutes les transactions"
+                >
+                  Désélectionner ({selectedTransactions.size})
                 </button>
               )}
             </>
@@ -648,7 +734,7 @@ const TransactionList = ({ transactions, categories, subcategories, onUpdate, lo
             </tr>
           </thead>
           <tbody>
-            {filteredAndSortedTransactions.map((transaction) => (
+            {filteredAndSortedTransactions.map((transaction, index) => (
               <TransactionRow
                 key={transaction.id}
                 transaction={transaction}
@@ -657,6 +743,10 @@ const TransactionList = ({ transactions, categories, subcategories, onUpdate, lo
                 onCategorize={() => handleCategorize(transaction)}
                 onDelete={() => handleDelete(transaction.id)}
                 onFilter={handleFilter}
+                isSelected={selectedTransactions.has(transaction.id)}
+                onSelect={handleTransactionSelection}
+                index={index}
+                hasMultipleSelected={selectedTransactions.size > 1}
               />
             ))}
           </tbody>
@@ -715,8 +805,14 @@ const TransactionList = ({ transactions, categories, subcategories, onUpdate, lo
           <div className="modal" onClick={(e) => e.stopPropagation()}>
             <h3>Catégoriser en masse</h3>
             <p>
-              Catégoriser <strong>{filteredAndSortedTransactions.length}</strong> transaction(s)
-              {labelFilter && ` correspondant à "${labelFilter}"`}
+              Catégoriser <strong>
+                {selectedTransactions.size > 0
+                  ? selectedTransactions.size
+                  : filteredAndSortedTransactions.length}
+              </strong> transaction(s)
+              {selectedTransactions.size > 0
+                ? ' sélectionnée(s)'
+                : labelFilter && ` correspondant à "${labelFilter}"`}
             </p>
 
             <div className="form-group">
@@ -828,7 +924,7 @@ const TransactionList = ({ transactions, categories, subcategories, onUpdate, lo
                 onClick={handleBulkCategorizeSubmit}
                 disabled={!bulkCategory}
               >
-                Catégoriser ({filteredAndSortedTransactions.length})
+                Catégoriser ({selectedTransactions.size > 0 ? selectedTransactions.size : filteredAndSortedTransactions.length})
               </button>
             </div>
           </div>
@@ -852,6 +948,10 @@ const TransactionList = ({ transactions, categories, subcategories, onUpdate, lo
               <div className="shortcut-item">
                 <kbd>?</kbd>
                 <span>Afficher cette aide</span>
+              </div>
+              <div className="shortcut-item">
+                <kbd>Ctrl+A</kbd>
+                <span>Sélectionner toutes les transactions visibles</span>
               </div>
             </div>
             <div className="modal-actions">
