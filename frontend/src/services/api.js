@@ -99,6 +99,21 @@ export const apiService = {
     return response.data.data
   },
 
+  async createSubcategory(subcategoryData) {
+    const response = await api.post('/subcategories', subcategoryData)
+    return response.data.data
+  },
+
+  async updateSubcategory(id, subcategoryData) {
+    const response = await api.put(`/subcategories/${id}`, subcategoryData)
+    return response.data.data
+  },
+
+  async deleteSubcategory(id) {
+    const response = await api.delete(`/subcategories/${id}`)
+    return response.data
+  },
+
   // Import
   async previewCsv(file) {
     const formData = new FormData()
