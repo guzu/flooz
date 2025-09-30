@@ -156,7 +156,7 @@ function App() {
   return (
     <div className="app">
       <header className="app-header">
-        <h1>💰 Budget Manager</h1>
+        <h1>🪙 Home Budget</h1>
       </header>
 
       <div className="app-body">
