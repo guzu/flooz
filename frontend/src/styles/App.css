@@ -1224,47 +1224,60 @@ input:focus, select:focus, textarea:focus {
 }
 
 .rules-list {
-  display: grid;
-  gap: 1rem;
-}
-
-.rule-card {
-  display: flex;
-  justify-content: space-between;
-  align-items: flex-start;
-  padding: 1rem;
-  border: 1px solid #e5e7eb;
-  border-radius: 0.5rem;
   background: white;
+  border-radius: 0.5rem;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  overflow: hidden;
 }
 
-.rule-info {
-  flex: 1;
+.rules-table {
+  width: 100%;
+  border-collapse: collapse;
 }
 
-.rule-pattern, .rule-category, .rule-priority {
-  margin-bottom: 0.5rem;
+.rules-table th {
+  background-color: #f3f4f6;
+  padding: 0.75rem 1rem;
+  text-align: left;
+  font-weight: 600;
+  color: #374151;
+  border-bottom: 1px solid #e5e7eb;
+  white-space: nowrap;
 }
 
-.rule-pattern code {
+.rules-table td {
+  padding: 0.75rem 1rem;
+  border-bottom: 1px solid #f3f4f6;
+  vertical-align: middle;
+}
+
+.rules-table tr:hover {
+  background-color: #f9fafb;
+}
+
+.rule-pattern-code {
   background: #f3f4f6;
   padding: 0.25rem 0.5rem;
   border-radius: 0.25rem;
   font-size: 0.875rem;
-  margin-left: 0.5rem;
+  font-weight: 500;
 }
 
-.rule-actions {
-  margin-left: 1rem;
+.rule-priority-cell {
+  text-align: center;
+  color: #6b7280;
+  font-weight: 500;
 }
 
-.rule-created {
-  margin-top: 0.5rem;
+.rule-date-cell {
+  color: #6b7280;
+  font-size: 0.875rem;
+  white-space: nowrap;
 }
 
-.rule-created small {
-  color: #9ca3af;
-  font-style: italic;
+.rule-actions-cell {
+  text-align: center;
+  width: 100px;
 }
 
 /* Keyboard shortcuts styles */

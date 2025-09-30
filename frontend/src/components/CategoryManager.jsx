@@ -305,41 +305,48 @@ const CategoryManager = ({ categories, onUpdate }) => {
         ) : rules.length === 0 ? (
           <p>Aucune règle de catégorisation définie</p>
         ) : (
-          <div className="rules-list">
-            {rules.map(rule => (
-              <div key={rule.id} className="rule-card">
-                <div className="rule-info">
-                  <div className="rule-pattern">
-                    <strong>Motif :</strong> <code>{rule.pattern}</code>
-                  </div>
-                  <div className="rule-category">
-                    <strong>Catégorie :</strong>
-                    <span
-                      className="category-badge"
-                      style={{
-                        backgroundColor: rule.category_color + '20',
-                        color: rule.category_color,
-                        border: `1px solid ${rule.category_color}40`
-                      }}
-                    >
-                      {rule.category_name}
-                    </span>
-                  </div>
-                  <div className="rule-priority">
-                    <strong>Priorité :</strong> {rule.priority}
-                  </div>
-                </div>
-                <div className="rule-actions">
-                  <button
-                    onClick={() => handleDeleteRule(rule.id)}
-                    className="btn btn-outline btn-sm"
-                    title="Supprimer"
-                  >
-                    ❌
-                  </button>
-                </div>
-              </div>
-            ))}
+          <div className="table-container">
+            <table className="rules-table">
+              <thead>
+                <tr>
+                  <th>Pattern</th>
+                  <th>Catégorie</th>
+                  <th>Priorité</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                {rules.map(rule => (
+                  <tr key={rule.id}>
+                    <td>
+                      <code className="rule-pattern-code">{rule.pattern}</code>
+                    </td>
+                    <td>
+                      <span
+                        className="category-badge"
+                        style={{
+                          backgroundColor: rule.category_color + '20',
+                          color: rule.category_color,
+                          border: `1px solid ${rule.category_color}40`
+                        }}
+                      >
+                        {rule.category_name}
+                      </span>
+                    </td>
+                    <td className="rule-priority-cell">{rule.priority}</td>
+                    <td className="rule-actions-cell">
+                      <button
+                        onClick={() => handleDeleteRule(rule.id)}
+                        className="btn btn-outline btn-sm"
+                        title="Supprimer"
+                      >
+                        ❌
+                      </button>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
           </div>
         )}
       </div>

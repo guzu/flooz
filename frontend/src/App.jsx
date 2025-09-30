@@ -202,13 +202,6 @@ function App() {
                 <span className="nav-icon">📤</span>
                 {sidebarOpen && <span className="nav-label">Import CSV</span>}
               </button>
-              <button
-                className={currentView === 'rules' ? 'active' : ''}
-                onClick={() => setCurrentView('rules')}
-              >
-                <span className="nav-icon">⚙️</span>
-                {sidebarOpen && <span className="nav-label">Règles</span>}
-              </button>
             </div>
           </nav>
         </aside>

@@ -72,47 +72,52 @@ const RulesManager = ({ categories }) => {
             <p><strong>{rules.length}</strong> règle(s) de catégorisation active(s)</p>
           </div>
 
-          <div className="rules-grid">
-            {rules.map((rule) => (
-              <div key={rule.id} className="rule-card">
-                <div className="rule-info">
-                  <div className="rule-pattern">
-                    <strong>Pattern :</strong>
-                    <code>{rule.pattern}</code>
-                  </div>
-                  <div className="rule-category">
-                    <strong>Catégorie :</strong>
-                    <span
-                      className="category-badge"
-                      style={{
-                        backgroundColor: getCategoryColor(rule.category_id) + '20',
-                        color: getCategoryColor(rule.category_id),
-                        border: `1px solid ${getCategoryColor(rule.category_id)}40`
-                      }}
-                    >
-                      {getCategoryName(rule.category_id)}
-                    </span>
-                  </div>
-                  <div className="rule-priority">
-                    <strong>Priorité :</strong> {rule.priority}
-                  </div>
-                  {rule.created_at && (
-                    <div className="rule-created">
-                      <small>Créée le {new Date(rule.created_at).toLocaleDateString('fr-FR')}</small>
-                    </div>
-                  )}
-                </div>
-                <div className="rule-actions">
-                  <button
-                    onClick={() => handleDeleteRule(rule.id)}
-                    className="btn btn-outline btn-sm"
-                    title="Supprimer cette règle"
-                  >
-                    ❌
-                  </button>
-                </div>
-              </div>
-            ))}
+          <div className="table-container">
+            <table className="rules-table">
+              <thead>
+                <tr>
+                  <th>Pattern</th>
+                  <th>Catégorie</th>
+                  <th>Priorité</th>
+                  <th>Date de création</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                {rules.map((rule) => (
+                  <tr key={rule.id}>
+                    <td>
+                      <code className="rule-pattern-code">{rule.pattern}</code>
+                    </td>
+                    <td>
+                      <span
+                        className="category-badge"
+                        style={{
+                          backgroundColor: getCategoryColor(rule.category_id) + '20',
+                          color: getCategoryColor(rule.category_id),
+                          border: `1px solid ${getCategoryColor(rule.category_id)}40`
+                        }}
+                      >
+                        {getCategoryName(rule.category_id)}
+                      </span>
+                    </td>
+                    <td className="rule-priority-cell">{rule.priority}</td>
+                    <td className="rule-date-cell">
+                      {rule.created_at ? new Date(rule.created_at).toLocaleDateString('fr-FR') : '-'}
+                    </td>
+                    <td className="rule-actions-cell">
+                      <button
+                        onClick={() => handleDeleteRule(rule.id)}
+                        className="btn btn-outline btn-sm"
+                        title="Supprimer cette règle"
+                      >
+                        ❌
+                      </button>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
           </div>
         </div>
       )}
