@@ -126,9 +126,10 @@ export const apiService = {
     return response.data.data
   },
 
-  async importCsv(file) {
+  async importCsv(file, bankType = 'auto') {
     const formData = new FormData()
     formData.append('file', file)
+    formData.append('bank_type', bankType)
     const response = await api.post('/import/csv', formData, {
       headers: {
         'Content-Type': 'multipart/form-data',

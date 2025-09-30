@@ -60,7 +60,7 @@ chmod +x test/test_transactions.sh
 - ✅ POST `/api/categories/rules` - Créer une règle
 - ✅ DELETE `/api/categories/rules/{id}` - Supprimer une règle
 
-### 📤 Import (`test_import.sh`)
+### 📥 Import (`test_import.sh`)
 - ✅ POST `/api/import/preview` - Prévisualiser un CSV
 - ✅ POST `/api/import/csv` - Importer un CSV
 - ✅ Gestion des doublons lors de l'import

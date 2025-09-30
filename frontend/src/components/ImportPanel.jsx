@@ -7,6 +7,7 @@ const ImportPanel = ({ onImportSuccess }) => {
   const [importing, setImporting] = useState(false)
   const [importResult, setImportResult] = useState(null)
   const [dragActive, setDragActive] = useState(false)
+  const [bankType, setBankType] = useState('auto')
 
   const handleFileSelect = (file) => {
     if (file && file.type === 'text/csv') {
@@ -61,7 +62,7 @@ const ImportPanel = ({ onImportSuccess }) => {
 
     try {
       setImporting(true)
-      const result = await apiService.importCsv(selectedFile)
+      const result = await apiService.importCsv(selectedFile, bankType)
       setImportResult(result)
 
       if (result.imported > 0) {
@@ -125,7 +126,12 @@ const ImportPanel = ({ onImportSuccess }) => {
           <p><strong>Total de lignes :</strong> {preview.total_rows}</p>
           <p><strong>Colonnes détectées :</strong> {preview.headers?.join(', ')}</p>
           {preview.detected_format && (
-            <p><strong>Format détecté :</strong> {preview.detected_format === 'bank' ? 'Format bancaire' : 'Format standard'}</p>
+            <p><strong>Format détecté :</strong> {
+              preview.detected_format === 'boursorama' ? 'Boursorama' :
+              preview.detected_format === 'banque_populaire' ? 'Banque Populaire' :
+              preview.detected_format === 'standard' ? 'Format standard' :
+              preview.detected_format
+            }</p>
           )}
         </div>
 
@@ -214,7 +220,12 @@ const ImportPanel = ({ onImportSuccess }) => {
 
         {importResult.format && (
           <p className="format-detected">
-            <strong>Format détecté :</strong> {importResult.format === 'bank' ? 'Format bancaire' : 'Format standard'}
+            <strong>Format utilisé :</strong> {
+              importResult.format === 'boursorama' ? 'Boursorama' :
+              importResult.format === 'banque_populaire' ? 'Banque Populaire' :
+              importResult.format === 'standard' ? 'Format standard' :
+              importResult.format
+            }
           </p>
         )}
 
@@ -241,8 +252,26 @@ const ImportPanel = ({ onImportSuccess }) => {
   return (
     <div className="import-panel">
       <div className="import-header">
-        <h2>📤 Import de fichier CSV</h2>
+        <h2>📥 Import de fichier CSV</h2>
         <p>Importez vos transactions depuis un fichier CSV (format bancaire ou standard)</p>
+      </div>
+
+      <div className="bank-type-selector">
+        <label htmlFor="bank-type">Type de banque :</label>
+        <select
+          id="bank-type"
+          value={bankType}
+          onChange={(e) => setBankType(e.target.value)}
+          className="bank-type-select"
+        >
+          <option value="auto">🔍 Détection automatique</option>
+          <option value="boursorama">🏦 Boursorama</option>
+          <option value="banque_populaire">🏦 Banque Populaire</option>
+          <option value="standard">📄 Format standard (CSV avec en-têtes)</option>
+        </select>
+        <small className="bank-type-help">
+          La détection automatique fonctionne dans la plupart des cas. Sélectionnez manuellement si nécessaire.
+        </small>
       </div>
 
       <div

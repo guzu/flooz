@@ -43,12 +43,16 @@ def import_csv_file():
         file_content = file.read().decode('utf-8')
         logger.info(f"File read successfully. Content length: {len(file_content)} characters")
 
+        # Get bank type from request (optional parameter)
+        bank_type = request.form.get('bank_type', 'auto')
+        logger.info(f"Bank type parameter: {bank_type}")
+
         # Log first few lines for debugging
         lines = file_content.split('\n')[:3]
         logger.debug(f"First 3 lines of CSV:\n" + "\n".join(f"  {i+1}: {line[:100]}" for i, line in enumerate(lines)))
 
-        # Import transactions
-        results = import_csv(file_content)
+        # Import transactions with bank type
+        results = import_csv(file_content, bank_type=bank_type)
         logger.info(f"Import results: {results}")
 
         return jsonify({
@@ -109,15 +113,15 @@ def preview_csv():
         logger.info(f"Preview file read successfully. Content length: {len(file_content)} characters")
 
         # Try to detect format first
-        from services.import_service import detect_csv_format
-        detected_format = detect_csv_format(file_content)
+        from services.import_service import detect_bank_format
+        detected_format = detect_bank_format(file_content)
         logger.info(f"Format detected for preview: {detected_format}")
 
         # Parse first few rows for preview
         import csv
         from io import StringIO
 
-        if detected_format == 'bank':
+        if detected_format in ['boursorama', 'banque_populaire']:
             # For bank format, create manual preview
             lines = [line.strip() for line in file_content.split('\n') if line.strip()]
             if len(lines) > 0:

@@ -53,34 +53,81 @@ def detect_category(label):
 
     return row['id'] if row else None
 
-def detect_csv_format(file_content):
-    """Detect CSV format based on first line"""
+def detect_bank_format(file_content):
+    """Detect bank format based on CSV structure"""
     first_line = file_content.split('\n')[0].strip()
-    logger.info(f"Detecting CSV format. First line: '{first_line[:100]}...' (truncated)")
+    logger.info(f"Detecting bank format. First line: '{first_line[:100]}...'")
 
-    # Check if it's bank format (semicolon separated, no headers, starts with date)
+    # Check for Boursorama format (has specific headers)
+    if 'dateOp' in first_line and 'dateVal' in first_line:
+        logger.info("Detected format: BOURSORAMA")
+        return 'boursorama'
+
+    # Check for Banque Populaire format (semicolon, no standard headers, starts with date)
     if ';' in first_line and not any(header in first_line.lower() for header in ['date', 'label', 'amount']):
-        # Check if first field looks like a date
         first_field = first_line.split(';')[0]
         try:
             parse_date(first_field)
-            logger.info("Detected format: BANK (semicolon separated with date in first field)")
-            return 'bank'
-        except Exception as e:
-            logger.warning(f"First field '{first_field}' is not a date: {e}")
+            logger.info("Detected format: BANQUE_POPULAIRE")
+            return 'banque_populaire'
+        except:
             pass
 
-    logger.info("Detected format: STANDARD (comma separated with headers)")
+    # Default to standard CSV
+    logger.info("Detected format: STANDARD")
     return 'standard'
 
-def parse_bank_csv_line(line):
-    """Parse a line from bank CSV format"""
+def parse_boursorama_line(line):
+    """Parse a line from Boursorama CSV format"""
+    # Boursorama uses semicolon separator with quoted fields
+    # Format: dateOp;dateVal;label;category;categoryParent;supplierFound;amount;comment;accountNum;accountLabel;accountbalance
+    fields = []
+    current_field = ""
+    in_quotes = False
+
+    for char in line:
+        if char == '"':
+            in_quotes = not in_quotes
+        elif char == ';' and not in_quotes:
+            fields.append(current_field)
+            current_field = ""
+        else:
+            current_field += char
+    fields.append(current_field)  # Add last field
+
+    logger.debug(f"Parsing Boursorama line with {len(fields)} fields")
+
+    if len(fields) < 7:
+        raise ValueError(f"Invalid Boursorama format: only {len(fields)} fields, expected at least 7")
+
+    # Extract fields
+    date = fields[0].strip()  # dateOp
+    label = fields[2].strip()  # label
+    amount_str = fields[6].strip()  # amount
+
+    logger.debug(f"Extracted: date='{date}', label='{label}', amount='{amount_str}'")
+
+    # Parse amount (format: "-4,45" or "-1 288,00")
+    amount_str = amount_str.replace(' ', '').replace(',', '.')
+    amount = float(amount_str)
+
+    # Boursorama uses negative for expenses, positive for income
+    # We need to invert: positive = expense, negative = income
+    amount = -amount
+
+    return {
+        'date': date,
+        'label': label,
+        'amount': amount
+    }
+
+def parse_banque_populaire_line(line):
+    """Parse a line from Banque Populaire CSV format"""
     fields = line.split(';')
-    logger.debug(f"Parsing bank CSV line with {len(fields)} fields: {fields[:5]}...")
+    logger.debug(f"Parsing Banque Populaire line with {len(fields)} fields")
 
     if len(fields) < 11:
-        logger.error(f"Invalid bank CSV format: only {len(fields)} fields, expected at least 11")
-        raise ValueError(f"Invalid bank CSV format: only {len(fields)} fields, expected at least 11")
+        raise ValueError(f"Invalid Banque Populaire format: only {len(fields)} fields, expected at least 11")
 
     # Extract fields based on position
     date = fields[0].strip()
@@ -94,21 +141,19 @@ def parse_bank_csv_line(line):
     # Use beneficiary + full_label as transaction label
     label = f"{beneficiary} - {full_label}" if beneficiary != full_label else full_label
 
-    # Determine amount and type
+    # Determine amount
     if credit_amount_str and credit_amount_str != '':
-        # Credit (incoming money) - positive amount in our system means expense, so we need to handle this
+        # Credit (incoming money) - store as negative to indicate income
         amount = float(credit_amount_str.replace(',', '.'))
-        # For credits, we store as negative to indicate income
         amount = -amount
         logger.debug(f"Credit transaction: {amount} (income)")
     elif debit_amount_str and debit_amount_str != '':
-        # Debit (outgoing money) - convert to positive for expenses
+        # Debit (outgoing money) - positive for expenses
         amount = float(debit_amount_str.replace(',', '.'))
         if amount < 0:
             amount = abs(amount)
         logger.debug(f"Debit transaction: {amount} (expense)")
     else:
-        logger.error("No amount found in debit or credit columns")
         raise ValueError("No amount found in debit or credit columns")
 
     return {
@@ -117,9 +162,14 @@ def parse_bank_csv_line(line):
         'amount': amount
     }
 
-def import_csv(file_content):
-    """Import transactions from CSV content"""
-    logger.info("Starting CSV import process")
+def import_csv(file_content, bank_type='auto'):
+    """Import transactions from CSV content
+
+    Args:
+        file_content: CSV file content as string
+        bank_type: 'auto', 'boursorama', 'banque_populaire', or 'standard'
+    """
+    logger.info(f"Starting CSV import with bank_type='{bank_type}'")
 
     results = {
         'imported': 0,
@@ -129,28 +179,38 @@ def import_csv(file_content):
     }
 
     try:
-        # Detect CSV format
-        csv_format = detect_csv_format(file_content)
+        # Detect or use specified format
+        if bank_type == 'auto':
+            csv_format = detect_bank_format(file_content)
+        else:
+            csv_format = bank_type
+
         results['format'] = csv_format
-        logger.info(f"CSV format detected: {csv_format}")
+        logger.info(f"Using CSV format: {csv_format}")
 
-        if csv_format == 'bank':
-            # Process bank format (first line is header, semicolon separated)
+        # Process based on format
+        if csv_format in ['boursorama', 'banque_populaire']:
             lines = [line.strip() for line in file_content.split('\n') if line.strip()]
-            logger.info(f"Processing bank format CSV with {len(lines)} total lines")
+            logger.info(f"Processing {csv_format} format with {len(lines)} total lines")
 
-            # Skip first line (header)
+            # Skip header line
             if lines:
                 lines = lines[1:]
                 logger.info(f"Skipped header, processing {len(lines)} data lines")
 
-            for row_num, line in enumerate(lines, start=2):
-                logger.debug(f"Processing line {row_num}: {line[:50]}...")
-                try:
-                    # Parse bank CSV line
-                    data = parse_bank_csv_line(line)
+            # Choose parser
+            if csv_format == 'boursorama':
+                parser = parse_boursorama_line
+            else:
+                parser = parse_banque_populaire_line
 
-                    # Parse and validate data
+            for row_num, line in enumerate(lines, start=2):
+                logger.debug(f"Processing line {row_num}")
+                try:
+                    # Parse line
+                    data = parser(line)
+
+                    # Validate
                     date = parse_date(data['date'])
                     label = data['label'].strip()
                     amount = data['amount']
@@ -167,7 +227,7 @@ def import_csv(file_content):
                         results['duplicates'] += 1
                         continue
 
-                    # Auto-detect category based on label
+                    # Auto-detect category
                     category_id = detect_category(label)
 
                     # Create transaction
@@ -197,14 +257,13 @@ def import_csv(file_content):
             logger.info(f"CSV headers detected: {reader.fieldnames}")
 
             for row_num, row in enumerate(reader, start=2):
-                logger.debug(f"Processing row {row_num}: {dict(row)}")
                 try:
                     # Required fields
                     if 'date' not in row or 'label' not in row or 'amount' not in row:
                         results['errors'].append(f"Row {row_num}: Missing required fields")
                         continue
 
-                    # Parse and validate data
+                    # Parse and validate
                     date = parse_date(row['date'])
                     label = row['label'].strip()
                     amount = float(row['amount'])
@@ -213,10 +272,10 @@ def import_csv(file_content):
                         results['errors'].append(f"Row {row_num}: Empty label")
                         continue
 
-                    # Calculate hash for duplicate detection
+                    # Calculate hash
                     transaction_hash = calculate_transaction_hash(date, label, amount)
 
-                    # Check for duplicates
+                    # Check duplicates
                     if Transaction.exists_by_hash(transaction_hash):
                         results['duplicates'] += 1
                         continue
@@ -224,7 +283,6 @@ def import_csv(file_content):
                     # Determine category
                     category_id = None
                     if 'category' in row and row['category']:
-                        # Try to find category by name
                         conn = get_db_connection()
                         cursor = conn.cursor()
                         cursor.execute('SELECT id FROM categories WHERE name = ?', (row['category'],))
@@ -234,11 +292,9 @@ def import_csv(file_content):
                         if category_row:
                             category_id = category_row['id']
 
-                    # If no category provided or found, auto-detect
                     if category_id is None:
                         category_id = detect_category(label)
 
-                    # Get notes if provided
                     notes = row.get('notes', '').strip() if 'notes' in row else None
 
                     # Create transaction
@@ -254,10 +310,10 @@ def import_csv(file_content):
                     results['imported'] += 1
 
                 except ValueError as e:
-                    logger.warning(f"ValueError on standard CSV row {row_num}: {str(e)}")
+                    logger.warning(f"ValueError on row {row_num}: {str(e)}")
                     results['errors'].append(f"Row {row_num}: {str(e)}")
                 except Exception as e:
-                    logger.error(f"Unexpected error on standard CSV row {row_num}: {str(e)}")
+                    logger.error(f"Unexpected error on row {row_num}: {str(e)}")
                     results['errors'].append(f"Row {row_num}: Unexpected error - {str(e)}")
 
     except Exception as e:
@@ -265,7 +321,5 @@ def import_csv(file_content):
         results['errors'].append(f"File parsing error: {str(e)}")
 
     logger.info(f"CSV import completed: {results['imported']} imported, {results['duplicates']} duplicates, {len(results['errors'])} errors")
-    if results['errors']:
-        logger.warning(f"Import errors: {results['errors']}")
 
     return results
