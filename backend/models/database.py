@@ -63,10 +63,10 @@ def init_db():
     # Add subcategory_id column to transactions table if it doesn't exist
     try:
         conn.execute('ALTER TABLE transactions ADD COLUMN subcategory_id INTEGER REFERENCES subcategories(id)')
-        logger.info("Added subcategory_id column to transactions table")
+        print("Added subcategory_id column to transactions table")
     except Exception as e:
-        if "duplicate column name" not in str(e):
-            logger.warning(f"Could not add subcategory_id column: {e}")
+        if "duplicate column name" not in str(e).lower():
+            print(f"Could not add subcategory_id column: {e}")
 
     # Create indexes
     conn.execute('CREATE INDEX IF NOT EXISTS idx_date ON transactions(date)')

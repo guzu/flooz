@@ -34,6 +34,11 @@ trap cleanup SIGINT
 echo "📡 Démarrage de l'API backend..."
 cd backend
 source venv/bin/activate
+
+# Initialize database if needed
+echo "🔧 Vérification/initialisation de la base de données..."
+python init_db.py
+
 python app.py &
 BACKEND_PID=$!
 cd ..

@@ -33,7 +33,19 @@ budget-manager/
 - Node.js 18+ et npm
 - pip/venv
 
-### Backend (API)
+### Installation rapide
+
+```bash
+# Installation automatique
+./install.sh
+
+# Démarrage
+./start.sh
+```
+
+### Installation manuelle
+
+#### Backend (API)
 
 ```bash
 # 1. Cloner et accéder au projet
@@ -46,7 +58,10 @@ source venv/bin/activate
 # 3. Installer les dépendances
 pip install -r requirements.txt
 
-# 4. Démarrer le serveur
+# 4. Initialiser la base de données
+python init_db.py
+
+# 5. Démarrer le serveur
 python app.py
 ```
 
@@ -88,6 +103,30 @@ npm run dev
 ```
 
 Le script `start.sh` démarre automatiquement le backend et le frontend, puis attend Ctrl+C pour les arrêter proprement.
+
+## Gestion de la base de données
+
+### Initialisation / Réinitialisation
+
+```bash
+cd backend
+source venv/bin/activate
+
+# Initialiser (crée si n'existe pas)
+python init_db.py
+
+# Réinitialiser (supprime et recrée)
+python init_db.py --reset
+```
+
+La base de données est créée automatiquement au premier démarrage avec :
+- 6 catégories par défaut (Alimentation, Transport, Logement, Santé, Loisirs, Non catégorisé)
+- 23 sous-catégories pré-configurées
+- 3 règles de catégorisation automatique
+
+### Emplacement
+
+La base SQLite est stockée dans `data/budget.db` et est exclue du contrôle de version (.gitignore).
 
 ## Déploiement Docker
 
