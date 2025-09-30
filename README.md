@@ -2,15 +2,16 @@
 
 Application web de gestion de budget personnel avec import CSV, catégorisation automatique et statistiques visuelles.
 
-## 🌟 Fonctionnalités
+## Fonctionnalités
 
-- 📊 **Gestion des transactions** : CRUD complet avec édition inline
-- 🏷️ **Catégorisation intelligente** : Règles automatiques basées sur le libellé
-- 📤 **Import CSV** : Upload et détection de doublons avec hash SHA256
-- 📈 **Statistiques** : Graphiques mensuels et répartition par catégorie
-- 🎨 **Interface moderne** : React avec Recharts pour les visualisations
+- **Gestion des transactions** : CRUD complet avec sélection multiple et catégorisation en lot
+- **Catégorisation intelligente** : Règles automatiques + actions manuelles sur sélections multiples
+- **Import CSV** : Upload et détection de doublons avec hash SHA256
+- **Statistiques** : Graphiques mensuels et répartition par catégorie avec sélecteur d'année
+- **Interface moderne** : React avec raccourcis clavier et filtres avancés
+- **Filtrage intelligent** : Recherche floue avec historique complet optionnel
 
-## 🏗️ Architecture
+## Architecture
 
 ```
 budget-manager/
@@ -24,7 +25,7 @@ budget-manager/
 └── data/              # Base SQLite (créée automatiquement)
 ```
 
-## 🚀 Installation et démarrage
+## Installation et démarrage
 
 ### Prérequis
 
@@ -66,7 +67,7 @@ npm run dev
 
 Le frontend se lance sur **http://localhost:3000** avec proxy automatique vers l'API backend.
 
-### 🚀 Démarrage complet de l'application
+### Démarrage complet de l'application
 
 **Option 1 : Deux terminaux séparés**
 ```bash
@@ -95,7 +96,7 @@ La base SQLite est créée automatiquement au premier démarrage avec :
 - Catégories par défaut (Alimentation, Transport, Logement, etc.)
 - Règles de catégorisation pré-configurées
 
-## 🧪 Tests
+## Tests
 
 Valider le fonctionnement de l'API avec la suite de tests :
 
@@ -111,7 +112,7 @@ sudo apt install jq
 ./test/test_categories.sh
 ```
 
-## 📡 API Endpoints
+## API Endpoints
 
 ### Transactions
 - `GET /api/transactions` - Liste des transactions
@@ -133,7 +134,7 @@ sudo apt install jq
 - `GET /api/stats/categories/{year}` - Répartition par catégorie
 - `GET /api/stats/summary/{year}` - Résumé annuel
 
-## 📄 Format CSV
+## Format CSV
 
 ### Format standard
 ```csv
@@ -161,7 +162,7 @@ Date;Bénéficiaire;Libellé;Référence;...;Débit;Crédit;...
 - Support colonnes débit/crédit séparées
 - Première ligne d'en-têtes ignorée automatiquement
 
-## 🔧 Configuration
+## Configuration
 
 ### Backend
 - **Port** : 5000 (configurable dans `app.py`)
@@ -171,7 +172,7 @@ Date;Bénéficiaire;Libellé;Référence;...;Débit;Crédit;...
 ### Détection de doublons
 Hash SHA256 calculé sur `date + label + amount` pour éviter les imports multiples.
 
-## 🛠️ Développement
+## Développement
 
 ### Structure du code
 
@@ -182,12 +183,14 @@ Hash SHA256 calculé sur `date + label + amount` pour éviter les imports multip
 
 ### Fonctionnalités disponibles
 
-✅ **Frontend React complet** : Interface utilisateur moderne et responsive
+✅ **Frontend React complet** : Interface utilisateur moderne et responsive avec sélection multiple
 ✅ **Import CSV intelligent** : Support formats bancaire et standard
-✅ **Catégorisation automatique** : Règles configurables
+✅ **Catégorisation automatique** : Règles configurables + actions manuelles en lot
 ✅ **Graphiques interactifs** : Recharts avec visualisations mensuelles et par catégorie
-✅ **Édition inline** : Modification directe des transactions
-✅ **Gestion des catégories** : CRUD complet avec couleurs personnalisées
+✅ **Raccourcis clavier** : Navigation rapide avec `/ ` (recherche), `Escape` (effacer), `?` (aide)
+✅ **Filtrage avancé** : Recherche floue + option "Tout l'historique" pour voir toutes les années
+✅ **Sélection multiple** : Ctrl/Shift + clic pour actions en lot (catégorisation groupée)
+✅ **Gestion des catégories** : CRUD complet avec couleurs personnalisées et sous-catégories
 
 ### Prochaines étapes possibles
 
@@ -196,6 +199,6 @@ Hash SHA256 calculé sur `date + label + amount` pour éviter les imports multip
 3. **Export** : PDF, Excel des statistiques
 4. **Sauvegarde** : Backup automatique de la base de données
 
-## 📝 License
+## License
 
 MIT License

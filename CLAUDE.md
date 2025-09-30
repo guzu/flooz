@@ -40,10 +40,11 @@ budget-manager/
 │   │   ├── App.jsx                # Composant principal
 │   │   │
 │   │   ├── components/
-│   │   │   ├── TransactionList.jsx      # Liste éditable
-│   │   │   ├── TransactionRow.jsx       # Ligne éditable
+│   │   │   ├── TransactionList.jsx      # Liste avec sélection multiple et filtres
+│   │   │   ├── TransactionRow.jsx       # Ligne avec catégorisation
 │   │   │   ├── ImportPanel.jsx          # Upload CSV
 │   │   │   ├── CategoryManager.jsx      # Gestion catégories
+│   │   │   ├── RulesManager.jsx         # Gestion règles catégorisation
 │   │   │   └── Charts/
 │   │   │       ├── MonthlyChart.jsx     # Graph par mois
 │   │   │       ├── CategoryChart.jsx    # Graph par catégorie
@@ -216,20 +217,33 @@ Hash calculé : `SHA256(date + label + amount)`
 
 #### Navigation Sidebar
 - **Panneau rétractable** avec bouton toggle hamburger (☰)
-- **4 sections** : Transactions, Import CSV, Catégories, Statistiques
+- **5 sections** : Transactions, Catégories, Statistiques, Import CSV, Règles
 - **Icônes émojis** pour chaque section
 - **Animation fluide** d'ouverture/fermeture avec rotation du bouton
 
-#### Édition Inline des Transactions
-- Double-clic sur une cellule → mode édition
-- Dropdown pour catégories avec codes couleur
-- Sauvegarde automatique au blur/Enter
-- Tri par colonnes (date, label, montant, catégorie)
+#### Gestion des Transactions
+- **Sélection multiple** avec Ctrl/Shift + clic pour sélectionner plusieurs transactions
+- **Feedback visuel** : transactions sélectionnées en surbrillance bleue
+- **Menu contextuel** (clic droit) avec actions conditionnelles
+- **Catégorisation en lot** via modal avec dropdown catégorie/sous-catégorie
+- **Actions individuelles** : catégoriser, filtrer, supprimer
+
+#### Filtrage et Recherche
+- **Filtre intelligent** avec algorithme de distance de Levenshtein
+- **Option historique complet** via checkbox "Tout l'historique"
+- **Champ de recherche** avec taille fixe (350px)
+- **Tri par colonnes** (date, label, montant, catégorie)
+
+#### Raccourcis Clavier
+- **`/`** : Focus sur le champ de filtrage et nouveau filtre
+- **`Escape`** : Effacer le filtre actuel
+- **`?`** : Afficher la liste des raccourcis (modal d'aide)
 
 #### Sélection d'Année
-- **Position** : Dans la barre de résumé des transactions
+- **Position** : Dans la barre de résumé des transactions ET panneau statistiques
 - **Scope** : Affecte les transactions et les graphiques
 - **Persistance** : État maintenu lors des changements de vue
+- **Override** : Option "Tout l'historique" désactive le filtre par année
 
 ### Graphiques
 - **Par mois** : Somme dépenses par mois (année sélectionnée)
@@ -241,3 +255,50 @@ Hash calculé : `SHA256(date + label + amount)`
 - **Gestion d'erreurs** : Messages détaillés avec logs backend
 - **Support multi-format** : Standard (virgule) et bancaire (point-virgule)
 - **Détection doublons** : Basée sur hash SHA256
+
+## Nouvelles Fonctionnalités Implémentées
+
+### Sélection Multiple et Actions en Lot
+- **Sélection avec souris** : Ctrl+clic et Shift+clic pour sélection multiple
+- **Feedback visuel** : Ligne sélectionnée avec background `#dbeafe`
+- **Catégorisation groupée** : Modal permettant d'appliquer catégorie/sous-catégorie à plusieurs transactions
+- **Menu contextuel intelligent** : Actions de filtrage/suppression désactivées pour sélections multiples
+
+### Système de Raccourcis Clavier
+- **`/` (slash)** : Met le focus sur le champ de recherche et efface le contenu existant
+- **`Escape`** : Efface le filtre actuel et remet le focus sur la liste
+- **`?` (point d'interrogation)** : Affiche une modal avec la liste complète des raccourcis
+- **Gestion des événements** : Événements capturés au niveau document avec gestion des conflits
+
+### Filtrage Historique Avancé
+- **Checkbox "Tout l'historique"** : Permet de voir toutes les transactions indépendamment de l'année
+- **État persistant** : Choix conservé lors des changements de vue
+- **API intelligente** : Paramètre `year=null` envoyé au backend pour récupérer tout l'historique
+
+### Interface Utilisateur Améliorée
+- **Champ de recherche à taille fixe** : `width: 350px; flex-shrink: 0;` pour éviter le redimensionnement
+- **Sélecteur d'année** : Ajouté dans le panneau Statistiques avec composant YearSelector réutilisable
+- **Actions contextuelles** : Suppression de l'édition inline, remplacement par catégorisation directe
+
+## Composants Clés
+
+### TransactionList.jsx
+**Fonctionnalités principales :**
+- Gestion de l'état de sélection multiple (`selectedTransactions` Set)
+- Algorithme de filtrage avec distance de Levenshtein pour recherche floue
+- Modal de catégorisation avec sélection catégorie/sous-catégorie
+- Système de raccourcis clavier global
+- API calls pour opérations en lot
+
+### TransactionRow.jsx
+**Fonctionnalités principales :**
+- Gestion des clics avec modificateurs (Ctrl/Shift)
+- Menu contextuel avec états conditionnels
+- Feedback visuel pour sélection
+- Actions catégoriser/filtrer/supprimer avec gestion des permissions
+
+### YearSelector.jsx
+**Composant réutilisable :**
+- Dropdown HTML simple avec années disponibles
+- Gestion des valeurs entières avec `parseInt()`
+- Intégration dans App.jsx et panneau Statistiques
