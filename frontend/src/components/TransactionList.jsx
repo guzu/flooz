@@ -31,10 +31,12 @@ const TransactionList = ({ transactions, categories, subcategories, onUpdate, lo
   // Ref for filter input
   const filterInputRef = React.useRef(null)
 
-  // Clear cache when filter changes
+  // Clear cache and selection when filter changes
   React.useEffect(() => {
     distanceCache.current.clear()
-  }, [labelFilter])
+    setSelectedTransactions(new Set())
+    setLastSelectedIndex(null)
+  }, [labelFilter, showOnlyUncategorized, showAllHistory])
 
   // Handle show all history toggle
   React.useEffect(() => {
