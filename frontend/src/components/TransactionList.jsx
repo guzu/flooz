@@ -455,9 +455,9 @@ const TransactionList = ({ transactions, categories, subcategories, onUpdate, lo
 
   const getSortIcon = (columnKey) => {
     if (sortConfig.key !== columnKey) {
-      return '↕️'
+      return '⇵'
     }
-    return sortConfig.direction === 'asc' ? '↑' : '↓'
+    return sortConfig.direction === 'asc' ? '▲' : '▼'
   }
 
   if (loading) {

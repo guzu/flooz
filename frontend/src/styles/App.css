@@ -597,7 +597,6 @@ input:focus, select:focus, textarea:focus {
 .subcategory-col {
   width: 10em;
   min-width: 10em;
-  font-style: italic;
   color: #6b7280;
 }
 
