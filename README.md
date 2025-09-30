@@ -89,6 +89,42 @@ npm run dev
 
 Le script `start.sh` démarre automatiquement le backend et le frontend, puis attend Ctrl+C pour les arrêter proprement.
 
+## Déploiement Docker
+
+### Prérequis Docker
+- Docker Engine installé
+
+### Conteneur unique
+
+Approche tout-en-un avec Nginx + Flask dans le même conteneur.
+
+```bash
+# Option 1: Docker Compose (recommandé)
+docker-compose up -d
+
+# Option 2: Script automatique
+./docker-start.sh
+
+# Option 3: Commandes manuelles
+docker build -t budget-manager .
+docker run -d -p 80:80 -v $(pwd)/data:/app/data --name budget-manager budget-manager
+
+# Commandes utiles
+docker-compose logs -f    # Voir les logs
+docker-compose down       # Arrêter l'application
+docker-compose restart    # Redémarrer
+```
+
+**Application accessible sur:**
+- Interface complète: http://localhost
+
+### Gestion des données Docker
+
+Les données de la base SQLite sont persistées via un volume Docker:
+- **Volume local**: `./data/budget.db` monté dans le conteneur
+- **Backup**: Copiez simplement le répertoire `./data/`
+- **Restauration**: Replacez le fichier dans `./data/budget.db`
+
 ### Base de données
 
 La base SQLite est créée automatiquement au premier démarrage avec :
@@ -191,13 +227,14 @@ Hash SHA256 calculé sur `date + label + amount` pour éviter les imports multip
 ✅ **Filtrage avancé** : Recherche floue + option "Tout l'historique" pour voir toutes les années
 ✅ **Sélection multiple** : Ctrl/Shift + clic pour actions en lot (catégorisation groupée)
 ✅ **Gestion des catégories** : CRUD complet avec couleurs personnalisées et sous-catégories
+✅ **Déploiement Docker** : Conteneurisation en conteneur unique
 
 ### Prochaines étapes possibles
 
-1. **Docker** : Conteneurisation pour déploiement
-2. **Authentification** : Gestion multi-utilisateurs
-3. **Export** : PDF, Excel des statistiques
-4. **Sauvegarde** : Backup automatique de la base de données
+1. **Authentification** : Gestion multi-utilisateurs
+2. **Export** : PDF, Excel des statistiques
+3. **Sauvegarde** : Backup automatique de la base de données
+4. **API REST** : Documentation OpenAPI/Swagger
 
 ## License
 
