@@ -1,9 +1,10 @@
 import React, { useState, useEffect } from 'react'
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts'
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts'
 import { apiService } from '../../services/api'
 
 const MonthlyChart = ({ year }) => {
   const [data, setData] = useState([])
+  const [categories, setCategories] = useState([])
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState(null)
 
@@ -15,8 +16,9 @@ const MonthlyChart = ({ year }) => {
     try {
       setLoading(true)
       setError(null)
-      const monthlyStats = await apiService.getMonthlyStats(year)
-      setData(monthlyStats)
+      const result = await apiService.getMonthlyStatsByCategory(year)
+      setData(result.data)
+      setCategories(result.categories.filter(cat => cat.name !== 'Non catégorisé'))
     } catch (error) {
       console.error('Error loading monthly stats:', error)
       setError('Erreur lors du chargement des statistiques mensuelles')
@@ -26,16 +28,13 @@ const MonthlyChart = ({ year }) => {
   }
 
   const formatTooltip = (value, name) => {
-    if (name === 'amount') {
-      return [
-        new Intl.NumberFormat('fr-FR', {
-          style: 'currency',
-          currency: 'EUR'
-        }).format(value),
-        'Dépenses'
-      ]
-    }
-    return [value, name]
+    return [
+      new Intl.NumberFormat('fr-FR', {
+        style: 'currency',
+        currency: 'EUR'
+      }).format(value),
+      name
+    ]
   }
 
   const formatYAxisTick = (value) => {
@@ -62,13 +61,15 @@ const MonthlyChart = ({ year }) => {
     )
   }
 
-  if (data.length === 0 || data.every(item => item.amount === 0)) {
+  if (data.length === 0 || data.every(item => item.total === 0)) {
     return (
       <div className="chart-empty">
         <p>Aucune dépense enregistrée pour {year}</p>
       </div>
     )
   }
+
+  const totalAnnual = data.reduce((sum, item) => sum + item.total, 0)
 
   return (
     <div className="monthly-chart">
@@ -101,11 +102,19 @@ const MonthlyChart = ({ year }) => {
               boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)'
             }}
           />
-          <Bar
-            dataKey="amount"
-            fill="#ef4444"
-            radius={[4, 4, 0, 0]}
+          <Legend
+            wrapperStyle={{ fontSize: '12px' }}
+            iconType="square"
           />
+          {categories.map((category) => (
+            <Bar
+              key={category.name}
+              dataKey={category.name}
+              stackId="stack"
+              fill={category.color}
+              radius={[0, 0, 0, 0]}
+            />
+          ))}
         </BarChart>
       </ResponsiveContainer>
 
@@ -117,7 +126,7 @@ const MonthlyChart = ({ year }) => {
               {new Intl.NumberFormat('fr-FR', {
                 style: 'currency',
                 currency: 'EUR'
-              }).format(data.reduce((sum, item) => sum + item.amount, 0))}
+              }).format(totalAnnual)}
             </span>
           </div>
           <div className="stat-item">
@@ -126,7 +135,7 @@ const MonthlyChart = ({ year }) => {
               {new Intl.NumberFormat('fr-FR', {
                 style: 'currency',
                 currency: 'EUR'
-              }).format(data.reduce((sum, item) => sum + item.amount, 0) / 12)}
+              }).format(totalAnnual / 12)}
             </span>
           </div>
         </div>

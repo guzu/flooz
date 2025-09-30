@@ -20,6 +20,22 @@ def get_monthly_stats(year):
             'error': str(e)
         }), 500
 
+@stats_bp.route('/stats/monthly-by-category/<int:year>', methods=['GET'])
+def get_monthly_stats_by_category(year):
+    """Get monthly spending stats by category for a given year"""
+    try:
+        stats = StatsService.get_monthly_stats_by_category(year)
+        return jsonify({
+            'success': True,
+            'data': stats
+        }), 200
+
+    except Exception as e:
+        return jsonify({
+            'success': False,
+            'error': str(e)
+        }), 500
+
 @stats_bp.route('/stats/categories/<int:year>', methods=['GET'])
 def get_category_stats(year):
     """Get category spending stats for a given year"""

@@ -148,6 +148,11 @@ export const apiService = {
     return response.data.data
   },
 
+  async getMonthlyStatsByCategory(year) {
+    const response = await api.get(`/stats/monthly-by-category/${year}`)
+    return response.data.data
+  },
+
   async getCategoryStats(year) {
     const response = await api.get(`/stats/categories/${year}`)
     return response.data.data

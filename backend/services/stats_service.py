@@ -48,6 +48,65 @@ class StatsService:
         return monthly_data
 
     @staticmethod
+    def get_monthly_stats_by_category(year):
+        """Get monthly spending stats by category for a given year"""
+        conn = get_db_connection()
+        cursor = conn.cursor()
+
+        # Get all categories with their colors
+        cursor.execute('SELECT id, name, color FROM categories ORDER BY name')
+        categories = {row['id']: {'name': row['name'], 'color': row['color']} for row in cursor.fetchall()}
+
+        # Get monthly data by category
+        cursor.execute('''
+            SELECT
+                strftime('%m', date) as month,
+                category_id,
+                SUM(amount) as total_amount
+            FROM transactions
+            WHERE strftime('%Y', date) = ? AND amount > 0
+            GROUP BY strftime('%m', date), category_id
+            ORDER BY month
+        ''', (str(year),))
+
+        rows = cursor.fetchall()
+        conn.close()
+
+        month_names = [
+            'Jan', 'Fév', 'Mar', 'Avr', 'Mai', 'Jun',
+            'Jul', 'Aoû', 'Sep', 'Oct', 'Nov', 'Déc'
+        ]
+
+        # Initialize all months
+        monthly_data = []
+        for i in range(1, 13):
+            month_entry = {
+                'month': month_names[i-1],
+                'month_num': i,
+                'total': 0
+            }
+            # Initialize each category to 0
+            for cat_id, cat_info in categories.items():
+                month_entry[cat_info['name']] = 0
+            monthly_data.append(month_entry)
+
+        # Fill in actual data
+        for row in rows:
+            month_num = int(row['month'])
+            category_id = row['category_id']
+            amount = float(row['total_amount'])
+
+            if category_id and category_id in categories:
+                category_name = categories[category_id]['name']
+                monthly_data[month_num - 1][category_name] = amount
+                monthly_data[month_num - 1]['total'] += amount
+
+        return {
+            'data': monthly_data,
+            'categories': [{'name': info['name'], 'color': info['color']} for info in categories.values()]
+        }
+
+    @staticmethod
     def get_category_stats(year):
         """Get spending stats by category for a given year"""
         conn = get_db_connection()
