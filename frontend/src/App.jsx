@@ -157,7 +157,7 @@ function App() {
   return (
     <div className="app">
       <header className="app-header">
-        <h1>🪙 Flooz</h1>
+        <img src="/banner-app.png" alt="Flooz" className="app-logo" />
       </header>
 
       <div className="app-body">

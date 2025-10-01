@@ -1,3 +1,7 @@
+<div align="center">
+  <img src="img/banner.png" alt="Flooz" width="400"/>
+</div>
+
 # Flooz
 
 Application web de gestion de budget personnel avec import CSV, catégorisation automatique et statistiques visuelles.

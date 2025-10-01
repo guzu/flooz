@@ -24,15 +24,20 @@ body {
 }
 
 .app-header {
-  background: linear-gradient(135deg, #667eea 0%, #002994 100%);
+  background: linear-gradient(135deg, #4a2e7f 0%, #6b4fa3 50%, #8c70c7 100%);
   color: white;
-  padding: 0.3rem 0.5rem;
+  padding: 0.1rem 1rem;
   display: flex;
-  justify-content: space-between;
+  justify-content: flex-start;
   align-items: center;
   box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
   position: relative;
   z-index: 100;
+}
+
+.app-logo {
+  height: 40px;
+  width: auto;
 }
 
 .header-left {
@@ -159,9 +164,9 @@ body {
 }
 
 .sidebar-nav button.active {
-  color: #667eea;
-  background-color: #f0f4ff;
-  border-left-color: #667eea;
+  color: #8c70c7;
+  background-color: #f3e8ff;
+  border-left-color: #8c70c7;
 }
 
 .nav-icon {
@@ -526,12 +531,12 @@ input:focus, select:focus, textarea:focus {
 }
 
 .transaction-row.selected {
-  background-color: #dbeafe !important;
-  border-left: 3px solid #3b82f6;
+  background-color: #f3e8ff !important;
+  border-left: 3px solid #8c70c7;
 }
 
 .transaction-row.selected:hover {
-  background-color: #bfdbfe !important;
+  background-color: #e9d5ff !important;
 }
 
 .transaction-row.editing {
@@ -874,8 +879,8 @@ input:focus, select:focus, textarea:focus {
 
 .bank-type-select:focus {
   outline: none;
-  border-color: #3b82f6;
-  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+  border-color: #8c70c7;
+  box-shadow: 0 0 0 3px rgba(140, 112, 199, 0.15);
 }
 
 .bank-type-help {
@@ -1063,8 +1068,8 @@ input:focus, select:focus, textarea:focus {
 
 .category-select:focus {
   outline: none;
-  border-color: #3b82f6;
-  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+  border-color: #8c70c7;
+  box-shadow: 0 0 0 3px rgba(140, 112, 199, 0.15);
 }
 
 .category-select:disabled {
@@ -1367,8 +1372,8 @@ input:focus, select:focus, textarea:focus {
 }
 
 .tabs button.active {
-  color: #667eea;
-  border-bottom-color: #667eea;
+  color: #8c70c7;
+  border-bottom-color: #8c70c7;
 }
 
 .tab-content {
