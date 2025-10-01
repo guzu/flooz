@@ -98,6 +98,7 @@ function App() {
         return (
           <ImportPanel
             onImportSuccess={handleImportSuccess}
+            categories={categories}
           />
         )
       case 'categories':

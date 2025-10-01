@@ -115,6 +115,23 @@ export const apiService = {
   },
 
   // Import
+  async validateCsv(file, bankType = 'auto') {
+    const formData = new FormData()
+    formData.append('file', file)
+    formData.append('bank_type', bankType)
+    const response = await api.post('/import/validate', formData, {
+      headers: {
+        'Content-Type': 'multipart/form-data',
+      },
+    })
+    return response.data.data
+  },
+
+  async importValidatedTransactions(transactions) {
+    const response = await api.post('/import/validated', { transactions })
+    return response.data.data
+  },
+
   async previewCsv(file) {
     const formData = new FormData()
     formData.append('file', file)
