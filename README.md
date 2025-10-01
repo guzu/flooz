@@ -1,4 +1,4 @@
-# Budget Manager
+# Flooz
 
 Application web de gestion de budget personnel avec import CSV, catégorisation automatique et statistiques visuelles.
 
@@ -14,7 +14,7 @@ Application web de gestion de budget personnel avec import CSV, catégorisation 
 ## Architecture
 
 ```
-budget-manager/
+flooz/
 ├── backend/           # API Flask + SQLite
 │   ├── models/        # Modèles de données
 │   ├── services/      # Logique métier
@@ -49,7 +49,7 @@ budget-manager/
 
 ```bash
 # 1. Cloner et accéder au projet
-cd budget/backend
+cd flooz/backend
 
 # 2. Créer un environnement virtuel
 python3 -m venv venv
@@ -126,7 +126,7 @@ La base de données est créée automatiquement au premier démarrage avec :
 
 ### Emplacement
 
-La base SQLite est stockée dans `data/budget.db` et est exclue du contrôle de version (.gitignore).
+La base SQLite est stockée dans `data/flooz-budget.db` et est exclue du contrôle de version (.gitignore).
 
 ## Déploiement Docker
 
@@ -145,8 +145,8 @@ docker-compose up -d
 ./docker-start.sh
 
 # Option 3: Commandes manuelles
-docker build -t budget-manager .
-docker run -d -p 80:80 -v $(pwd)/data:/app/data --name budget-manager budget-manager
+docker build -t flooz .
+docker run -d -p 80:80 -v $(pwd)/data:/app/data --name flooz flooz
 
 # Commandes utiles
 docker-compose logs -f    # Voir les logs
@@ -160,9 +160,9 @@ docker-compose restart    # Redémarrer
 ### Gestion des données Docker
 
 Les données de la base SQLite sont persistées via un volume Docker:
-- **Volume local**: `./data/budget.db` monté dans le conteneur
+- **Volume local**: `./data/flooz-budget.db` monté dans le conteneur
 - **Backup**: Copiez simplement le répertoire `./data/`
-- **Restauration**: Replacez le fichier dans `./data/budget.db`
+- **Restauration**: Replacez le fichier dans `./data/flooz-budget.db`
 
 ### Base de données
 
@@ -241,7 +241,7 @@ Date;Bénéficiaire;Libellé;Référence;...;Débit;Crédit;...
 
 ### Backend
 - **Port** : 5000 (configurable dans `app.py`)
-- **Base de données** : `data/budget.db` (SQLite)
+- **Base de données** : `data/flooz-budget.db` (SQLite)
 - **CORS** : Activé pour développement frontend
 
 ### Détection de doublons

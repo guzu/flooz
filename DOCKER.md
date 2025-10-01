@@ -1,6 +1,6 @@
-# Docker Deployment - Budget Manager
+# Docker Deployment - Flooz
 
-Ce guide explique comment déployer Budget Manager avec Docker en conteneur unique.
+Ce guide explique comment déployer Flooz avec Docker en conteneur unique.
 
 ## Déploiement Conteneur Unique
 
@@ -16,8 +16,8 @@ docker-compose up -d
 ./docker-start.sh
 
 # Option 3: Manuellement
-docker build -t budget-manager .
-docker run -d -p 80:80 -v $(pwd)/data:/app/data --name budget-manager budget-manager
+docker build -t flooz .
+docker run -d -p 80:80 -v $(pwd)/data:/app/data --name flooz flooz
 ```
 
 ## Fichiers Docker
@@ -51,28 +51,28 @@ docker-compose up --build -d
 ### Avec Docker direct
 ```bash
 # Construire l'image
-docker build -t budget-manager .
+docker build -t flooz .
 
 # Démarrer le conteneur
-docker run -d -p 80:80 -v $(pwd)/data:/app/data --name budget-manager budget-manager
+docker run -d -p 80:80 -v $(pwd)/data:/app/data --name flooz flooz
 
 # Voir les logs
-docker logs -f budget-manager
+docker logs -f flooz
 
 # Redémarrer le conteneur
-docker restart budget-manager
+docker restart flooz
 
 # Arrêter et supprimer
-docker stop budget-manager && docker rm budget-manager
+docker stop flooz && docker rm flooz
 
 # Nettoyer les images
-docker rmi budget-manager
+docker rmi flooz
 docker system prune
 ```
 
 ## Volumes et Données
 
-- **Base de données**: `./data/budget.db` (montée en volume)
+- **Base de données**: `./data/flooz-budget.db` (montée en volume)
 - **Persistance**: Les données survivent aux redémarrages
 - **Backup**: Copiez simplement le répertoire `./data/`
 
@@ -80,7 +80,7 @@ docker system prune
 
 ### Variables d'environnement
 - `FLASK_ENV=production`
-- `DATABASE_PATH=/app/data/budget.db`
+- `DATABASE_PATH=/app/data/flooz-budget.db`
 
 ### Ports
 - **Application complète**: http://localhost (port 80)
@@ -111,23 +111,23 @@ Pour un déploiement en production:
 ### Logs détaillés
 ```bash
 # Logs généraux
-docker logs budget-manager
+docker logs flooz
 
 # Logs en temps réel
-docker logs -f budget-manager
+docker logs -f flooz
 
 # Accès au conteneur
-docker exec -it budget-manager /bin/bash
+docker exec -it flooz /bin/bash
 ```
 
 ### Debug des services
 ```bash
 # Vérifier les processus dans le conteneur
-docker exec budget-manager ps aux
+docker exec flooz ps aux
 
 # Vérifier la configuration nginx
-docker exec budget-manager nginx -t
+docker exec flooz nginx -t
 
 # Tester l'API backend
-docker exec budget-manager curl http://localhost:5000/api/transactions
+docker exec flooz curl http://localhost:5000/api/transactions
 ```

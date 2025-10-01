@@ -2,7 +2,7 @@
 
 # Single container entrypoint script
 
-echo "🐳 Starting Budget Manager in single container mode..."
+echo "🐳 Starting Flooz in single container mode..."
 
 # Initialize database
 cd /app/backend

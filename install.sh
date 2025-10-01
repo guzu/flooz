@@ -1,7 +1,7 @@
 #!/bin/bash
 
-# Script d'installation du Budget Manager
-echo "🔧 Installation du Budget Manager..."
+# Script d'installation de Flooz
+echo "🔧 Installation de Flooz..."
 echo ""
 
 # Check Python version

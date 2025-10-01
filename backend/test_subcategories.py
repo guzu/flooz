@@ -57,7 +57,7 @@ def test_api_endpoint(method, endpoint, data=None, expected_status=200):
 
 def main():
     """Run all tests"""
-    print("🧪 Testing Budget Manager API with Subcategories")
+    print("🧪 Testing Flooz API with Subcategories")
     print("=" * 50)
 
     tests_passed = 0

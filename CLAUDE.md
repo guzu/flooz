@@ -1,7 +1,7 @@
-# Budget Manager - Structure du Projet
+# Flooz - Structure du Projet
 
 ```
-budget-manager/
+flooz/
 │
 ├── backend/
 │   ├── app.py                      # Point d'entrée Flask
@@ -63,7 +63,7 @@ budget-manager/
 │       └── sample_import.csv      # Exemple fichier CSV
 │
 ├── data/
-│   └── budget.db                  # Base SQLite (créée au démarrage)
+│   └── flooz-budget.db            # Base SQLite (créée au démarrage)
 │
 ├── CLAUDE.md                      # Guide pour Claude Code
 ├── README.md                      # Documentation projet

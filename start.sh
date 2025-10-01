@@ -1,7 +1,7 @@
 #!/bin/bash
 
-# Script de démarrage complet du Budget Manager
-echo "🚀 Démarrage du Budget Manager..."
+# Script de démarrage complet de Flooz
+echo "🚀 Démarrage de Flooz..."
 
 # Vérifier que les dépendances sont installées
 if [ ! -d "backend/venv" ]; then
@@ -60,7 +60,7 @@ FRONTEND_PID=$!
 cd ..
 
 echo ""
-echo "✅ Budget Manager démarré avec succès !"
+echo "✅ Flooz démarré avec succès !"
 echo ""
 echo "🌐 Interface web : http://localhost:3000"
 echo "📡 API backend  : http://localhost:5000"

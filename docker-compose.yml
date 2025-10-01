@@ -1,16 +1,16 @@
 version: '3.8'
 
 services:
-  budget-manager:
+  flooz:
     build: .
-    container_name: budget-manager
+    container_name: flooz
     ports:
       - "80:80"
     volumes:
       - ./data:/app/data
     environment:
       - FLASK_ENV=production
-      - DATABASE_PATH=/app/data/budget.db
+      - DATABASE_PATH=/app/data/flooz-budget.db
     restart: unless-stopped
 
 volumes:

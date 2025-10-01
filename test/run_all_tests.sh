@@ -2,7 +2,7 @@
 
 # Main test runner script
 echo "=========================================="
-echo "    Budget Manager API Test Suite"
+echo "    Flooz API Test Suite"
 echo "=========================================="
 echo
 

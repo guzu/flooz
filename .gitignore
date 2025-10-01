@@ -15,8 +15,8 @@ backend/venv/
 Thumbs.db
 
 # Database
-data/budget*.db
-data/budget.db-journal
+data/flooz-budget*.db
+data/flooz-budget.db-journal
 
 # Environment variables
 .env

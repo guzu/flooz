@@ -20,7 +20,7 @@ backend/*.pyc
 backend/**/*.pyc
 
 # Database (will be mounted as volume)
-data/budget.db
+data/flooz-budget.db
 
 # IDE and editor files
 .vscode

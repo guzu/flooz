@@ -1,4 +1,4 @@
-# Budget Manager - Single Container Deployment
+# Flooz - Single Container Deployment
 # Nginx + Flask in one container
 
 FROM node:18-alpine as frontend-build

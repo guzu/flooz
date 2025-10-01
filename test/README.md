@@ -1,4 +1,4 @@
-# Tests API Budget Manager
+# Tests API Flooz
 
 Scripts de tests simples pour valider tous les endpoints de l'API Backend.
 
