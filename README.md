@@ -9,9 +9,13 @@ Application web de gestion de budget personnel avec import CSV, catégorisation 
 ## Fonctionnalités
 
 - **Gestion des transactions** : CRUD complet avec sélection multiple et catégorisation en lot
-- **Catégorisation intelligente** : Règles automatiques + actions manuelles sur sélections multiples
+- **Catégorisation intelligente** : Règles automatiques + actions manuelles sur sélections multiples avec sous-catégories
 - **Import CSV** : Upload et détection de doublons avec hash SHA256
-- **Statistiques** : Graphiques mensuels et répartition par catégorie avec sélecteur d'année
+- **Statistiques avancées** :
+  - Diagramme de Sankey (flux catégories → sous-catégories)
+  - Graphiques mensuels et répartition par catégorie
+  - Toggle €/% pour affichage en euros ou pourcentages
+  - Sélecteur d'année pour toutes les visualisations
 - **Interface moderne** : React avec raccourcis clavier et filtres avancés
 - **Filtrage intelligent** : Recherche floue avec historique complet optionnel
 
@@ -209,8 +213,11 @@ sudo apt install jq
 - `POST /api/import/csv` - Importer des transactions
 
 ### Statistiques
+- `GET /api/stats/years` - Années disponibles
 - `GET /api/stats/monthly/{year}` - Stats mensuelles
+- `GET /api/stats/monthly-by-category/{year}` - Stats mensuelles par catégorie
 - `GET /api/stats/categories/{year}` - Répartition par catégorie
+- `GET /api/stats/sankey/{year}` - Données diagramme de Sankey
 - `GET /api/stats/summary/{year}` - Résumé annuel
 
 ## Format CSV
@@ -265,11 +272,16 @@ Hash SHA256 calculé sur `date + label + amount` pour éviter les imports multip
 ✅ **Frontend React complet** : Interface utilisateur moderne et responsive avec sélection multiple
 ✅ **Import CSV intelligent** : Support formats bancaire et standard
 ✅ **Catégorisation automatique** : Règles configurables + actions manuelles en lot
-✅ **Graphiques interactifs** : Recharts avec visualisations mensuelles et par catégorie
+✅ **Graphiques interactifs** :
+  - Diagramme de Sankey interactif (flux catégories → sous-catégories)
+  - Graphiques mensuels et répartition par catégorie
+  - Toggle €/% pour basculer entre montants et pourcentages
+  - Sélecteur d'année intégré
 ✅ **Raccourcis clavier** : Navigation rapide avec `/ ` (recherche), `Escape` (effacer), `?` (aide)
 ✅ **Filtrage avancé** : Recherche floue + option "Tout l'historique" pour voir toutes les années
-✅ **Sélection multiple** : Ctrl/Shift + clic pour actions en lot (catégorisation groupée)
+✅ **Sélection multiple** : Ctrl/Shift + clic pour actions en lot (catégorisation groupée, sans sélection de texte)
 ✅ **Gestion des catégories** : CRUD complet avec couleurs personnalisées et sous-catégories
+✅ **Sous-catégories intelligentes** : Tri automatique et regroupement dans le diagramme de Sankey
 ✅ **Déploiement Docker** : Conteneurisation en conteneur unique
 
 ### Prochaines étapes possibles
