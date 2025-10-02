@@ -676,9 +676,9 @@ tr:focus {
 }
 
 .actions-col {
-  width: 12em;
-  min-width: 12em;
-  max-width: 12em;
+  width: 8em;
+  min-width: 8em;
+  max-width: 8em;
   padding: 0.3rem 0.5rem;
 }
 
@@ -692,6 +692,14 @@ tr:focus {
   padding: 0.2rem 0.3rem;
   font-size: 0.75rem;
   min-width: unset;
+  color: #6b7280;
+  border-color: #d1d5db;
+}
+
+.actions-col .btn-sm:hover:not(:disabled) {
+  color: #667eea;
+  border-color: #a5b4fc;
+  background-color: #eef2ff;
 }
 
 /* Edit inputs */

@@ -37,6 +37,20 @@ const TransactionRow = ({
     })
   }
 
+  const handleActionsClick = (e) => {
+    e.stopPropagation()
+    if (contextMenu.visible) {
+      setContextMenu({ visible: false, x: 0, y: 0 })
+    } else {
+      const rect = e.currentTarget.getBoundingClientRect()
+      setContextMenu({
+        visible: true,
+        x: rect.left,
+        y: rect.bottom + 5
+      })
+    }
+  }
+
   const handleClick = (e) => {
     onSelect(transaction, index, e)
   }
@@ -121,32 +135,17 @@ const TransactionRow = ({
         {subcategoryInfo.name}
       </td>
       <td className="actions-col">
-        <div className="action-buttons">
-          <button
-            onClick={onCategorize}
-            className="btn btn-outline btn-sm"
-            title="Catégoriser"
-          >
-            🏷️
-          </button>
-          <button
-            onClick={() => onFilter(transaction.label)}
-            className="btn btn-outline btn-sm"
-            title="Filtrer par ce libellé"
-          >
-            🔍
-          </button>
-          <button
-            onClick={onDelete}
-            className="btn btn-outline btn-sm"
-            title="Supprimer"
-          >
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#ef4444" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-              <line x1="18" y1="6" x2="6" y2="18"></line>
-              <line x1="6" y1="6" x2="18" y2="18"></line>
-            </svg>
-          </button>
-        </div>
+        <button
+          onClick={handleActionsClick}
+          className="btn btn-outline btn-sm"
+          title="Actions"
+        >
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <circle cx="12" cy="12" r="1"></circle>
+            <circle cx="12" cy="5" r="1"></circle>
+            <circle cx="12" cy="19" r="1"></circle>
+          </svg>
+        </button>
       </td>
       </tr>
 
