@@ -141,7 +141,10 @@ const TransactionRow = ({
             className="btn btn-outline btn-sm"
             title="Supprimer"
           >
-            ❌
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#ef4444" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <line x1="18" y1="6" x2="6" y2="18"></line>
+              <line x1="6" y1="6" x2="18" y2="18"></line>
+            </svg>
           </button>
         </div>
       </td>
@@ -160,19 +163,27 @@ const TransactionRow = ({
           onClick={(e) => e.stopPropagation()}
         >
           <div className="context-menu-item" onClick={handleContextMenuCategorize}>
-            🏷️ Catégoriser
+            <span className="context-menu-icon">🏷️</span>
+            <span>Catégoriser</span>
           </div>
           <div
             className={`context-menu-item ${hasMultipleSelected ? 'disabled' : ''}`}
             onClick={hasMultipleSelected ? undefined : handleContextMenuFilter}
           >
-            🔍 Filtrer
+            <span className="context-menu-icon">🔍</span>
+            <span>Filtrer</span>
           </div>
           <div
             className={`context-menu-item ${hasMultipleSelected ? 'disabled' : ''}`}
             onClick={hasMultipleSelected ? undefined : handleContextMenuDelete}
           >
-            ❌ Supprimer
+            <span className="context-menu-icon">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#ef4444" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <line x1="18" y1="6" x2="6" y2="18"></line>
+                <line x1="6" y1="6" x2="18" y2="18"></line>
+              </svg>
+            </span>
+            <span>Supprimer</span>
           </div>
         </div>
       )}

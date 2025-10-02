@@ -749,6 +749,13 @@ tr:focus {
   color: #9ca3af;
 }
 
+.context-menu-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.2rem;
+}
+
 /* Import Panel */
 .import-panel {
   max-width: 800px;
