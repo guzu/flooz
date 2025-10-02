@@ -321,49 +321,53 @@ class StatsService:
 
             subcategories_total = 0
 
-            # Get subcategories for this category, sorted by amount DESC
+            # Get subcategories for this category
             cat_subcategories = [
                 row for row in subcategory_rows
                 if row['category_id'] == cat_id and row['subcategory']
             ]
-            cat_subcategories.sort(key=lambda x: float(x['total']), reverse=True)
 
-            # Add all subcategories for this category
-            for row in cat_subcategories:
-                subcategory = row['subcategory']
-                subcategory_color = row['subcategory_color'] or cat_color
-                total = float(row['total'])
-                subcategories_total += total
+            # Calculate subcategories total
+            subcategories_total = sum(float(row['total']) for row in cat_subcategories)
 
-                nodes.append({
-                    'name': subcategory,
-                    'color': subcategory_color,
-                    'value': total
-                })
-
-                links.append({
-                    'source': category_map[cat_id],
-                    'target': node_index,
-                    'value': total,
-                    'color': subcategory_color
-                })
-
-                node_index += 1
-
-            # Add uncategorized amount for this category immediately after its subcategories
+            # Calculate uncategorized amount
             uncategorized_amount = cat_total - subcategories_total
+
+            # Create a list of all items (subcategories + uncategorized) to sort together
+            all_items = []
+
+            for row in cat_subcategories:
+                all_items.append({
+                    'name': row['subcategory'],
+                    'color': row['subcategory_color'] or cat_color,
+                    'value': float(row['total'])
+                })
+
             if uncategorized_amount > 0.01:
-                nodes.append({
-                    'name': cat_name,
+                # Use "Autres" if there are other subcategories, otherwise use category name
+                uncategorized_name = 'Autres' if len(cat_subcategories) > 0 else cat_name
+                all_items.append({
+                    'name': uncategorized_name,
                     'color': cat_color,
                     'value': uncategorized_amount
                 })
 
+            # Sort all items by value DESC
+            all_items.sort(key=lambda x: x['value'], reverse=True)
+
+            # Add sorted nodes and links
+            for item in all_items:
+                nodes.append({
+                    'name': item['name'],
+                    'color': item['color'],
+                    'value': item['value']
+                })
+
                 links.append({
                     'source': category_map[cat_id],
                     'target': node_index,
-                    'value': uncategorized_amount,
-                    'color': cat_color
+                    'value': item['value'],
+                    'color': item['color']
                 })
 
                 node_index += 1
