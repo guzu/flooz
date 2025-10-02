@@ -90,25 +90,6 @@ def init_db():
         if not cursor.fetchone():
             cursor.execute('INSERT INTO categories (name, color) VALUES (?, ?)', (name, color))
 
-    # Insert default categorization rules
-    rules = [
-        ('CARREFOUR|AUCHAN|LECLERC', 'Alimentation', 10),
-        ('SNCF|RATP|ESSENCE', 'Transport', 10),
-        ('LOYER|EDF|EAU', 'Logement', 10)
-    ]
-
-    for pattern, category_name, priority in rules:
-        cursor.execute('SELECT id FROM categories WHERE name = ?', (category_name,))
-        category_row = cursor.fetchone()
-        if category_row:
-            category_id = category_row['id']
-            cursor.execute('SELECT id FROM categorization_rules WHERE pattern = ?', (pattern,))
-            if not cursor.fetchone():
-                cursor.execute(
-                    'INSERT INTO categorization_rules (pattern, category_id, priority) VALUES (?, ?, ?)',
-                    (pattern, category_id, priority)
-                )
-
     # Insert default subcategories
     subcategories_data = [
         # Alimentation subcategories

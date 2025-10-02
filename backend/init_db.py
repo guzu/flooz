@@ -35,7 +35,6 @@ def main():
         print("\n📊 Données par défaut créées :")
         print("  - 6 catégories (Alimentation, Transport, Logement, Santé, Loisirs, Non catégorisé)")
         print("  - 23 sous-catégories")
-        print("  - 3 règles de catégorisation automatique")
     except Exception as e:
         print(f"❌ Erreur lors de l'initialisation : {e}")
         sys.exit(1)
