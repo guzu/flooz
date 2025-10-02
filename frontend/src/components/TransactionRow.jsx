@@ -101,6 +101,9 @@ const TransactionRow = ({
       <td className="date-col">
         {formatDate(transaction.date)}
       </td>
+      <td className="operation-date-col">
+        {transaction.operation_date ? formatDate(transaction.operation_date) : '-'}
+      </td>
       <td className="label-col">
         <div className="label-container">
           <span className="label-text">{transaction.label}</span>

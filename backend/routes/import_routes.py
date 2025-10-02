@@ -109,7 +109,8 @@ def import_validated_transactions():
                     amount=txn['amount'],
                     category_id=txn.get('category_id'),
                     hash=txn['hash'],
-                    notes=None
+                    notes=None,
+                    operation_date=txn.get('operation_date')
                 )
 
                 imported += 1
@@ -190,6 +191,7 @@ def validate_csv():
                     date = parse_date(data['date'])
                     label = data['label'].strip()
                     amount = data['amount']
+                    operation_date = parse_date(data['operation_date']) if data.get('operation_date') else None
 
                     if not label:
                         errors.append(f"Row {row_num}: Empty label")
@@ -207,6 +209,7 @@ def validate_csv():
                     validated_transactions.append({
                         'row_num': row_num,
                         'date': date,
+                        'operation_date': operation_date,
                         'label': label,
                         'amount': amount,
                         'category_id': category_id,

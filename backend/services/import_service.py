@@ -101,11 +101,12 @@ def parse_boursorama_line(line):
         raise ValueError(f"Invalid Boursorama format: only {len(fields)} fields, expected at least 7")
 
     # Extract fields
-    date = fields[0].strip()  # dateOp
+    operation_date = fields[0].strip()  # dateOp (date d'opération)
+    value_date = fields[1].strip()  # dateVal (date de valeur/comptabilisation)
     label = fields[2].strip()  # label
     amount_str = fields[6].strip()  # amount
 
-    logger.debug(f"Extracted: date='{date}', label='{label}', amount='{amount_str}'")
+    logger.debug(f"Extracted: operation_date='{operation_date}', value_date='{value_date}', label='{label}', amount='{amount_str}'")
 
     # Parse amount (format: "-4,45" or "-1 288,00")
     amount_str = amount_str.replace(' ', '').replace(',', '.')
@@ -116,7 +117,8 @@ def parse_boursorama_line(line):
     amount = -amount
 
     return {
-        'date': date,
+        'date': value_date,  # date de valeur pour la colonne principale
+        'operation_date': operation_date,  # date d'opération
         'label': label,
         'amount': amount
     }
@@ -126,17 +128,18 @@ def parse_banque_populaire_line(line):
     fields = line.split(';')
     logger.debug(f"Parsing Banque Populaire line with {len(fields)} fields")
 
-    if len(fields) < 11:
-        raise ValueError(f"Invalid Banque Populaire format: only {len(fields)} fields, expected at least 11")
+    if len(fields) < 12:
+        raise ValueError(f"Invalid Banque Populaire format: only {len(fields)} fields, expected at least 12")
 
     # Extract fields based on position
-    date = fields[0].strip()
+    value_date = fields[0].strip()  # Date de valeur/comptabilisation
     beneficiary = fields[1].strip()
     full_label = fields[2].strip()
     debit_amount_str = fields[8].strip()  # Dépenses (négatif)
     credit_amount_str = fields[9].strip()  # Crédit (positif)
+    operation_date = fields[11].strip() if len(fields) > 11 else value_date  # Date d'opération
 
-    logger.debug(f"Extracted: date='{date}', beneficiary='{beneficiary}', debit='{debit_amount_str}', credit='{credit_amount_str}'")
+    logger.debug(f"Extracted: value_date='{value_date}', operation_date='{operation_date}', beneficiary='{beneficiary}', debit='{debit_amount_str}', credit='{credit_amount_str}'")
 
     # Use beneficiary + full_label as transaction label
     label = f"{beneficiary} - {full_label}" if beneficiary != full_label else full_label
@@ -157,7 +160,8 @@ def parse_banque_populaire_line(line):
         raise ValueError("No amount found in debit or credit columns")
 
     return {
-        'date': date,
+        'date': value_date,  # date de valeur pour la colonne principale
+        'operation_date': operation_date,  # date d'opération
         'label': label,
         'amount': amount
     }
@@ -214,6 +218,7 @@ def import_csv(file_content, bank_type='auto'):
                     date = parse_date(data['date'])
                     label = data['label'].strip()
                     amount = data['amount']
+                    operation_date = parse_date(data['operation_date']) if data.get('operation_date') else None
 
                     if not label:
                         results['errors'].append(f"Row {row_num}: Empty label")
@@ -237,7 +242,8 @@ def import_csv(file_content, bank_type='auto'):
                         amount=amount,
                         category_id=category_id,
                         hash=transaction_hash,
-                        notes=None
+                        notes=None,
+                        operation_date=operation_date
                     )
 
                     results['imported'] += 1
@@ -296,6 +302,8 @@ def import_csv(file_content, bank_type='auto'):
                         category_id = detect_category(label)
 
                     notes = row.get('notes', '').strip() if 'notes' in row else None
+                    operation_date_str = row.get('operation_date', '').strip() if 'operation_date' in row else None
+                    operation_date = parse_date(operation_date_str) if operation_date_str else None
 
                     # Create transaction
                     Transaction.create(
@@ -304,7 +312,8 @@ def import_csv(file_content, bank_type='auto'):
                         amount=amount,
                         category_id=category_id,
                         hash=transaction_hash,
-                        notes=notes
+                        notes=notes,
+                        operation_date=operation_date
                     )
 
                     results['imported'] += 1

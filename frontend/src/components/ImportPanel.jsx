@@ -165,9 +165,16 @@ const ImportPanel = ({ onImportSuccess, categories }) => {
     }
 
     const stats = getImportStats()
+    const importSuccessful = importResult && importResult.imported > 0 && (!importResult.errors || importResult.errors.length === 0)
 
     return (
       <div className="validation-section">
+        {importSuccessful && (
+          <div className="import-success-banner">
+            ✅ Import terminé avec succès ! {importResult.imported} transaction(s) importée(s).
+          </div>
+        )}
+        <div className={`validation-content ${importSuccessful ? 'disabled' : ''}`}>
         <div className="validation-header">
           <h3>✅ Validation des transactions</h3>
           <div className="validation-stats">
@@ -267,7 +274,7 @@ const ImportPanel = ({ onImportSuccess, categories }) => {
         <div className="import-actions">
           <button
             onClick={handleImport}
-            disabled={importing || stats.toImport === 0}
+            disabled={importing || stats.toImport === 0 || importSuccessful}
             className="btn btn-primary btn-large"
           >
             {importing ? '⏳ Import en cours...' : `📥 Importer ${stats.toImport} transaction(s)`}
@@ -275,6 +282,7 @@ const ImportPanel = ({ onImportSuccess, categories }) => {
           <button onClick={clearFile} className="btn btn-secondary">
             Annuler
           </button>
+        </div>
         </div>
       </div>
     )
@@ -285,6 +293,11 @@ const ImportPanel = ({ onImportSuccess, categories }) => {
 
     const hasErrors = importResult.errors && importResult.errors.length > 0
     const isHttpError = importResult.httpError
+
+    // Ne pas afficher le panneau si l'import est réussi sans erreurs
+    if (!hasErrors && !isHttpError && importResult.imported > 0) {
+      return null
+    }
 
     return (
       <div className={`import-result ${hasErrors || isHttpError ? 'has-errors' : 'success'}`}>
@@ -314,12 +327,6 @@ const ImportPanel = ({ onImportSuccess, categories }) => {
               ))}
             </ul>
           </div>
-        )}
-
-        {!hasErrors && importResult.imported > 0 && (
-          <p className="success-message">
-            ✅ {importResult.imported} transaction(s) importée(s) avec succès !
-          </p>
         )}
       </div>
     )

@@ -68,6 +68,14 @@ def init_db():
         if "duplicate column name" not in str(e).lower():
             print(f"Could not add subcategory_id column: {e}")
 
+    # Add operation_date column to transactions table if it doesn't exist
+    try:
+        conn.execute('ALTER TABLE transactions ADD COLUMN operation_date DATE')
+        print("Added operation_date column to transactions table")
+    except Exception as e:
+        if "duplicate column name" not in str(e).lower():
+            print(f"Could not add operation_date column: {e}")
+
     # Create indexes
     conn.execute('CREATE INDEX IF NOT EXISTS idx_date ON transactions(date)')
     conn.execute('CREATE INDEX IF NOT EXISTS idx_hash ON transactions(hash)')

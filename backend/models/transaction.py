@@ -2,7 +2,7 @@ from datetime import datetime
 from models.database import get_db_connection
 
 class Transaction:
-    def __init__(self, id=None, date=None, label=None, amount=None, category_id=None, subcategory_id=None, hash=None, notes=None, created_at=None):
+    def __init__(self, id=None, date=None, label=None, amount=None, category_id=None, subcategory_id=None, hash=None, notes=None, operation_date=None, created_at=None):
         self.id = id
         self.date = date
         self.label = label
@@ -11,6 +11,7 @@ class Transaction:
         self.subcategory_id = subcategory_id
         self.hash = hash
         self.notes = notes
+        self.operation_date = operation_date
         self.created_at = created_at
 
     def to_dict(self):
@@ -23,18 +24,19 @@ class Transaction:
             'subcategory_id': self.subcategory_id,
             'hash': self.hash,
             'notes': self.notes,
+            'operation_date': self.operation_date,
             'created_at': self.created_at
         }
 
     @staticmethod
-    def create(date, label, amount, category_id=None, subcategory_id=None, hash=None, notes=None):
+    def create(date, label, amount, category_id=None, subcategory_id=None, hash=None, notes=None, operation_date=None):
         conn = get_db_connection()
         cursor = conn.cursor()
 
         cursor.execute('''
-            INSERT INTO transactions (date, label, amount, category_id, subcategory_id, hash, notes)
-            VALUES (?, ?, ?, ?, ?, ?, ?)
-        ''', (date, label, amount, category_id, subcategory_id, hash, notes))
+            INSERT INTO transactions (date, label, amount, category_id, subcategory_id, hash, notes, operation_date)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+        ''', (date, label, amount, category_id, subcategory_id, hash, notes, operation_date))
 
         transaction_id = cursor.lastrowid
         conn.commit()
@@ -58,6 +60,12 @@ class Transaction:
             except (KeyError, IndexError):
                 subcategory_id = None
 
+            # Handle operation_date safely in case column doesn't exist yet
+            try:
+                operation_date = row['operation_date']
+            except (KeyError, IndexError):
+                operation_date = None
+
             return Transaction(
                 id=row['id'],
                 date=row['date'],
@@ -67,6 +75,7 @@ class Transaction:
                 subcategory_id=subcategory_id,
                 hash=row['hash'],
                 notes=row['notes'],
+                operation_date=operation_date,
                 created_at=row['created_at']
             )
         return None
@@ -112,6 +121,12 @@ class Transaction:
             except (KeyError, IndexError):
                 subcategory_name = None
 
+            # Handle operation_date safely
+            try:
+                operation_date = row['operation_date']
+            except (KeyError, IndexError):
+                operation_date = None
+
             transaction = Transaction(
                 id=row['id'],
                 date=row['date'],
@@ -121,6 +136,7 @@ class Transaction:
                 subcategory_id=subcategory_id,
                 hash=row['hash'],
                 notes=row['notes'],
+                operation_date=operation_date,
                 created_at=row['created_at']
             )
             transaction_dict = transaction.to_dict()

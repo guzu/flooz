@@ -705,7 +705,13 @@ const TransactionList = ({ transactions, categories, subcategories, onUpdate, lo
                 onClick={() => handleSort('date')}
                 className="sortable date-col"
               >
-                Date {getSortIcon('date')}
+                Date valeur {getSortIcon('date')}
+              </th>
+              <th
+                onClick={() => handleSort('operation_date')}
+                className="sortable operation-date-col"
+              >
+                Date op. {getSortIcon('operation_date')}
               </th>
               <th
                 onClick={() => handleSort('label')}
