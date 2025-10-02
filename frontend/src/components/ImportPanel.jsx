@@ -2,12 +2,14 @@ import React, { useState } from 'react'
 import { apiService } from '../services/api'
 
 const ImportPanel = ({ onImportSuccess, categories }) => {
+  const [activeTab, setActiveTab] = useState('import')
   const [selectedFile, setSelectedFile] = useState(null)
   const [validation, setValidation] = useState(null)
   const [importing, setImporting] = useState(false)
   const [importResult, setImportResult] = useState(null)
   const [dragActive, setDragActive] = useState(false)
   const [bankType, setBankType] = useState('auto')
+  const [exporting, setExporting] = useState(false)
 
   const handleFileSelect = (file) => {
     if (file && file.type === 'text/csv') {
@@ -332,12 +334,118 @@ const ImportPanel = ({ onImportSuccess, categories }) => {
     )
   }
 
+  const handleExportDatabase = async () => {
+    try {
+      setExporting(true)
+      const response = await fetch('http://localhost:5000/api/export/database')
+      const blob = await response.blob()
+      const url = window.URL.createObjectURL(blob)
+      const a = document.createElement('a')
+      a.href = url
+      a.download = `flooz-backup-${new Date().toISOString().split('T')[0]}.db`
+      document.body.appendChild(a)
+      a.click()
+      window.URL.revokeObjectURL(url)
+      document.body.removeChild(a)
+    } catch (error) {
+      console.error('Error exporting database:', error)
+      alert('Erreur lors de l\'export de la base de données')
+    } finally {
+      setExporting(false)
+    }
+  }
+
+  const handleExportJSON = async () => {
+    try {
+      setExporting(true)
+      const response = await fetch('http://localhost:5000/api/export/json')
+      const blob = await response.blob()
+      const url = window.URL.createObjectURL(blob)
+      const a = document.createElement('a')
+      a.href = url
+      a.download = `flooz-export-${new Date().toISOString().split('T')[0]}.json`
+      document.body.appendChild(a)
+      a.click()
+      window.URL.revokeObjectURL(url)
+      document.body.removeChild(a)
+    } catch (error) {
+      console.error('Error exporting JSON:', error)
+      alert('Erreur lors de l\'export JSON')
+    } finally {
+      setExporting(false)
+    }
+  }
+
+  const renderExportPanel = () => {
+    return (
+      <div className="export-panel">
+        <div className="export-section">
+          <div className="export-card">
+            <div className="export-card-icon">💾</div>
+            <h3>Sauvegarde complète (Base de données)</h3>
+            <p>Export binaire de la base de données SQLite. Idéal pour une sauvegarde complète et rapide.</p>
+            <ul className="export-features">
+              <li>✓ Fichier .db (format SQLite)</li>
+              <li>✓ Toutes les données incluses</li>
+              <li>✓ Restauration rapide</li>
+              <li>✓ Taille optimale</li>
+            </ul>
+            <button
+              onClick={handleExportDatabase}
+              disabled={exporting}
+              className="btn btn-primary btn-large"
+            >
+              {exporting ? '⏳ Export en cours...' : '💾 Exporter la base de données'}
+            </button>
+          </div>
+
+          <div className="export-card">
+            <div className="export-card-icon">📄</div>
+            <h3>Export JSON</h3>
+            <p>Export au format JSON lisible. Inclut toutes les transactions, catégories, sous-catégories et règles.</p>
+            <ul className="export-features">
+              <li>✓ Format JSON lisible</li>
+              <li>✓ Compatible avec d'autres outils</li>
+              <li>✓ Transactions complètes</li>
+              <li>✓ Catégories et règles incluses</li>
+            </ul>
+            <button
+              onClick={handleExportJSON}
+              disabled={exporting}
+              className="btn btn-primary btn-large"
+            >
+              {exporting ? '⏳ Export en cours...' : '📄 Exporter en JSON'}
+            </button>
+          </div>
+        </div>
+      </div>
+    )
+  }
+
   return (
     <div className="import-panel">
       <div className="import-header">
-        <h2>📥 Import de fichier CSV</h2>
-        <p>Importez vos transactions depuis un fichier CSV (format bancaire ou standard)</p>
+        <h2>📥 Import / Export</h2>
+        <p>Importez vos transactions ou exportez vos données</p>
       </div>
+
+      <div className="import-tabs">
+        <button
+          className={`tab-button ${activeTab === 'import' ? 'active' : ''}`}
+          onClick={() => setActiveTab('import')}
+        >
+          📥 Import
+        </button>
+        <button
+          className={`tab-button ${activeTab === 'export' ? 'active' : ''}`}
+          onClick={() => setActiveTab('export')}
+        >
+          📤 Export
+        </button>
+      </div>
+
+      {activeTab === 'import' ? (
+        <div className="tab-content">
 
       <div className="bank-type-selector">
         <label htmlFor="bank-type">Type de banque :</label>
@@ -400,6 +508,12 @@ const ImportPanel = ({ onImportSuccess, categories }) => {
 
       {renderValidation()}
       {renderImportResult()}
+        </div>
+      ) : (
+        <div className="tab-content">
+          {renderExportPanel()}
+        </div>
+      )}
     </div>
   )
 }

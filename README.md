@@ -78,6 +78,24 @@ python init_db.py --reset
 
 La base SQLite est stockée dans `data/flooz-budget.db`.
 
+### Sauvegardes Automatiques 💾
+
+#### Backup binaire (SQLite) - locale
+
+```bash
+cp data/flooz-budget.db /somewhere/flooz-budget-$(date '+%F-%T').db
+```
+
+#### Backup binaire (SQLite) - distant
+
+```bash
+curl -o ~/backups/flooz-$(date '+%F-%T').db http://localhost:5000/api/export/database
+```
+
+#### Export JSON complet - distant
+```bash
+curl -o flooz-export-$(date '+%F-%T').json http://localhost:5000/api/export/json
+```
 
 # Documentation 📒
 

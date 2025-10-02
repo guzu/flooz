@@ -247,7 +247,7 @@ function App() {
                 onClick={() => setCurrentView('import')}
               >
                 <span className="nav-icon">📥</span>
-                {sidebarOpen && <span className="nav-label">Import CSV</span>}
+                {sidebarOpen && <span className="nav-label">Import / Export</span>}
               </button>
             </div>
             <div className="sidebar-footer">

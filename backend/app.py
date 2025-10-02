@@ -14,12 +14,14 @@ def create_app():
     from routes.categories import categories_bp
     from routes.subcategories import subcategories_bp
     from routes.import_routes import import_bp
+    from routes.export_routes import export_bp
     from routes.stats import stats_bp
 
     app.register_blueprint(transactions_bp, url_prefix='/api')
     app.register_blueprint(categories_bp, url_prefix='/api')
     app.register_blueprint(subcategories_bp, url_prefix='/api')
     app.register_blueprint(import_bp, url_prefix='/api')
+    app.register_blueprint(export_bp, url_prefix='/api')
     app.register_blueprint(stats_bp, url_prefix='/api')
 
     return app
