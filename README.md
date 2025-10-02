@@ -95,4 +95,12 @@ La base SQLite est stockée dans `data/flooz-budget.db`.
 
 # License 🫶
 
-MIT License
+**CC BY-NC-SA 4.0** - Non-Commercial ShareAlike
+
+### Conditions supplémentaires pour l'hébergement public
+
+Si vous proposez un hébergement de Flooz (instance publique ou partagée) :
+- **Conservation du nom** : L'application DOIT conserver le nom "Flooz"
+- **Indication de la source** : Vous DEVEZ garder le lien ou une mention du dépôt original
+
+[Texte complet de la licence](https://creativecommons.org/licenses/by-nc-sa/4.0/)
