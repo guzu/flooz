@@ -66,10 +66,65 @@ flooz/
 ├── data/
 │   └── flooz-budget.db            # Base SQLite (créée au démarrage)
 │
+├── docs/                          # Documentation détaillée
+│   ├── API.md                     # Documentation API REST
+│   ├── CONTRIBUTING.md            # Guide développeur et architecture
+│   └── TESTING.md                 # Guide des tests
+│
 ├── CLAUDE.md                      # Guide pour Claude Code
-├── README.md                      # Documentation projet
+├── README.md                      # Documentation projet (landing page)
+├── DOCKER.md                      # Déploiement Docker
 └── docker-compose.yml             # (optionnel) Pour déploiement
 ```
+
+## Organisation de la Documentation
+
+### README.md
+- **Landing page** du projet (~90 lignes)
+- Vue d'ensemble des fonctionnalités
+- Installation et démarrage rapide
+- Liens vers documentation détaillée
+
+### docs/API.md
+- Documentation complète de l'API REST
+- Liste des endpoints avec exemples
+- Formats de requête/réponse
+- Formats CSV supportés
+
+### docs/CONTRIBUTING.md
+- Architecture du projet
+- Structure du code
+- Guide de contribution
+- Standards de développement
+- Roadmap
+
+### docs/TESTING.md
+- Scripts de tests disponibles
+- Guide d'utilisation
+- Écriture de nouveaux tests
+- Tests manuels
+
+### DOCKER.md
+- Déploiement Docker détaillé
+- Configuration production
+- Gestion des volumes
+- Dépannage
+
+### CLAUDE.md
+- Guide pour Claude Code (IA)
+- Structure du projet
+- Base de données
+- Conventions de code
+
+## Maintenance de la Documentation
+
+**Lors de l'ajout de nouvelles fonctionnalités :**
+
+1. **docs/API.md** : Mettre à jour si nouveaux endpoints ou modifications d'API
+2. **docs/CONTRIBUTING.md** : Mettre à jour si changements d'architecture ou nouveaux patterns
+3. **docs/TESTING.md** : Ajouter les nouveaux scripts de test
+4. **README.md** : Mettre à jour uniquement si fonctionnalité majeure
+5. **CLAUDE.md** : Mettre à jour la structure du projet et les conventions
 
 ## Schéma Base de Données SQLite
 
