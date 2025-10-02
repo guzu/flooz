@@ -1894,15 +1894,10 @@ input:focus, select:focus, textarea:focus {
 }
 
 .sankey-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 1rem;
-  gap: 1rem;
+  margin-bottom: 0.5rem;
 }
 
 .sankey-summary {
-  flex: 1;
   text-align: center;
   padding: 0.75rem;
   background: #f3e8ff;
@@ -1920,15 +1915,17 @@ input:focus, select:focus, textarea:focus {
 }
 
 .sankey-toggle {
-  flex-shrink: 0;
+  display: flex;
+  justify-content: flex-end;
+  margin-bottom: 1rem;
 }
 
 /* Toggle Switch */
 .toggle-switch {
   position: relative;
   display: inline-block;
-  width: 80px;
-  height: 34px;
+  width: 70px;
+  height: 30px;
   cursor: pointer;
 }
 
@@ -1956,8 +1953,8 @@ input:focus, select:focus, textarea:focus {
 .toggle-slider:before {
   content: "";
   position: absolute;
-  height: 26px;
-  width: 26px;
+  height: 22px;
+  width: 22px;
   left: 4px;
   bottom: 4px;
   background-color: rgba(255, 255, 255, 0.7);
@@ -1967,7 +1964,7 @@ input:focus, select:focus, textarea:focus {
 }
 
 .toggle-switch input:checked + .toggle-slider:before {
-  transform: translateX(46px);
+  transform: translateX(40px);
 }
 
 .toggle-label {
@@ -2006,4 +2003,23 @@ input:focus, select:focus, textarea:focus {
   color: #8c70c7;
   font-weight: 700;
   font-size: 1rem;
+}
+
+/* Sankey D3 styles */
+.sankey-node {
+  transition: opacity 0.2s;
+}
+
+.sankey-node:hover {
+  opacity: 0.8;
+  cursor: pointer;
+}
+
+.sankey-link {
+  transition: fill-opacity 0.2s;
+}
+
+.sankey-link:hover {
+  fill-opacity: 0.5 !important;
+  cursor: pointer;
 }

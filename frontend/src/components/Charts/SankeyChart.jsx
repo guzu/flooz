@@ -1,12 +1,13 @@
-import React, { useState, useEffect } from 'react'
-import { Sankey, Tooltip, ResponsiveContainer } from 'recharts'
+import React, { useState, useEffect, useRef } from 'react'
+import { sankey, sankeyLinkHorizontal } from 'd3-sankey'
 import { apiService } from '../../services/api'
 
 const SankeyChart = ({ year }) => {
   const [data, setData] = useState(null)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState(null)
-  const [displayMode, setDisplayMode] = useState('currency') // 'currency' or 'percentage'
+  const [displayMode, setDisplayMode] = useState('currency')
+  const svgRef = useRef(null)
 
   useEffect(() => {
     loadSankeyData()
@@ -45,61 +46,74 @@ const SankeyChart = ({ year }) => {
     return displayMode === 'currency' ? formatCurrency(value) : formatPercentage(value)
   }
 
-  const CustomNode = ({ x, y, width, height, index, payload, containerWidth }) => {
-    const isOut = x + width + 6 > containerWidth
-    return (
-      <g>
-        <rect
-          x={x}
-          y={y}
-          width={width}
-          height={height}
-          fill={payload.color || '#8c70c7'}
-          fillOpacity="1"
-        />
-        <text
-          textAnchor={isOut ? 'end' : 'start'}
-          x={isOut ? x - 6 : x + width + 6}
-          y={y + height / 2 + 4}
-          fontSize="12"
-          fontWeight="500"
-          fill="#374151"
-        >
-          {payload.name} <tspan fill="#6b7280" fontSize="11">({formatValue(payload.value)})</tspan>
-        </text>
-      </g>
-    )
-  }
+  useEffect(() => {
+    if (!data || !data.nodes || data.nodes.length === 0 || !svgRef.current) return
 
-  const CustomLink = ({ sourceX, targetX, sourceY, targetY, sourceControlX, targetControlX, linkWidth, payload }) => {
-    return (
-      <path
-        d={`
-          M${sourceX},${sourceY + linkWidth / 2}
-          C${sourceControlX},${sourceY + linkWidth / 2} ${targetControlX},${targetY + linkWidth / 2} ${targetX},${targetY + linkWidth / 2}
-          L${targetX},${targetY - linkWidth / 2}
-          C${targetControlX},${targetY - linkWidth / 2} ${sourceControlX},${sourceY - linkWidth / 2} ${sourceX},${sourceY - linkWidth / 2}
-          Z
-        `}
-        fill={payload.color || '#8c70c7'}
-        fillOpacity="0.4"
-        strokeWidth="0"
-      />
-    )
-  }
+    const svg = svgRef.current
+    const width = 1200
+    const height = 600
 
-  const CustomTooltip = ({ active, payload }) => {
-    if (active && payload && payload.length) {
-      const data = payload[0].payload
-      return (
-        <div className="sankey-tooltip">
-          <p className="label">{`${data.source.name} → ${data.target.name}`}</p>
-          <p className="value">{formatValue(data.value)}</p>
-        </div>
-      )
-    }
-    return null
-  }
+    svg.innerHTML = ''
+
+    // Create sankey generator
+    const sankeyGenerator = sankey()
+      .nodeWidth(20)
+      .nodePadding(15)
+      .extent([[200, 20], [width - 200, height - 20]])
+      .nodeSort(null) // Preserve order from backend
+
+    // Apply layout
+    const { nodes, links } = sankeyGenerator({
+      nodes: data.nodes.map(d => Object.assign({}, d)),
+      links: data.links.map(d => Object.assign({}, d))
+    })
+
+    // Draw links
+    const linkGroup = document.createElementNS('http://www.w3.org/2000/svg', 'g')
+    links.forEach(link => {
+      const path = document.createElementNS('http://www.w3.org/2000/svg', 'path')
+      path.setAttribute('d', sankeyLinkHorizontal()(link))
+      path.setAttribute('stroke', link.color || '#8c70c7')
+      path.setAttribute('stroke-opacity', '0.3')
+      path.setAttribute('fill', 'none')
+      path.setAttribute('stroke-width', Math.max(1, link.width))
+
+      const title = document.createElementNS('http://www.w3.org/2000/svg', 'title')
+      title.textContent = `${link.source.name} → ${link.target.name}: ${formatValue(link.value)}`
+      path.appendChild(title)
+
+      linkGroup.appendChild(path)
+    })
+    svg.appendChild(linkGroup)
+
+    // Draw nodes
+    const nodeGroup = document.createElementNS('http://www.w3.org/2000/svg', 'g')
+    nodes.forEach(node => {
+      const rect = document.createElementNS('http://www.w3.org/2000/svg', 'rect')
+      rect.setAttribute('x', node.x0)
+      rect.setAttribute('y', node.y0)
+      rect.setAttribute('width', node.x1 - node.x0)
+      rect.setAttribute('height', node.y1 - node.y0)
+      rect.setAttribute('fill', node.color || '#8c70c7')
+      rect.setAttribute('rx', '3')
+      nodeGroup.appendChild(rect)
+
+      const text = document.createElementNS('http://www.w3.org/2000/svg', 'text')
+      // Place text on the left for first column, right for last column
+      const isLastColumn = node.x0 > width * 0.6
+      text.setAttribute('x', isLastColumn ? node.x1 + 6 : node.x0 - 6)
+      text.setAttribute('y', (node.y0 + node.y1) / 2)
+      text.setAttribute('dy', '0.35em')
+      text.setAttribute('text-anchor', isLastColumn ? 'start' : 'end')
+      text.setAttribute('font-size', '12')
+      text.setAttribute('fill', '#374151')
+      text.textContent = `${node.name} (${formatValue(node.value)})`
+
+      nodeGroup.appendChild(text)
+    })
+    svg.appendChild(nodeGroup)
+
+  }, [data, displayMode])
 
   if (loading) {
     return (
@@ -131,33 +145,27 @@ const SankeyChart = ({ year }) => {
         <div className="sankey-summary">
           <p><strong>Total des dépenses :</strong> {formatCurrency(data.total || 0)}</p>
         </div>
-        <div className="sankey-toggle">
-          <label className="toggle-switch">
-            <input
-              type="checkbox"
-              checked={displayMode === 'percentage'}
-              onChange={(e) => setDisplayMode(e.target.checked ? 'percentage' : 'currency')}
-            />
-            <span className="toggle-slider">
-              <span className="toggle-label toggle-label-left">€</span>
-              <span className="toggle-label toggle-label-right">%</span>
-            </span>
-          </label>
-        </div>
       </div>
-      <ResponsiveContainer width="100%" height={600}>
-        <Sankey
-          data={data}
-          node={<CustomNode />}
-          link={<CustomLink />}
-          nodePadding={15}
-          nodeWidth={15}
-          margin={{ top: 20, right: 200, bottom: 20, left: 200 }}
-          iterations={64}
-        >
-          <Tooltip content={<CustomTooltip />} />
-        </Sankey>
-      </ResponsiveContainer>
+      <div className="sankey-toggle">
+        <label className="toggle-switch">
+          <input
+            type="checkbox"
+            checked={displayMode === 'percentage'}
+            onChange={(e) => setDisplayMode(e.target.checked ? 'percentage' : 'currency')}
+          />
+          <span className="toggle-slider">
+            <span className="toggle-label toggle-label-left">€</span>
+            <span className="toggle-label toggle-label-right">%</span>
+          </span>
+        </label>
+      </div>
+      <svg
+        ref={svgRef}
+        width="100%"
+        height="600"
+        viewBox="0 0 1200 600"
+        style={{ maxWidth: '100%' }}
+      />
     </div>
   )
 }

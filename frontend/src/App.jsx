@@ -127,6 +127,10 @@ function App() {
               />
             </div>
             <div className="charts-grid">
+              <div className="chart-section chart-section-full">
+                <h3>Flux des dépenses (Catégories → Sous-catégories)</h3>
+                <SankeyChart year={selectedYear} />
+              </div>
               <div className="chart-section">
                 <h3>Dépenses mensuelles</h3>
                 <MonthlyChart year={selectedYear} />
@@ -134,10 +138,6 @@ function App() {
               <div className="chart-section">
                 <h3>Répartition par catégorie</h3>
                 <CategoryChart year={selectedYear} />
-              </div>
-              <div className="chart-section chart-section-full">
-                <h3>Flux des dépenses (Catégories → Sous-catégories)</h3>
-                <SankeyChart year={selectedYear} />
               </div>
             </div>
           </div>

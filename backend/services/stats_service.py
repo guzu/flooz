@@ -262,7 +262,6 @@ class StatsService:
             WHERE strftime('%Y', t.date) = ? AND t.amount > 0
             GROUP BY c.id, s.id
             HAVING total > 0
-            ORDER BY c.id, total DESC
         ''', (str(year),))
         subcategory_rows = cursor.fetchall()
 
@@ -283,7 +282,13 @@ class StatsService:
 
         # Category nodes and links from Total to Categories
         category_map = {}
-        for row in category_rows:
+        category_order = {}
+
+        # Sort categories by total spending (descending)
+        sorted_categories = sorted(category_rows, key=lambda x: float(x['total']), reverse=True)
+
+        for idx, row in enumerate(sorted_categories):
+            category_order[row['category_id']] = idx
             category = row['category'] or 'Non catégorisé'
             category_id = row['category_id']
             category_color = row['category_color'] or '#6b7280'
@@ -292,7 +297,8 @@ class StatsService:
             category_map[category_id] = node_index
             nodes.append({
                 'name': category,
-                'color': category_color
+                'color': category_color,
+                'value': total  # Add value for debugging
             })
 
             # Link from Total to Category
@@ -306,27 +312,58 @@ class StatsService:
             node_index += 1
 
         # Subcategory nodes and links from Categories to Subcategories
-        for row in subcategory_rows:
-            category_id = row['category_id']
-            category = row['category'] or 'Non catégorisé'
-            subcategory = row['subcategory']
-            category_color = row['category_color'] or '#6b7280'
-            subcategory_color = row['subcategory_color'] or category_color
-            total = float(row['total'])
+        # Process subcategories grouped by category to keep them together
+        for cat_row in sorted_categories:
+            cat_id = cat_row['category_id']
+            cat_name = cat_row['category'] or 'Non catégorisé'
+            cat_color = cat_row['category_color'] or '#6b7280'
+            cat_total = float(cat_row['total'])
 
-            if subcategory:
-                # Add subcategory node
+            subcategories_total = 0
+
+            # Get subcategories for this category, sorted by amount DESC
+            cat_subcategories = [
+                row for row in subcategory_rows
+                if row['category_id'] == cat_id and row['subcategory']
+            ]
+            cat_subcategories.sort(key=lambda x: float(x['total']), reverse=True)
+
+            # Add all subcategories for this category
+            for row in cat_subcategories:
+                subcategory = row['subcategory']
+                subcategory_color = row['subcategory_color'] or cat_color
+                total = float(row['total'])
+                subcategories_total += total
+
                 nodes.append({
                     'name': subcategory,
-                    'color': subcategory_color
+                    'color': subcategory_color,
+                    'value': total
                 })
 
-                # Link from Category to Subcategory
                 links.append({
-                    'source': category_map[category_id],
+                    'source': category_map[cat_id],
                     'target': node_index,
                     'value': total,
                     'color': subcategory_color
+                })
+
+                node_index += 1
+
+            # Add uncategorized amount for this category immediately after its subcategories
+            uncategorized_amount = cat_total - subcategories_total
+            if uncategorized_amount > 0.01:
+                nodes.append({
+                    'name': cat_name,
+                    'color': cat_color,
+                    'value': uncategorized_amount
+                })
+
+                links.append({
+                    'source': category_map[cat_id],
+                    'target': node_index,
+                    'value': uncategorized_amount,
+                    'color': cat_color
                 })
 
                 node_index += 1
