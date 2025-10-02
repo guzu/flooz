@@ -68,6 +68,22 @@ def get_year_summary(year):
             'error': str(e)
         }), 500
 
+@stats_bp.route('/stats/sankey/<int:year>', methods=['GET'])
+def get_sankey_data(year):
+    """Get Sankey diagram data for a given year"""
+    try:
+        data = StatsService.get_sankey_data(year)
+        return jsonify({
+            'success': True,
+            'data': data
+        }), 200
+
+    except Exception as e:
+        return jsonify({
+            'success': False,
+            'error': str(e)
+        }), 500
+
 @stats_bp.route('/stats/years', methods=['GET'])
 def get_available_years():
     """Get list of years with transactions"""

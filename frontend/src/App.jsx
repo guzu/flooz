@@ -5,6 +5,7 @@ import CategoryManager from './components/CategoryManager'
 import RulesManager from './components/RulesManager'
 import MonthlyChart from './components/Charts/MonthlyChart'
 import CategoryChart from './components/Charts/CategoryChart'
+import SankeyChart from './components/Charts/SankeyChart'
 import YearSelector from './components/Charts/YearSelector'
 import { apiService } from './services/api'
 
@@ -133,6 +134,10 @@ function App() {
               <div className="chart-section">
                 <h3>Répartition par catégorie</h3>
                 <CategoryChart year={selectedYear} />
+              </div>
+              <div className="chart-section chart-section-full">
+                <h3>Flux des dépenses (Catégories → Sous-catégories)</h3>
+                <SankeyChart year={selectedYear} />
               </div>
             </div>
           </div>

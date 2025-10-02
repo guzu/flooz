@@ -217,6 +217,127 @@ class StatsService:
         }
 
     @staticmethod
+    def get_sankey_data(year):
+        """Get Sankey diagram data with 3 columns: Total -> Categories -> Subcategories"""
+        conn = get_db_connection()
+        cursor = conn.cursor()
+
+        # Get total spending
+        cursor.execute('''
+            SELECT SUM(amount) as total
+            FROM transactions
+            WHERE strftime('%Y', date) = ? AND amount > 0
+        ''', (str(year),))
+        total_spending = float(cursor.fetchone()['total'] or 0)
+
+        # Get spending by category
+        cursor.execute('''
+            SELECT
+                c.id as category_id,
+                c.name as category,
+                c.color as category_color,
+                SUM(t.amount) as total
+            FROM transactions t
+            LEFT JOIN categories c ON t.category_id = c.id
+            WHERE strftime('%Y', t.date) = ? AND t.amount > 0
+            GROUP BY c.id
+            HAVING total > 0
+            ORDER BY total DESC
+        ''', (str(year),))
+        category_rows = cursor.fetchall()
+
+        # Get spending by category and subcategory
+        cursor.execute('''
+            SELECT
+                c.id as category_id,
+                c.name as category,
+                c.color as category_color,
+                s.id as subcategory_id,
+                s.name as subcategory,
+                s.color as subcategory_color,
+                SUM(t.amount) as total
+            FROM transactions t
+            LEFT JOIN categories c ON t.category_id = c.id
+            LEFT JOIN subcategories s ON t.subcategory_id = s.id
+            WHERE strftime('%Y', t.date) = ? AND t.amount > 0
+            GROUP BY c.id, s.id
+            HAVING total > 0
+            ORDER BY c.id, total DESC
+        ''', (str(year),))
+        subcategory_rows = cursor.fetchall()
+
+        conn.close()
+
+        # Build Sankey structure
+        nodes = []
+        links = []
+        node_index = 0
+
+        # Node 0: Total
+        nodes.append({
+            'name': 'Total Dépenses',
+            'color': '#8c70c7'
+        })
+        total_node_index = node_index
+        node_index += 1
+
+        # Category nodes and links from Total to Categories
+        category_map = {}
+        for row in category_rows:
+            category = row['category'] or 'Non catégorisé'
+            category_id = row['category_id']
+            category_color = row['category_color'] or '#6b7280'
+            total = float(row['total'])
+
+            category_map[category_id] = node_index
+            nodes.append({
+                'name': category,
+                'color': category_color
+            })
+
+            # Link from Total to Category
+            links.append({
+                'source': total_node_index,
+                'target': node_index,
+                'value': total,
+                'color': category_color
+            })
+
+            node_index += 1
+
+        # Subcategory nodes and links from Categories to Subcategories
+        for row in subcategory_rows:
+            category_id = row['category_id']
+            category = row['category'] or 'Non catégorisé'
+            subcategory = row['subcategory']
+            category_color = row['category_color'] or '#6b7280'
+            subcategory_color = row['subcategory_color'] or category_color
+            total = float(row['total'])
+
+            if subcategory:
+                # Add subcategory node
+                nodes.append({
+                    'name': subcategory,
+                    'color': subcategory_color
+                })
+
+                # Link from Category to Subcategory
+                links.append({
+                    'source': category_map[category_id],
+                    'target': node_index,
+                    'value': total,
+                    'color': subcategory_color
+                })
+
+                node_index += 1
+
+        return {
+            'nodes': nodes,
+            'links': links,
+            'total': total_spending
+        }
+
+    @staticmethod
     def get_available_years():
         """Get list of years with transactions"""
         conn = get_db_connection()

@@ -176,6 +176,11 @@ export const apiService = {
     return response.data.data
   },
 
+  async getSankeyData(year) {
+    const response = await api.get(`/stats/sankey/${year}`)
+    return response.data.data
+  },
+
   async getYearSummary(year) {
     const response = await api.get(`/stats/summary/${year}`)
     return response.data.data
