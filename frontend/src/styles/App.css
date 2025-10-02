@@ -496,6 +496,9 @@ input:focus, select:focus, textarea:focus {
   width: 100%;
   border-collapse: collapse;
   table-layout: fixed;
+  -moz-user-select: none;
+  -webkit-user-select: none;
+  user-select: none;
 }
 
 .transactions-table th {
@@ -533,6 +536,26 @@ input:focus, select:focus, textarea:focus {
 .transaction-row.selected {
   background-color: #f3e8ff !important;
   border-left: 3px solid #8c70c7;
+  outline: none;
+}
+
+.transaction-row {
+  outline: none;
+  -moz-user-select: none;
+  -webkit-user-select: none;
+  user-select: none;
+}
+
+.transaction-row::-moz-focus-inner {
+  border: 0;
+}
+
+.transaction-row:focus {
+  outline: none;
+}
+
+tr:focus {
+  outline: none;
 }
 
 .transaction-row.selected:hover {
