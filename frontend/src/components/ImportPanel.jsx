@@ -376,10 +376,90 @@ const ImportPanel = ({ onImportSuccess, categories }) => {
     }
   }
 
+  const handleExportCSVTransactions = async () => {
+    try {
+      setExporting(true)
+      const response = await fetch('http://localhost:5000/api/export/csv/transactions')
+      const blob = await response.blob()
+      const url = window.URL.createObjectURL(blob)
+      const a = document.createElement('a')
+      a.href = url
+      a.download = `flooz-transactions-${new Date().toISOString().split('T')[0]}.csv`
+      document.body.appendChild(a)
+      a.click()
+      window.URL.revokeObjectURL(url)
+      document.body.removeChild(a)
+    } catch (error) {
+      console.error('Error exporting CSV transactions:', error)
+      alert('Erreur lors de l\'export CSV des transactions')
+    } finally {
+      setExporting(false)
+    }
+  }
+
+  const handleExportCSVCategories = async () => {
+    try {
+      setExporting(true)
+      const response = await fetch('http://localhost:5000/api/export/csv/categories')
+      const blob = await response.blob()
+      const url = window.URL.createObjectURL(blob)
+      const a = document.createElement('a')
+      a.href = url
+      a.download = `flooz-categories-${new Date().toISOString().split('T')[0]}.csv`
+      document.body.appendChild(a)
+      a.click()
+      window.URL.revokeObjectURL(url)
+      document.body.removeChild(a)
+    } catch (error) {
+      console.error('Error exporting CSV categories:', error)
+      alert('Erreur lors de l\'export CSV des catégories')
+    } finally {
+      setExporting(false)
+    }
+  }
+
   const renderExportPanel = () => {
     return (
       <div className="export-panel">
         <div className="export-section">
+          <div className="export-card">
+            <div className="export-card-icon">📊</div>
+            <h3>Export CSV - Toutes les transactions</h3>
+            <p>Export de toutes les transactions avec leurs détails complets au format CSV.</p>
+            <ul className="export-features">
+              <li>✓ Format CSV standard</li>
+              <li>✓ Toutes les transactions</li>
+              <li>✓ Catégories et sous-catégories</li>
+              <li>✓ Compatible Excel/LibreOffice</li>
+            </ul>
+            <button
+              onClick={handleExportCSVTransactions}
+              disabled={exporting}
+              className="btn btn-primary btn-large"
+            >
+              {exporting ? '⏳ Export en cours...' : '📊 Exporter les transactions (CSV)'}
+            </button>
+          </div>
+
+          <div className="export-card">
+            <div className="export-card-icon">📈</div>
+            <h3>Export CSV - Catégories consolidées</h3>
+            <p>Export consolidé des dépenses par catégorie et sous-catégorie au format CSV.</p>
+            <ul className="export-features">
+              <li>✓ Format CSV standard</li>
+              <li>✓ Montants totaux par catégorie</li>
+              <li>✓ Nombre de transactions</li>
+              <li>✓ Vue synthétique</li>
+            </ul>
+            <button
+              onClick={handleExportCSVCategories}
+              disabled={exporting}
+              className="btn btn-primary btn-large"
+            >
+              {exporting ? '⏳ Export en cours...' : '📈 Exporter les catégories (CSV)'}
+            </button>
+          </div>
+
           <div className="export-card">
             <div className="export-card-icon">💾</div>
             <h3>Sauvegarde complète (Base de données)</h3>

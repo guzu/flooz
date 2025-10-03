@@ -31,6 +31,7 @@ const TransactionList = ({ transactions, categories, subcategories, onUpdate, lo
       date: true,           // obligatoire
       operation_date: true,
       label: true,          // obligatoire
+      notes: true,
       amount: true,         // obligatoire
       category: true,
       subcategory: true
@@ -827,6 +828,11 @@ const TransactionList = ({ transactions, categories, subcategories, onUpdate, lo
                   Libellé {getSortIcon('label')}
                 </th>
               )}
+              {visibleColumns.notes && (
+                <th className="notes-col">
+                  Notes
+                </th>
+              )}
               {visibleColumns.amount && (
                 <th
                   onClick={() => handleSort('amount')}
@@ -877,6 +883,7 @@ const TransactionList = ({ transactions, categories, subcategories, onUpdate, lo
                 onCategorize={() => handleCategorize(transaction)}
                 onDelete={() => handleDelete(transaction.id)}
                 onFilter={handleFilter}
+                onUpdate={onUpdate}
                 isSelected={selectedTransactions.has(transaction.id)}
                 onSelect={handleTransactionSelection}
                 index={index}
@@ -1198,6 +1205,15 @@ const TransactionList = ({ transactions, categories, subcategories, onUpdate, lo
                 />
                 <span>Libellé</span>
                 <small className="required-badge">Obligatoire</small>
+              </label>
+
+              <label className="column-selector-item">
+                <input
+                  type="checkbox"
+                  checked={visibleColumns.notes}
+                  onChange={(e) => setVisibleColumns({...visibleColumns, notes: e.target.checked})}
+                />
+                <span>Notes</span>
               </label>
 
               <label className={`column-selector-item ${!visibleColumns.amount ? 'disabled' : ''}`}>

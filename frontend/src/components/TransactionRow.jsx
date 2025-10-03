@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect, useRef } from 'react'
 import { formatAmount, formatDate, formatDateForInput, getAmountColor } from '../utils/formatters'
 
 const TransactionRow = ({
@@ -8,6 +8,7 @@ const TransactionRow = ({
   onCategorize,
   onDelete,
   onFilter,
+  onUpdate,
   isSelected,
   onSelect,
   index,
@@ -15,6 +16,58 @@ const TransactionRow = ({
   visibleColumns,
 }) => {
   const [contextMenu, setContextMenu] = useState({ visible: false, x: 0, y: 0 })
+  const [notes, setNotes] = useState(transaction.notes || '')
+  const originalNotesRef = useRef(transaction.notes || '')
+  const shouldSaveRef = useRef(true)
+
+  // Sync notes when transaction changes
+  useEffect(() => {
+    setNotes(transaction.notes || '')
+    originalNotesRef.current = transaction.notes || ''
+  }, [transaction.notes])
+
+  const handleNotesFocus = () => {
+    // Store the current value when starting to edit
+    originalNotesRef.current = notes
+    shouldSaveRef.current = true
+  }
+
+  const handleNotesSave = async () => {
+    // Don't save if we're canceling
+    if (!shouldSaveRef.current) {
+      shouldSaveRef.current = true
+      return
+    }
+
+    const trimmedNotes = notes.trim() || null
+    const currentNotes = transaction.notes || null
+
+    if (trimmedNotes !== currentNotes) {
+      try {
+        const { apiService } = await import('../services/api')
+        await apiService.updateTransaction(transaction.id, { notes: trimmedNotes })
+        // Don't call onUpdate() to avoid reloading all transactions
+        // The local state is already updated
+        transaction.notes = trimmedNotes
+      } catch (error) {
+        console.error('Error updating notes:', error)
+        setNotes(transaction.notes || '')
+      }
+    }
+  }
+
+  const handleNotesKeyDown = (e) => {
+    if (e.key === 'Escape') {
+      // Cancel: restore original value and prevent save
+      shouldSaveRef.current = false
+      setNotes(originalNotesRef.current)
+      e.target.blur()
+    } else if (e.key === 'Enter') {
+      // Save and blur
+      shouldSaveRef.current = true
+      e.target.blur()
+    }
+  }
 
   // Close context menu when clicking elsewhere
   useEffect(() => {
@@ -113,12 +166,22 @@ const TransactionRow = ({
         <td className="label-col">
           <div className="label-container">
             <span className="label-text">{transaction.label}</span>
-            {transaction.notes && (
-              <span className="notes-text" title={transaction.notes}>
-                📝 {transaction.notes}
-              </span>
-            )}
           </div>
+        </td>
+      )}
+      {visibleColumns.notes && (
+        <td className="notes-col">
+          <input
+            type="text"
+            value={notes}
+            onChange={(e) => setNotes(e.target.value)}
+            onFocus={handleNotesFocus}
+            onBlur={handleNotesSave}
+            onKeyDown={handleNotesKeyDown}
+            onClick={(e) => e.stopPropagation()}
+            className="notes-input"
+            placeholder="Ajouter une note..."
+          />
         </td>
       )}
       {visibleColumns.amount && (

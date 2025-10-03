@@ -3,6 +3,7 @@ from models.database import get_db_connection
 from config import Config
 import json
 import logging
+import csv
 from datetime import datetime
 
 export_bp = Blueprint('export', __name__)
@@ -115,3 +116,148 @@ def export_json():
         import traceback
         traceback.print_exc()
         return jsonify({'error': 'Failed to export JSON'}), 500
+
+@export_bp.route('/export/csv/transactions', methods=['GET'])
+def export_csv_transactions():
+    """Export all transactions to CSV"""
+    try:
+        logger.info("CSV transactions export requested")
+
+        conn = get_db_connection()
+        cursor = conn.cursor()
+
+        # Export all transactions with category and subcategory names
+        cursor.execute('''
+            SELECT
+                t.date,
+                t.operation_date,
+                t.label,
+                t.amount,
+                c.name as category,
+                s.name as subcategory,
+                t.notes
+            FROM transactions t
+            LEFT JOIN categories c ON t.category_id = c.id
+            LEFT JOIN subcategories s ON t.subcategory_id = s.id
+            ORDER BY t.date DESC
+        ''')
+        transactions = cursor.fetchall()
+        conn.close()
+
+        # Write to temporary CSV file
+        import tempfile
+        import os
+
+        temp_file = tempfile.NamedTemporaryFile(mode='w', delete=False, suffix='.csv', newline='', encoding='utf-8')
+        writer = csv.writer(temp_file)
+
+        # Write header
+        writer.writerow(['Date', 'Date opération', 'Libellé', 'Montant', 'Catégorie', 'Sous-catégorie', 'Notes'])
+
+        # Write data
+        for row in transactions:
+            writer.writerow([
+                row['date'],
+                row['operation_date'] or '',
+                row['label'],
+                row['amount'],
+                row['category'] or 'Non catégorisé',
+                row['subcategory'] or '',
+                row['notes'] or ''
+            ])
+
+        temp_file.close()
+
+        # Send file
+        response = send_file(
+            temp_file.name,
+            as_attachment=True,
+            download_name=f'flooz-transactions-{datetime.now().strftime("%Y-%m-%d")}.csv',
+            mimetype='text/csv'
+        )
+
+        # Clean up temp file after sending
+        @response.call_on_close
+        def cleanup():
+            try:
+                os.unlink(temp_file.name)
+            except:
+                pass
+
+        return response
+
+    except Exception as e:
+        logger.error(f"Error exporting CSV transactions: {str(e)}")
+        import traceback
+        traceback.print_exc()
+        return jsonify({'error': 'Failed to export CSV transactions'}), 500
+
+@export_bp.route('/export/csv/categories', methods=['GET'])
+def export_csv_categories():
+    """Export consolidated spending by category and subcategory to CSV"""
+    try:
+        logger.info("CSV categories export requested")
+
+        conn = get_db_connection()
+        cursor = conn.cursor()
+
+        # Export consolidated data by category and subcategory
+        cursor.execute('''
+            SELECT
+                c.name as category,
+                s.name as subcategory,
+                SUM(t.amount) as total_amount,
+                COUNT(t.id) as transaction_count
+            FROM transactions t
+            LEFT JOIN categories c ON t.category_id = c.id
+            LEFT JOIN subcategories s ON t.subcategory_id = s.id
+            GROUP BY c.name, s.name
+            ORDER BY c.name, s.name
+        ''')
+        consolidated = cursor.fetchall()
+        conn.close()
+
+        # Write to temporary CSV file
+        import tempfile
+        import os
+
+        temp_file = tempfile.NamedTemporaryFile(mode='w', delete=False, suffix='.csv', newline='', encoding='utf-8')
+        writer = csv.writer(temp_file)
+
+        # Write header
+        writer.writerow(['Catégorie', 'Sous-catégorie', 'Montant total', 'Nombre de transactions'])
+
+        # Write data
+        for row in consolidated:
+            writer.writerow([
+                row['category'] or 'Non catégorisé',
+                row['subcategory'] or '-',
+                row['total_amount'],
+                row['transaction_count']
+            ])
+
+        temp_file.close()
+
+        # Send file
+        response = send_file(
+            temp_file.name,
+            as_attachment=True,
+            download_name=f'flooz-categories-{datetime.now().strftime("%Y-%m-%d")}.csv',
+            mimetype='text/csv'
+        )
+
+        # Clean up temp file after sending
+        @response.call_on_close
+        def cleanup():
+            try:
+                os.unlink(temp_file.name)
+            except:
+                pass
+
+        return response
+
+    except Exception as e:
+        logger.error(f"Error exporting CSV categories: {str(e)}")
+        import traceback
+        traceback.print_exc()
+        return jsonify({'error': 'Failed to export CSV categories'}), 500
