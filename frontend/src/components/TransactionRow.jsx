@@ -12,6 +12,7 @@ const TransactionRow = ({
   onSelect,
   index,
   hasMultipleSelected,
+  visibleColumns,
 }) => {
   const [contextMenu, setContextMenu] = useState({ visible: false, x: 0, y: 0 })
 
@@ -98,45 +99,57 @@ const TransactionRow = ({
         onContextMenu={handleRightClick}
         onClick={handleClick}
       >
-      <td className="date-col">
-        {formatDate(transaction.date)}
-      </td>
-      <td className="operation-date-col">
-        {transaction.operation_date ? formatDate(transaction.operation_date) : '-'}
-      </td>
-      <td className="label-col">
-        <div className="label-container">
-          <span className="label-text">{transaction.label}</span>
-          {transaction.notes && (
-            <span className="notes-text" title={transaction.notes}>
-              📝 {transaction.notes}
-            </span>
-          )}
-        </div>
-      </td>
-      <td className="amount-col">
-        <span
-          className="amount-value"
-          style={{ color: getAmountColor(transaction.amount) }}
-        >
-          {formatAmount(transaction.amount)}
-        </span>
-      </td>
-      <td className="category-col">
-        <span
-          className="category-badge"
-          style={{
-            backgroundColor: categoryInfo.color + '20',
-            color: categoryInfo.color,
-            border: `1px solid ${categoryInfo.color}40`
-          }}
-        >
-          {categoryInfo.name}
-        </span>
-      </td>
-      <td className="subcategory-col">
-        {subcategoryInfo.name}
-      </td>
+      {visibleColumns.date && (
+        <td className="date-col">
+          {formatDate(transaction.date)}
+        </td>
+      )}
+      {visibleColumns.operation_date && (
+        <td className="operation-date-col">
+          {transaction.operation_date ? formatDate(transaction.operation_date) : '-'}
+        </td>
+      )}
+      {visibleColumns.label && (
+        <td className="label-col">
+          <div className="label-container">
+            <span className="label-text">{transaction.label}</span>
+            {transaction.notes && (
+              <span className="notes-text" title={transaction.notes}>
+                📝 {transaction.notes}
+              </span>
+            )}
+          </div>
+        </td>
+      )}
+      {visibleColumns.amount && (
+        <td className="amount-col">
+          <span
+            className="amount-value"
+            style={{ color: getAmountColor(transaction.amount) }}
+          >
+            {formatAmount(transaction.amount)}
+          </span>
+        </td>
+      )}
+      {visibleColumns.category && (
+        <td className="category-col">
+          <span
+            className="category-badge"
+            style={{
+              backgroundColor: categoryInfo.color + '20',
+              color: categoryInfo.color,
+              border: `1px solid ${categoryInfo.color}40`
+            }}
+          >
+            {categoryInfo.name}
+          </span>
+        </td>
+      )}
+      {visibleColumns.subcategory && (
+        <td className="subcategory-col">
+          {subcategoryInfo.name}
+        </td>
+      )}
       <td className="actions-col">
         <button
           onClick={handleActionsClick}

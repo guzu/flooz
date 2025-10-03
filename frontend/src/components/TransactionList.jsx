@@ -24,9 +24,26 @@ const TransactionList = ({ transactions, categories, subcategories, onUpdate, lo
   const [selectedSubcategoryForSingle, setSelectedSubcategoryForSingle] = useState('')
   const [selectedTransactions, setSelectedTransactions] = useState(new Set())
   const [lastSelectedIndex, setLastSelectedIndex] = useState(null)
+  const [showColumnSelector, setShowColumnSelector] = useState(false)
+  const [visibleColumns, setVisibleColumns] = useState(() => {
+    const saved = localStorage.getItem('flooz_visible_columns')
+    return saved ? JSON.parse(saved) : {
+      date: true,           // obligatoire
+      operation_date: true,
+      label: true,          // obligatoire
+      amount: true,         // obligatoire
+      category: true,
+      subcategory: true
+    }
+  })
 
   // Cache for Levenshtein distance calculations
   const distanceCache = React.useRef(new Map())
+
+  // Save column preferences to localStorage
+  React.useEffect(() => {
+    localStorage.setItem('flooz_visible_columns', JSON.stringify(visibleColumns))
+  }, [visibleColumns])
 
   // Ref for filter input
   const filterInputRef = React.useRef(null)
@@ -701,44 +718,68 @@ const TransactionList = ({ transactions, categories, subcategories, onUpdate, lo
         <table className="transactions-table">
           <thead>
             <tr>
-              <th
-                onClick={() => handleSort('date')}
-                className="sortable date-col"
-              >
-                Date valeur {getSortIcon('date')}
+              {visibleColumns.date && (
+                <th
+                  onClick={() => handleSort('date')}
+                  className="sortable date-col"
+                >
+                  Date valeur {getSortIcon('date')}
+                </th>
+              )}
+              {visibleColumns.operation_date && (
+                <th
+                  onClick={() => handleSort('operation_date')}
+                  className="sortable operation-date-col"
+                >
+                  Date op. {getSortIcon('operation_date')}
+                </th>
+              )}
+              {visibleColumns.label && (
+                <th
+                  onClick={() => handleSort('label')}
+                  className="sortable label-col"
+                >
+                  Libellé {getSortIcon('label')}
+                </th>
+              )}
+              {visibleColumns.amount && (
+                <th
+                  onClick={() => handleSort('amount')}
+                  className="sortable amount-col"
+                >
+                  Montant {getSortIcon('amount')}
+                </th>
+              )}
+              {visibleColumns.category && (
+                <th
+                  onClick={() => handleSort('category_name')}
+                  className="sortable category-col"
+                >
+                  Catégorie {getSortIcon('category_name')}
+                </th>
+              )}
+              {visibleColumns.subcategory && (
+                <th
+                  onClick={() => handleSort('subcategory_name')}
+                  className="sortable subcategory-col"
+                >
+                  Sous-catégorie {getSortIcon('subcategory_name')}
+                </th>
+              )}
+              <th className="actions-col">
+                Actions
+                <button
+                  className="column-selector-btn"
+                  onClick={() => setShowColumnSelector(!showColumnSelector)}
+                  title="Sélectionner les colonnes à afficher"
+                >
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                    <rect x="3" y="3" width="18" height="18" rx="2"/>
+                    <line x1="9" y1="3" x2="9" y2="21"/>
+                    <line x1="15" y1="3" x2="15" y2="21"/>
+                  </svg>
+                </button>
               </th>
-              <th
-                onClick={() => handleSort('operation_date')}
-                className="sortable operation-date-col"
-              >
-                Date op. {getSortIcon('operation_date')}
-              </th>
-              <th
-                onClick={() => handleSort('label')}
-                className="sortable label-col"
-              >
-                Libellé {getSortIcon('label')}
-              </th>
-              <th
-                onClick={() => handleSort('amount')}
-                className="sortable amount-col"
-              >
-                Montant {getSortIcon('amount')}
-              </th>
-              <th
-                onClick={() => handleSort('category_name')}
-                className="sortable category-col"
-              >
-                Catégorie {getSortIcon('category_name')}
-              </th>
-              <th
-                onClick={() => handleSort('subcategory_name')}
-                className="sortable subcategory-col"
-              >
-                Sous-catégorie {getSortIcon('subcategory_name')}
-              </th>
-              <th className="actions-col"
-	  	>Actions</th>
             </tr>
           </thead>
           <tbody>
@@ -755,6 +796,7 @@ const TransactionList = ({ transactions, categories, subcategories, onUpdate, lo
                 onSelect={handleTransactionSelection}
                 index={index}
                 hasMultipleSelected={selectedTransactions.size > 1}
+                visibleColumns={visibleColumns}
               />
             ))}
           </tbody>
@@ -1030,6 +1072,84 @@ const TransactionList = ({ transactions, categories, subcategories, onUpdate, lo
                 onClick={handleSingleCategorizeSubmit}
               >
                 Catégoriser
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Column Selector Modal */}
+      {showColumnSelector && (
+        <div className="modal-overlay" onClick={() => setShowColumnSelector(false)}>
+          <div className="modal column-selector-modal" onClick={(e) => e.stopPropagation()}>
+            <h3>Colonnes affichées</h3>
+            <div className="column-selector-list">
+              <label className={`column-selector-item ${!visibleColumns.date ? 'disabled' : ''}`}>
+                <input
+                  type="checkbox"
+                  checked={visibleColumns.date}
+                  disabled={true}
+                  readOnly
+                />
+                <span>Date valeur</span>
+                <small className="required-badge">Obligatoire</small>
+              </label>
+
+              <label className="column-selector-item">
+                <input
+                  type="checkbox"
+                  checked={visibleColumns.operation_date}
+                  onChange={(e) => setVisibleColumns({...visibleColumns, operation_date: e.target.checked})}
+                />
+                <span>Date opération</span>
+              </label>
+
+              <label className={`column-selector-item ${!visibleColumns.label ? 'disabled' : ''}`}>
+                <input
+                  type="checkbox"
+                  checked={visibleColumns.label}
+                  disabled={true}
+                  readOnly
+                />
+                <span>Libellé</span>
+                <small className="required-badge">Obligatoire</small>
+              </label>
+
+              <label className={`column-selector-item ${!visibleColumns.amount ? 'disabled' : ''}`}>
+                <input
+                  type="checkbox"
+                  checked={visibleColumns.amount}
+                  disabled={true}
+                  readOnly
+                />
+                <span>Montant</span>
+                <small className="required-badge">Obligatoire</small>
+              </label>
+
+              <label className="column-selector-item">
+                <input
+                  type="checkbox"
+                  checked={visibleColumns.category}
+                  onChange={(e) => setVisibleColumns({...visibleColumns, category: e.target.checked})}
+                />
+                <span>Catégorie</span>
+              </label>
+
+              <label className="column-selector-item">
+                <input
+                  type="checkbox"
+                  checked={visibleColumns.subcategory}
+                  onChange={(e) => setVisibleColumns({...visibleColumns, subcategory: e.target.checked})}
+                />
+                <span>Sous-catégorie</span>
+              </label>
+            </div>
+            <div className="modal-actions">
+              <button
+                className="btn btn-secondary"
+                onClick={() => setShowColumnSelector(false)}
+              >
+                Fermer
               </button>
             </div>
           </div>
