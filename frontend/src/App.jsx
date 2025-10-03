@@ -120,12 +120,13 @@ function App() {
           <div className="stats-container">
             <div className="stats-header">
               <h2>Statistiques</h2>
-              <YearSelector
-                years={availableYears}
-                selectedYear={selectedYear}
-                onYearChange={setSelectedYear}
-              />
             </div>
+            <YearSelector
+              years={availableYears}
+              selectedYear={selectedYear}
+              onYearChange={setSelectedYear}
+              variant="buttons"
+            />
             <div className="charts-grid">
               <div className="chart-section chart-section-full">
                 <h3>Flux des dépenses (Catégories → Sous-catégories)</h3>

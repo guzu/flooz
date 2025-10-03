@@ -282,6 +282,49 @@ body {
   box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
 }
 
+/* Year selector buttons variant */
+.year-selector-buttons {
+  display: flex;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+  margin: 1rem 0 1.5rem 0;
+  padding: 0 1rem;
+  justify-content: center;
+}
+
+.year-button {
+  background: white;
+  border: 2px solid #d1d5db;
+  border-radius: 0.5rem;
+  padding: 0.5rem 1.25rem;
+  color: #374151;
+  font-size: 0.95rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  min-width: 4.5rem;
+}
+
+.year-button:hover {
+  border-color: #8b5cf6;
+  background-color: #f5f3ff;
+  transform: translateY(-1px);
+  box-shadow: 0 2px 8px rgba(139, 92, 246, 0.15);
+}
+
+.year-button.active {
+  background: linear-gradient(135deg, #8b5cf6 0%, #9569f7 100%);
+  color: white;
+  border-color: #8b5cf6;
+  box-shadow: 0 4px 12px rgba(139, 92, 246, 0.3);
+}
+
+.year-button.active:hover {
+  background: linear-gradient(135deg, #7c3aed 0%, #8650e6 100%);
+  transform: translateY(-1px);
+  box-shadow: 0 6px 16px rgba(139, 92, 246, 0.4);
+}
+
 .year-select option {
   color: #1f2937;
 }
