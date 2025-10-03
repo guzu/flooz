@@ -594,7 +594,6 @@ input:focus, select:focus, textarea:focus {
 
 .checkbox-label input {
   padding: 0em 0em;
-  background-color: red;
 }
 
 .filter-checkbox {
@@ -2097,6 +2096,115 @@ tr:focus {
 .category-percentage {
   font-size: 0.875rem;
   color: #6b7280;
+}
+
+/* Comparison View */
+.comparison-selectors {
+  background: white;
+  border-radius: 0.5rem;
+  padding: 1rem 1.5rem;
+  margin-bottom: 2rem;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.year-selectors-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  gap: 2rem;
+  margin-bottom: 1rem;
+}
+
+.year-selectors {
+  display: flex;
+  align-items: flex-end;
+  gap: 2rem;
+}
+
+.year-selector-group {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  min-width: 120px;
+}
+
+.year-selector-group label {
+  font-weight: 600;
+  color: #374151;
+  margin: 0;
+  font-size: 0.875rem;
+}
+
+.vs-label {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: #8b5cf6;
+}
+
+.date-range-toggle {
+  display: flex;
+  align-items: center;
+  margin-bottom: 0.25rem;
+}
+
+.date-range-toggle input[type="checkbox"] {
+  margin-top: 1em;
+}
+
+.month-range-selectors {
+  display: flex;
+  gap: 2rem;
+  justify-content: flex-start;
+  margin-top: 1rem;
+}
+
+.month-selector-group {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  min-width: 150px;
+}
+
+.month-selector-group label {
+  font-weight: 600;
+  color: #374151;
+  margin: 0;
+  font-size: 0.875rem;
+}
+
+.comparison-kpis {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 1rem;
+  margin-bottom: 2rem;
+}
+
+.kpi-card {
+  background: white;
+  border-radius: 0.5rem;
+  padding: 1.5rem;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  text-align: center;
+}
+
+.kpi-label {
+  font-size: 0.875rem;
+  color: #6b7280;
+  margin-bottom: 0.5rem;
+}
+
+.kpi-value {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: #374151;
+}
+
+.kpi-value.positive {
+  color: #10b981;
+}
+
+.kpi-value.negative {
+  color: #ef4444;
 }
 
 /* Responsive design */

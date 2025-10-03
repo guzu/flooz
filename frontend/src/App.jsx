@@ -7,6 +7,7 @@ import MonthlyChart from './components/Charts/MonthlyChart'
 import CategoryChart from './components/Charts/CategoryChart'
 import SankeyChart from './components/Charts/SankeyChart'
 import YearSelector from './components/Charts/YearSelector'
+import ComparisonView from './components/ComparisonView'
 import { apiService } from './services/api'
 
 function App() {
@@ -143,6 +144,10 @@ function App() {
             </div>
           </div>
         )
+      case 'comparison':
+        return (
+          <ComparisonView availableYears={availableYears} />
+        )
       default:
         return (
           <TransactionList
@@ -240,6 +245,13 @@ function App() {
               >
                 <span className="nav-icon">📊</span>
                 {sidebarOpen && <span className="nav-label">Statistiques</span>}
+              </button>
+              <button
+                className={currentView === 'comparison' ? 'active' : ''}
+                onClick={() => setCurrentView('comparison')}
+              >
+                <span className="nav-icon">📈</span>
+                {sidebarOpen && <span className="nav-label">Comparaison</span>}
               </button>
             </div>
             <div className="nav-admin">
