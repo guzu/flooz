@@ -132,12 +132,12 @@ def parse_banque_populaire_line(line):
         raise ValueError(f"Invalid Banque Populaire format: only {len(fields)} fields, expected at least 12")
 
     # Extract fields based on position
-    value_date = fields[0].strip()  # Date de valeur/comptabilisation
+    value_date = fields[0].strip()  # Date de comptabilisation
     beneficiary = fields[1].strip()
     full_label = fields[2].strip()
-    debit_amount_str = fields[8].strip()  # Dépenses (négatif)
-    credit_amount_str = fields[9].strip()  # Crédit (positif)
-    operation_date = fields[11].strip() if len(fields) > 11 else value_date  # Date d'opération
+    debit_amount_str = fields[8].strip()  # Débit (dépenses)
+    credit_amount_str = fields[9].strip()  # Crédit (revenus)
+    operation_date = fields[10].strip() if len(fields) > 10 else value_date  # Date operation (champ 10)
 
     logger.debug(f"Extracted: value_date='{value_date}', operation_date='{operation_date}', beneficiary='{beneficiary}', debit='{debit_amount_str}', credit='{credit_amount_str}'")
 
