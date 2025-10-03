@@ -148,7 +148,7 @@ class Transaction:
         return transactions
 
     @staticmethod
-    def update(transaction_id, date=None, label=None, amount=None, category_id=None, subcategory_id=None, notes=None):
+    def update(transaction_id, date=None, label=None, amount=None, category_id=None, subcategory_id=None, notes='__UNSET__'):
         conn = get_db_connection()
         cursor = conn.cursor()
 
@@ -170,7 +170,7 @@ class Transaction:
         if subcategory_id is not None:
             fields.append('subcategory_id = ?')
             values.append(subcategory_id)
-        if notes is not None:
+        if notes != '__UNSET__':
             fields.append('notes = ?')
             values.append(notes)
 
