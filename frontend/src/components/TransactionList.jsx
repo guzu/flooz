@@ -573,74 +573,88 @@ const TransactionList = ({ transactions, categories, subcategories, onUpdate, lo
           </div>
         </div>
 
-        <div className="filter-section">
-          <div className="filter-group">
-            <label htmlFor="label-filter">Filtrer par libellé :</label>
-            <input
-              ref={filterInputRef}
-              id="label-filter"
-              type="text"
-              value={labelFilter}
-              onChange={(e) => setLabelFilter(e.target.value)}
-              placeholder={useFuzzyMatching ? "Recherche intelligente (tolère les fautes de frappe)..." : "Rechercher dans les libellés..."}
-              className="filter-input"
-            />
-            {labelFilter.trim() && (
-              <>
-                <button
-                  className="btn btn-outline btn-sm"
-                  onClick={() => setLabelFilter('')}
-                  title="Effacer le filtre"
-                >
-                  ✕
-                </button>
-                <button
-                  className="btn btn-primary btn-sm"
-                  onClick={handleCreateRule}
-                  title="Créer une règle de catégorisation automatique"
-                >
-                  ➕
-                </button>
-              </>
-            )}
+        <div className="filter-section-wrapper">
+          <div className="filter-section">
+            <div className="filter-group">
+              <label htmlFor="label-filter">Filtrer par libellé :</label>
+              <input
+                ref={filterInputRef}
+                id="label-filter"
+                type="text"
+                value={labelFilter}
+                onChange={(e) => setLabelFilter(e.target.value)}
+                placeholder={useFuzzyMatching ? "Recherche intelligente (tolère les fautes de frappe)..." : "Rechercher dans les libellés..."}
+                className="filter-input"
+              />
+              {labelFilter.trim() && (
+                <>
+                  <button
+                    className="btn btn-outline btn-sm"
+                    onClick={() => setLabelFilter('')}
+                    title="Effacer le filtre"
+                  >
+                    ✕
+                  </button>
+                  <button
+                    className="btn btn-primary btn-sm create-rule-btn"
+                    onClick={handleCreateRule}
+                    title="Créer une règle de catégorisation automatique"
+                  >
+                    ➕
+                  </button>
+                </>
+              )}
+            </div>
+            <div className="filter-options">
+              <label className="checkbox-label">
+                <input
+                  type="checkbox"
+                  checked={useFuzzyMatching}
+                  onChange={(e) => setUseFuzzyMatching(e.target.checked)}
+                  className="filter-checkbox"
+                />
+                <span>Recherche floue</span>
+                <small className="checkbox-hint">
+                  Permet de trouver "CARREFOUR" en tapant "crfr"
+                </small>
+              </label>
+              <label className="checkbox-label">
+                <input
+                  type="checkbox"
+                  checked={showAllHistory}
+                  onChange={(e) => setShowAllHistory(e.target.checked)}
+                  className="filter-checkbox"
+                />
+                <span>Tout l'historique</span>
+                <small className="checkbox-hint">
+                  Rechercher dans toutes les années
+                </small>
+              </label>
+              <label className="checkbox-label">
+                <input
+                  type="checkbox"
+                  checked={showOnlyUncategorized}
+                  onChange={(e) => setShowOnlyUncategorized(e.target.checked)}
+                  className="filter-checkbox"
+                />
+                <span>Non catégorisées uniquement</span>
+                <small className="checkbox-hint">
+                  Afficher seulement les transactions sans catégorie
+                </small>
+              </label>
+            </div>
           </div>
-          <div className="filter-options">
-            <label className="checkbox-label">
-              <input
-                type="checkbox"
-                checked={useFuzzyMatching}
-                onChange={(e) => setUseFuzzyMatching(e.target.checked)}
-                className="filter-checkbox"
-              />
-              <span>Recherche intelligente</span>
-              <small className="checkbox-hint">
-                Trouve "CARREFOUR" avec "carr", "carrefur", etc.
-              </small>
-            </label>
-            <label className="checkbox-label">
-              <input
-                type="checkbox"
-                checked={showAllHistory}
-                onChange={(e) => setShowAllHistory(e.target.checked)}
-                className="filter-checkbox"
-              />
-              <span>Tout l'historique</span>
-              <small className="checkbox-hint">
-                Rechercher dans toutes les années
-              </small>
-            </label>
-            <label className="checkbox-label">
-              <input
-                type="checkbox"
-                checked={showOnlyUncategorized}
-                onChange={(e) => setShowOnlyUncategorized(e.target.checked)}
-                className="filter-checkbox"
-              />
-              <span>Non catégorisées uniquement</span>
-              <small className="checkbox-hint">
-                Afficher seulement les transactions sans catégorie
-              </small>
-            </label>
+          <div className="add-transaction-wrapper">
+            <button
+              className="btn btn-success btn-sm add-transaction-btn"
+              onClick={() => setShowAddTransactionModal(true)}
+              title="Ajouter une transaction manuellement"
+            >
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                <line x1="12" y1="5" x2="12" y2="19"></line>
+                <line x1="5" y1="12" x2="19" y2="12"></line>
+              </svg>
+            </button>
           </div>
         </div>
 
