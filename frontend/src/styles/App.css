@@ -487,9 +487,7 @@ input:focus, select:focus, textarea:focus {
 
 /* Filter Section */
 .filter-section {
-  padding: 0.75rem;
   background-color: #f9fafb;
-  border-bottom: 1px solid #e5e7eb;
 }
 
 .filter-group {
@@ -523,6 +521,50 @@ input:focus, select:focus, textarea:focus {
   box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
 }
 
+.filter-section-wrapper {
+  display: flex;
+  align-items: stretch;
+  gap: 1rem;
+  background-color: #f9fafb;
+  padding: 0.5rem;
+  border-radius: 0.375rem;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.filter-section {
+  background-color: #f9fafb;
+}
+
+.add-transaction-wrapper {
+  flex: 1;
+  display: flex;
+  justify-content: flex-end;
+  align-items: flex-end;
+  padding: 0.5rem;
+  background-color: #f9fafb;
+  border-radius: 0.375rem;
+}
+
+.add-transaction-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 2rem;
+  height: 2rem;
+  padding: 0;
+  border-radius: 0.375rem;
+  background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+  border: none;
+  color: white;
+  transition: all 0.2s ease;
+}
+
+.add-transaction-btn:hover {
+  background: linear-gradient(135deg, #059669 0%, #047857 100%);
+  transform: scale(1.05);
+  box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
+}
+
 .btn.create-rule-btn {
   margin-left: 2em !important;
   background-color: #4caf5082 !important;
@@ -548,6 +590,11 @@ input:focus, select:focus, textarea:focus {
   font-size: 0.875rem;
   color: #374151;
   margin: 0;
+}
+
+.checkbox-label input {
+  padding: 0em 0em;
+  background-color: red;
 }
 
 .filter-checkbox {

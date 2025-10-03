@@ -88,7 +88,8 @@ def create_transaction():
             category_id=data.get('category_id'),
             subcategory_id=data.get('subcategory_id'),
             hash=transaction_hash,
-            notes=data.get('notes')
+            notes=data.get('notes'),
+            operation_date=data.get('operation_date')
         )
 
         return jsonify({
