@@ -7,9 +7,19 @@
 
 Flooz est une application web simple et rapide pour suivre vos dépenses.<br>
 Import automatique depuis vos relevés bancaires, catégorisation intelligente, et visualisations claires pour comprendre où va votre argent.
+<br><br>
+
+<div align="center">
+  <img src="img/screenshot-transactions.png" alt="Transactions" width="20%" />
+  <img src="img/screenshot-stats1.png" alt="Statistiques 1" width="20%" />
+  <img src="img/screenshot-stat2.png" alt="Statistiques 2" width="20%" />
+  <img src="img/screenshot-category.png" alt="Categories" width="20%" />
+  <br>
+  Look'n feel général
+</div>
 
 ## KISS (keep-it-simple-stupid) 🧘
-- Installation en une commande
+- Installation et utilisation en une commande
 - Base de données SQLite en **un seul fichier** (facile à sauvegarder)
 - Pas de login et de gestion multi-utilisateur
   - Facilement partageable sur un NAS ou un petit serveur à la maison
