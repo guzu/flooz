@@ -4,7 +4,10 @@ import YearSelector from './Charts/YearSelector'
 import { apiService } from '../services/api'
 
 const TransactionList = ({ transactions, categories, subcategories, onUpdate, loading, availableYears, selectedYear, onYearChange, onLoadAllTransactions }) => {
-  const [sortConfig, setSortConfig] = useState({ key: 'date', direction: 'desc' })
+  const [sortConfig, setSortConfig] = useState(() => {
+    const saved = localStorage.getItem('flooz_sort_config')
+    return saved ? JSON.parse(saved) : { key: 'date', direction: 'desc' }
+  })
   const [labelFilter, setLabelFilter] = useState('')
   const [useFuzzyMatching, setUseFuzzyMatching] = useState(false)
   const [showRuleModal, setShowRuleModal] = useState(false)
@@ -56,6 +59,11 @@ const TransactionList = ({ transactions, categories, subcategories, onUpdate, lo
   React.useEffect(() => {
     localStorage.setItem('flooz_visible_columns', JSON.stringify(visibleColumns))
   }, [visibleColumns])
+
+  // Save sort configuration to localStorage
+  React.useEffect(() => {
+    localStorage.setItem('flooz_sort_config', JSON.stringify(sortConfig))
+  }, [sortConfig])
 
   // Ref for filter input
   const filterInputRef = React.useRef(null)
