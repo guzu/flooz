@@ -1,7 +1,17 @@
 #!/bin/bash
 
 # Script de démarrage complet de Flooz
-echo "🚀 Démarrage de Flooz..."
+# Usage: ./start.sh [--network]
+
+# Check for --network flag
+NETWORK_MODE=""
+if [ "$1" = "--network" ]; then
+    NETWORK_MODE="--network"
+    echo "🌐 Démarrage de Flooz en mode réseau (accessible depuis le LAN)..."
+else
+    echo "🚀 Démarrage de Flooz (localhost uniquement)..."
+    echo "💡 Utilisez './start.sh --network' pour permettre l'accès depuis le réseau local."
+fi
 
 # Vérifier que les dépendances sont installées
 if [ ! -d "backend/venv" ]; then
@@ -39,7 +49,8 @@ source venv/bin/activate
 echo "🔧 Vérification/initialisation de la base de données..."
 python init_db.py
 
-python app.py &
+# Start backend with optional --network flag
+python app.py $NETWORK_MODE &
 BACKEND_PID=$!
 cd ..
 
@@ -55,13 +66,27 @@ fi
 
 echo "🎨 Démarrage du frontend..."
 cd frontend
-npm run dev &
+if [ -n "$NETWORK_MODE" ]; then
+    npm run dev -- --host 0.0.0.0 &
+else
+    npm run dev &
+fi
 FRONTEND_PID=$!
 cd ..
 
 echo ""
 echo "✅ Flooz démarré avec succès !"
 echo ""
+if [ -n "$NETWORK_MODE" ]; then
+    # Get local IP address
+    LOCAL_IP=$(hostname -I 2>/dev/null | awk '{print $1}' || echo "VOTRE_IP")
+    echo "🌐 Mode réseau activé !"
+    echo "📱 Accessible depuis le réseau local :"
+    echo "   - Interface web : http://$LOCAL_IP:3000"
+    echo "   - API backend   : http://$LOCAL_IP:5000"
+    echo ""
+    echo "🏠 Également accessible localement :"
+fi
 echo "🌐 Interface web : http://localhost:3000"
 echo "📡 API backend  : http://localhost:5000"
 echo ""

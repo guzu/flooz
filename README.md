@@ -63,6 +63,14 @@ cd flooz
 
 L'application sera accessible sur : http://localhost:3000
 
+### Partage sur le Réseau Local 🌐
+
+Pour permettre l'accès depuis d'autres appareils sur votre réseau local :
+```bash
+./start.sh --network
+```
+
+⚠️ **Note** : Recommandé uniquement pour un réseau local de confiance.
 
 ## Déploiement Docker 📦
 

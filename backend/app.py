@@ -1,3 +1,5 @@
+import os
+import sys
 from flask import Flask
 from flask_cors import CORS
 from config import Config
@@ -28,4 +30,14 @@ def create_app():
 
 if __name__ == '__main__':
     app = create_app()
-    app.run(debug=True, port=5000)
+
+    # Check for --network flag for LAN access
+    host = '127.0.0.1'  # Default: localhost only
+    if '--network' in sys.argv:
+        host = '0.0.0.0'  # Listen on all interfaces
+        print(f"🌐 Server starting on {host}:5000 (network mode - accessible from LAN)")
+    else:
+        print(f"🏠 Server starting on {host}:5000 (localhost only)")
+        print(f"💡 Use '--network' flag to allow LAN access: python app.py --network")
+
+    app.run(host=host, debug=True, port=5000)
