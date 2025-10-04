@@ -2,8 +2,10 @@ import sqlite3
 from config import Config
 
 def get_db_connection():
-    conn = sqlite3.connect(Config.DB_PATH)
+    conn = sqlite3.connect(Config.DB_PATH, timeout=30.0)
     conn.row_factory = sqlite3.Row
+    # Enable WAL mode for better concurrency
+    conn.execute('PRAGMA journal_mode=WAL')
     return conn
 
 def init_db():

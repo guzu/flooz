@@ -13,7 +13,7 @@ logger = logging.getLogger(__name__)
 
 def parse_date(date_str):
     """Parse date from various formats"""
-    formats = ['%Y-%m-%d', '%d/%m/%Y', '%m/%d/%Y']
+    formats = ['%Y-%m-%d', '%d/%m/%Y', '%m/%d/%Y', '%d/%m/%y', '%m/%d/%y']
 
     for fmt in formats:
         try:
@@ -165,6 +165,150 @@ def parse_banque_populaire_line(line):
         'label': label,
         'amount': amount
     }
+
+def parse_qif(file_content):
+    """Parse QIF (Quicken Interchange Format) file
+
+    QIF format uses markers:
+    !Type:Bank or !Type:CCard
+    D - Date (MM/DD/YYYY or DD/MM/YYYY)
+    T - Transaction amount
+    P - Payee (label)
+    M - Memo (notes)
+    ^ - End of transaction
+    """
+    logger.info("Parsing QIF format")
+
+    transactions = []
+    current_transaction = {}
+
+    lines = file_content.split('\n')
+
+    for line_num, line in enumerate(lines, start=1):
+        line = line.strip()
+
+        if not line:
+            continue
+
+        # Skip header
+        if line.startswith('!Type:'):
+            logger.info(f"QIF type: {line}")
+            continue
+
+        # End of transaction marker
+        if line == '^':
+            if current_transaction:
+                transactions.append(current_transaction)
+                current_transaction = {}
+            continue
+
+        # Parse field
+        if len(line) < 2:
+            continue
+
+        marker = line[0]
+        value = line[1:].strip()
+
+        if marker == 'D':
+            # Date
+            current_transaction['date'] = value
+        elif marker == 'T':
+            # Amount
+            current_transaction['amount'] = value
+        elif marker == 'P':
+            # Payee (label)
+            current_transaction['label'] = value
+        elif marker == 'M':
+            # Memo (notes)
+            current_transaction['memo'] = value
+        elif marker == 'N':
+            # Check number or reference (ignore for now)
+            pass
+        elif marker == 'C':
+            # Cleared status (ignore for now)
+            pass
+
+    logger.info(f"Parsed {len(transactions)} transactions from QIF")
+    return transactions
+
+def import_qif(file_content):
+    """Import transactions from QIF content"""
+    logger.info("Starting QIF import")
+
+    results = {
+        'imported': 0,
+        'duplicates': 0,
+        'errors': [],
+        'format': 'qif'
+    }
+
+    try:
+        transactions = parse_qif(file_content)
+
+        for idx, txn_data in enumerate(transactions, start=1):
+            try:
+                # Validate required fields
+                if 'date' not in txn_data or 'amount' not in txn_data:
+                    results['errors'].append(f"Transaction {idx}: Missing date or amount")
+                    continue
+
+                # Parse date
+                date = parse_date(txn_data['date'])
+
+                # Parse amount (remove commas and convert)
+                amount_str = txn_data['amount'].replace(',', '')
+                amount = float(amount_str)
+
+                # QIF uses negative for expenses (withdrawals), positive for income (deposits)
+                # We need to invert: positive = expense, negative = income
+                amount = -amount
+
+                # Use payee as label, or "Transaction" if missing
+                label = txn_data.get('label', 'Transaction').strip()
+                if not label:
+                    label = 'Transaction'
+
+                # Get memo as notes
+                notes = txn_data.get('memo', '').strip() or None
+
+                # Calculate hash
+                transaction_hash = calculate_transaction_hash(date, label, amount)
+
+                # Check duplicates
+                if Transaction.exists_by_hash(transaction_hash):
+                    results['duplicates'] += 1
+                    continue
+
+                # Auto-detect category
+                category_id = detect_category(label)
+
+                # Create transaction
+                Transaction.create(
+                    date=date,
+                    label=label,
+                    amount=amount,
+                    category_id=category_id,
+                    hash=transaction_hash,
+                    notes=notes,
+                    operation_date=None
+                )
+
+                results['imported'] += 1
+
+            except ValueError as e:
+                logger.warning(f"ValueError on transaction {idx}: {str(e)}")
+                results['errors'].append(f"Transaction {idx}: {str(e)}")
+            except Exception as e:
+                logger.error(f"Unexpected error on transaction {idx}: {str(e)}")
+                results['errors'].append(f"Transaction {idx}: Unexpected error - {str(e)}")
+
+    except Exception as e:
+        logger.error(f"QIF parsing error: {str(e)}")
+        results['errors'].append(f"QIF parsing error: {str(e)}")
+
+    logger.info(f"QIF import completed: {results['imported']} imported, {results['duplicates']} duplicates, {len(results['errors'])} errors")
+
+    return results
 
 def import_csv(file_content, bank_type='auto'):
     """Import transactions from CSV content

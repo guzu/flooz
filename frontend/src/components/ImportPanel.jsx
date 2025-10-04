@@ -12,13 +12,16 @@ const ImportPanel = ({ onImportSuccess, categories }) => {
   const [exporting, setExporting] = useState(false)
 
   const handleFileSelect = (file) => {
-    if (file && file.type === 'text/csv') {
+    const isCSV = file && file.name.toLowerCase().endsWith('.csv')
+    const isQIF = file && file.name.toLowerCase().endsWith('.qif')
+
+    if (isCSV || isQIF) {
       setSelectedFile(file)
       setImportResult(null)
       setValidation(null)
-      loadValidation(file)
+      loadValidation(file, isQIF ? 'qif' : 'csv')
     } else {
-      alert('Veuillez sélectionner un fichier CSV valide')
+      alert('Veuillez sélectionner un fichier CSV ou QIF valide')
     }
   }
 
@@ -46,9 +49,31 @@ const ImportPanel = ({ onImportSuccess, categories }) => {
     }
   }
 
-  const loadValidation = async (file) => {
+  const loadValidation = async (file, fileType = 'csv') => {
     try {
-      const validationData = await apiService.validateCsv(file, bankType)
+      let validationData
+      if (fileType === 'qif') {
+        // Validate QIF file
+        const formData = new FormData()
+        formData.append('file', file)
+
+        const response = await fetch('http://localhost:5000/api/import/validate-qif', {
+          method: 'POST',
+          body: formData
+        })
+
+        const data = await response.json()
+
+        if (data.success) {
+          validationData = data.data
+        } else {
+          throw new Error(data.error || 'Erreur lors de la validation QIF')
+        }
+      } else {
+        // Validate CSV file
+        validationData = await apiService.validateCsv(file, bankType)
+      }
+
       setValidation(validationData)
     } catch (error) {
       console.error('Error loading validation:', error)
@@ -95,6 +120,8 @@ const ImportPanel = ({ onImportSuccess, categories }) => {
 
     try {
       setImporting(true)
+
+      // Import validated transactions (works for both CSV and QIF)
       const result = await apiService.importValidatedTransactions(validation.transactions)
       setImportResult(result)
 
@@ -167,18 +194,31 @@ const ImportPanel = ({ onImportSuccess, categories }) => {
     }
 
     const stats = getImportStats()
-    const importSuccessful = importResult && importResult.imported > 0 && (!importResult.errors || importResult.errors.length === 0)
+    const hasImportedTransactions = importResult && importResult.imported > 0
+    const hasErrors = importResult && importResult.errors && importResult.errors.length > 0
+    const hasDuplicates = importResult && importResult.duplicates > 0
+    const hasIssues = hasErrors || hasDuplicates
+
+    const formatLabel = validation.format === 'qif' ? 'QIF' : 'CSV'
 
     return (
       <div className="validation-section">
-        {importSuccessful && (
-          <div className="import-success-banner">
-            ✅ Import terminé avec succès ! {importResult.imported} transaction(s) importée(s).
+        {hasImportedTransactions && (
+          <div className={`import-success-banner ${hasIssues ? 'with-errors' : ''}`}>
+            {hasIssues ? (
+              <>
+                ⚠️ Import terminé avec {importResult.imported} transaction(s) importée(s)
+                {hasDuplicates && <>, {importResult.duplicates} doublon(s) ignoré(s)</>}
+                {hasErrors && <>, {importResult.errors.length} erreur(s)</>}.
+              </>
+            ) : (
+              <>✅ Import terminé avec succès ! {importResult.imported} transaction(s) importée(s).</>
+            )}
           </div>
         )}
-        <div className={`validation-content ${importSuccessful ? 'disabled' : ''}`}>
+        <div className={`validation-content ${hasImportedTransactions ? 'disabled' : ''}`}>
         <div className="validation-header">
-          <h3>✅ Validation des transactions</h3>
+          <h3>✅ Validation des transactions ({formatLabel})</h3>
           <div className="validation-stats">
             <span className="stat-badge total">{stats.total} total</span>
             <span className="stat-badge success">{stats.toImport} à importer</span>
@@ -276,7 +316,7 @@ const ImportPanel = ({ onImportSuccess, categories }) => {
         <div className="import-actions">
           <button
             onClick={handleImport}
-            disabled={importing || stats.toImport === 0 || importSuccessful}
+            disabled={importing || stats.toImport === 0 || hasImportedTransactions}
             className="btn btn-primary btn-large"
           >
             {importing ? '⏳ Import en cours...' : `📥 Importer ${stats.toImport} transaction(s)`}
@@ -570,7 +610,7 @@ const ImportPanel = ({ onImportSuccess, categories }) => {
         ) : (
           <div className="file-drop-content">
             <span className="drop-icon">📁</span>
-            <p>Glissez-déposez votre fichier CSV ici</p>
+            <p>Glissez-déposez votre fichier CSV ou QIF ici</p>
             <p>ou</p>
             <label htmlFor="csv-file-input" className="btn btn-primary">
               Sélectionner un fichier
@@ -578,7 +618,7 @@ const ImportPanel = ({ onImportSuccess, categories }) => {
             <input
               id="csv-file-input"
               type="file"
-              accept=".csv"
+              accept=".csv,.qif"
               onChange={handleFileChange}
               style={{ display: 'none' }}
             />

@@ -1,5 +1,5 @@
 from flask import Blueprint, request, jsonify
-from services.import_service import import_csv
+from services.import_service import import_csv, import_qif
 import logging
 
 import_bp = Blueprint('import', __name__)
@@ -74,6 +74,122 @@ def import_csv_file():
             'error': str(e)
         }), 500
 
+@import_bp.route('/import/validate-qif', methods=['POST'])
+def validate_qif():
+    """Validate QIF content with categorization and duplicate detection"""
+    logger.info("QIF validation request received")
+
+    try:
+        # Check if file is present
+        if 'file' not in request.files:
+            return jsonify({'success': False, 'error': 'No file provided'}), 400
+
+        file = request.files['file']
+
+        if file.filename == '':
+            return jsonify({'success': False, 'error': 'No file selected'}), 400
+
+        if not file.filename.lower().endswith('.qif'):
+            return jsonify({'success': False, 'error': 'Invalid file type. Only QIF files are allowed.'}), 400
+
+        # Read file content
+        file_content = file.read().decode('utf-8')
+
+        logger.info(f"Validating QIF file: {file.filename}")
+
+        # Import service functions
+        from services.import_service import parse_qif, parse_date, detect_category
+        from models.transaction import Transaction
+        from utils.hash_utils import calculate_transaction_hash
+
+        validated_transactions = []
+        errors = []
+
+        # Parse QIF
+        try:
+            transactions = parse_qif(file_content)
+
+            for idx, txn_data in enumerate(transactions, start=1):
+                try:
+                    # Validate required fields
+                    if 'date' not in txn_data or 'amount' not in txn_data:
+                        errors.append(f"Transaction {idx}: Missing date or amount")
+                        continue
+
+                    # Parse date
+                    date = parse_date(txn_data['date'])
+
+                    # Parse amount
+                    amount_str = txn_data['amount'].replace(',', '')
+                    amount = float(amount_str)
+                    # Invert for our convention
+                    amount = -amount
+
+                    # Label
+                    label = txn_data.get('label', 'Transaction').strip()
+                    if not label:
+                        label = 'Transaction'
+
+                    # Notes
+                    notes = txn_data.get('memo', '').strip() or None
+
+                    # Calculate hash
+                    transaction_hash = calculate_transaction_hash(date, label, amount)
+
+                    # Check for duplicate
+                    is_duplicate = Transaction.exists_by_hash(transaction_hash)
+
+                    # Auto-detect category
+                    category_id = detect_category(label)
+
+                    validated_transactions.append({
+                        'row_num': idx,
+                        'date': date,
+                        'operation_date': None,
+                        'label': label,
+                        'amount': amount,
+                        'notes': notes,
+                        'category_id': category_id,
+                        'hash': transaction_hash,
+                        'is_duplicate': is_duplicate
+                    })
+
+                except Exception as e:
+                    logger.warning(f"Error parsing transaction {idx}: {str(e)}")
+                    errors.append(f"Transaction {idx}: {str(e)}")
+
+        except Exception as e:
+            logger.error(f"Error parsing QIF: {str(e)}")
+            return jsonify({
+                'success': False,
+                'error': f"Error parsing QIF: {str(e)}"
+            }), 400
+
+        logger.info(f"QIF validation completed: {len(validated_transactions)} transactions, {len(errors)} errors")
+
+        return jsonify({
+            'success': True,
+            'data': {
+                'transactions': validated_transactions,
+                'errors': errors,
+                'format': 'qif'
+            }
+        }), 200
+
+    except UnicodeDecodeError as e:
+        logger.error(f"Unicode decode error: {str(e)}")
+        return jsonify({
+            'success': False,
+            'error': 'Invalid file encoding. Please use UTF-8 encoded QIF files.'
+        }), 400
+
+    except Exception as e:
+        logger.error(f"Unexpected error during QIF validation: {str(e)}", exc_info=True)
+        return jsonify({
+            'success': False,
+            'error': str(e)
+        }), 500
+
 @import_bp.route('/import/validated', methods=['POST'])
 def import_validated_transactions():
     """Import validated transactions with custom categories"""
@@ -102,6 +218,12 @@ def import_validated_transactions():
                         duplicates += 1
                     continue
 
+                # Double-check for duplicate (in case hash already exists)
+                if Transaction.exists_by_hash(txn['hash']):
+                    duplicates += 1
+                    logger.warning(f"Skipping duplicate transaction: {txn.get('label', 'Unknown')}")
+                    continue
+
                 # Create transaction
                 Transaction.create(
                     date=txn['date'],
@@ -109,15 +231,21 @@ def import_validated_transactions():
                     amount=txn['amount'],
                     category_id=txn.get('category_id'),
                     hash=txn['hash'],
-                    notes=None,
+                    notes=txn.get('notes'),
                     operation_date=txn.get('operation_date')
                 )
 
                 imported += 1
 
             except Exception as e:
-                logger.error(f"Error importing transaction: {str(e)}")
-                errors.append(f"Row {txn.get('row_num', '?')}: {str(e)}")
+                error_msg = str(e)
+                # Check if it's a duplicate error
+                if 'UNIQUE constraint failed' in error_msg:
+                    duplicates += 1
+                    logger.warning(f"Duplicate detected during insert: {txn.get('label', 'Unknown')}")
+                else:
+                    logger.error(f"Error importing transaction: {error_msg}")
+                    errors.append(f"Row {txn.get('row_num', '?')}: {error_msg}")
 
         logger.info(f"Import completed: {imported} imported, {duplicates} duplicates, {len(errors)} errors")
 
