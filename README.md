@@ -24,8 +24,9 @@ Import automatique depuis vos relevés bancaires, catégorisation intelligente, 
 - Pas de login et de gestion multi-utilisateur
   - Facilement partageable sur un NAS ou un petit serveur à la maison
 - **Import** "intelligent" et catégorisation automatique
-  - Glissez-déposez vos fichiers CSV bancaires
-  - Création de règle de catégorisation pour les futurs imports
+  - Glissez-déposez vos fichiers CSV ou QIF bancaires
+  - Prévisualisation avant import avec modification des catégories
+  - Création de règles de catégorisation pour les futurs imports
   - Détection automatique des doublons
 - **Catégorisation**
   - Sous-catégories pour plus de précision
@@ -33,6 +34,11 @@ Import automatique depuis vos relevés bancaires, catégorisation intelligente, 
 - **Visualisations claires**
   - Diagramme de répartition des catégories
   - Graphiques mensuels et par catégorie
+  - Comparaison inter-annuelle avec périodes personnalisables
+- **Export de données**
+  - Export CSV : toutes les transactions ou consolidation par catégorie
+  - Export JSON complet avec toutes les données
+  - Export binaire SQLite pour sauvegarde
 
 ## DISCLAIMER ⚠️
  Flooz est entierement ***viber-codé***, et je n'ai aucune compétence particulière dans les technos utilisées...<br>

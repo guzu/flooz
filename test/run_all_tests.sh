@@ -54,15 +54,30 @@ echo "🧪 Running Stats Tests..."
 echo
 echo
 
+echo "🧪 Running Subcategories Tests..."
+cd backend && python3 test_subcategories.py
+cd ..
+echo
+echo
+
+echo "🧪 Running Comprehensive Tests (QIF, CSV exports, notes, duplicates)..."
+cd backend && python3 test_comprehensive.py
+cd ..
+echo
+echo
+
 echo "=========================================="
 echo "✅ All tests completed!"
 echo "=========================================="
 echo
 echo "📊 Test Summary:"
 echo "- Transaction endpoints: CRUD operations, filtering, duplicates"
-echo "- Category endpoints: CRUD operations, rules management"
-echo "- Import endpoints: CSV upload, preview, validation, error handling"
+echo "- Category endpoints: CRUD operations, rules management, subcategories"
+echo "- Import endpoints: CSV upload, QIF upload, preview, validation, error handling"
 echo "- Stats endpoints: Monthly, category, and year summary statistics"
+echo "- Export endpoints: CSV (transactions & categories), JSON, database"
+echo "- Notes field: Create, update, clear notes on transactions"
+echo "- Duplicate detection: Enhanced hash-based duplicate prevention"
 echo
 echo "Check the output above for any errors or failures."
 echo "All endpoints should return JSON responses with 'success': true"

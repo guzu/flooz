@@ -15,15 +15,17 @@ flooz/
 │   │
 │   ├── services/
 │   │   ├── __init__.py
-│   │   ├── import_service.py      # Import CSV + détection doublons
+│   │   ├── import_service.py      # Import CSV/QIF + détection doublons
 │   │   ├── category_service.py    # Gestion catégories & règles
 │   │   └── stats_service.py       # Calculs pour graphiques
 │   │
 │   ├── routes/
 │   │   ├── __init__.py
-│   │   ├── transactions.py        # CRUD transactions
+│   │   ├── transactions.py        # CRUD transactions avec notes
 │   │   ├── categories.py          # CRUD catégories
-│   │   ├── import_routes.py       # Import fichiers
+│   │   ├── subcategories.py       # CRUD sous-catégories
+│   │   ├── import_routes.py       # Import CSV/QIF avec validation
+│   │   ├── export_routes.py       # Export DB/JSON/CSV
 │   │   └── stats.py               # Stats pour graphiques
 │   │
 │   └── utils/
@@ -40,16 +42,17 @@ flooz/
 │   │   ├── App.jsx                # Composant principal
 │   │   │
 │   │   ├── components/
-│   │   │   ├── TransactionList.jsx      # Liste avec sélection multiple et filtres
-│   │   │   ├── TransactionRow.jsx       # Ligne avec catégorisation
-│   │   │   ├── ImportPanel.jsx          # Upload CSV
+│   │   │   ├── TransactionList.jsx      # Liste avec sélection multiple, filtres, notes éditables
+│   │   │   ├── TransactionRow.jsx       # Ligne avec catégorisation et notes inline
+│   │   │   ├── ImportPanel.jsx          # Upload CSV/QIF avec prévisualisation
 │   │   │   ├── CategoryManager.jsx      # Gestion catégories
 │   │   │   ├── RulesManager.jsx         # Gestion règles catégorisation
+│   │   │   ├── ComparisonView.jsx       # Comparaison inter-annuelle
 │   │   │   └── Charts/
 │   │   │       ├── MonthlyChart.jsx     # Graph par mois
 │   │   │       ├── CategoryChart.jsx    # Graph par catégorie
 │   │   │       ├── SankeyChart.jsx      # Diagramme de Sankey (flux catégories → sous-catégories)
-│   │   │       └── YearSelector.jsx     # Sélecteur année
+│   │   │       └── YearSelector.jsx     # Sélecteur année (dropdown ou boutons)
 │   │   │
 │   │   ├── services/
 │   │   │   └── api.js             # Appels API backend
@@ -133,18 +136,22 @@ flooz/
 CREATE TABLE transactions (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     date DATE NOT NULL,
+    operation_date DATE,
     label TEXT NOT NULL,
     amount REAL NOT NULL,
     category_id INTEGER,
+    subcategory_id INTEGER,
     hash TEXT UNIQUE NOT NULL,
     notes TEXT,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    FOREIGN KEY (category_id) REFERENCES categories(id)
+    FOREIGN KEY (category_id) REFERENCES categories(id),
+    FOREIGN KEY (subcategory_id) REFERENCES subcategories(id)
 );
 
 CREATE INDEX idx_date ON transactions(date);
 CREATE INDEX idx_hash ON transactions(hash);
 CREATE INDEX idx_category ON transactions(category_id);
+CREATE INDEX idx_subcategory ON transactions(subcategory_id);
 ```
 
 ### Table: categories
@@ -167,6 +174,19 @@ INSERT INTO categories (name, color) VALUES
     ('Non catégorisé', '#6b7280');
 ```
 
+### Table: subcategories
+```sql
+CREATE TABLE subcategories (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    name TEXT NOT NULL,
+    category_id INTEGER NOT NULL,
+    color TEXT,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (category_id) REFERENCES categories(id),
+    UNIQUE(name, category_id)
+);
+```
+
 ### Table: categorization_rules
 ```sql
 CREATE TABLE categorization_rules (
@@ -179,7 +199,7 @@ CREATE TABLE categorization_rules (
 );
 
 -- Exemples de règles
-INSERT INTO categorization_rules (pattern, category_id, priority) VALUES 
+INSERT INTO categorization_rules (pattern, category_id, priority) VALUES
     ('CARREFOUR|AUCHAN|LECLERC', 1, 10),
     ('SNCF|RATP|ESSENCE', 2, 10),
     ('LOYER|EDF|EAU', 3, 10);
@@ -235,9 +255,9 @@ python-dotenv==1.0.0
 }
 ```
 
-## Formats CSV Supportés
+## Formats d'Import Supportés
 
-### Format Standard
+### Format CSV Standard
 ```csv
 date,label,amount,category,notes
 2025-01-15,CARREFOUR PARIS,45.30,Alimentation,Courses hebdomadaires
@@ -247,23 +267,58 @@ date,label,amount,category,notes
 
 **Colonnes supportées :**
 - `date` (requis) : Format YYYY-MM-DD ou DD/MM/YYYY
+- `operation_date` (optionnel) : Date d'opération
 - `label` (requis) : Libellé de la transaction
-- `amount` (requis) : Montant (positif pour dépenses)
+- `amount` (requis) : Montant (positif pour dépenses, négatif pour revenus)
 - `category` (optionnel) : Nom de catégorie
 - `notes` (optionnel) : Notes complémentaires
 
-### Format Bancaire (détection automatique)
+### Format CSV Bancaire (détection automatique)
+
+**Boursorama :**
 ```csv
-Date;Bénéficiaire;Libellé;Référence;Valeur;Montant;Devise;Débit;Crédit;Cumul
-15/01/2025;CARREFOUR;ACHAT CARREFOUR PARIS;REF123;15/01/2025;-45,30;EUR;45,30;;1500,00
-16/01/2025;RATP;NAVIGO MENSUEL;REF124;16/01/2025;-75,20;EUR;75,20;;1424,80
+dateOp;dateVal;label;category;categoryParent;supplierFound;amount;comment;accountNum;accountLabel;accountbalance
 ```
 
-**Caractéristiques du format bancaire :**
+**Banque Populaire :**
+```csv
+Date;Bénéficiaire;Libellé;Référence;Valeur;Montant;Devise;Débit;Crédit;Cumul;Date opération;...
+15/01/2025;CARREFOUR;ACHAT CARREFOUR PARIS;REF123;15/01/2025;-45,30;EUR;45,30;;1500,00;15/01/2025
+```
+
+**Caractéristiques :**
 - Séparateur : point-virgule (`;`)
-- Première ligne : en-têtes (ignorée automatiquement)
-- Colonnes débit/crédit dans les positions 8 et 9
 - Détection automatique du format basée sur la structure
+- Colonnes débit/crédit pour Banque Populaire
+- Support de la date d'opération distincte de la date de valeur
+
+### Format QIF (Quicken Interchange Format)
+```
+!Type:Bank
+D01/15/2025
+T-45.30
+PCARREFOUR PARIS
+MCourses hebdomadaires
+^
+D01/16/2025
+T-75.20
+PRATP NAVIGO
+^
+```
+
+**Marqueurs supportés :**
+- `!Type:Bank` ou `!Type:CCard` : Type de compte
+- `D` : Date (MM/DD/YYYY ou DD/MM/YYYY)
+- `T` : Montant (négatif = dépense, positif = revenu)
+- `P` : Bénéficiaire/Libellé
+- `M` : Memo/Notes
+- `^` : Fin de transaction
+
+**Caractéristiques :**
+- Format texte simple ligne par ligne
+- Support des notes (champ M)
+- Inversion automatique des montants pour convention Flooz
+- Prévisualisation avant import
 
 ## Points Clés Architecture
 
@@ -276,17 +331,19 @@ Hash calculé : `SHA256(date + label + amount)`
 ### Interface Utilisateur
 
 #### Navigation Sidebar
-- **Panneau rétractable** avec bouton toggle hamburger (☰)
-- **5 sections** : Transactions, Catégories, Statistiques, Import CSV, Règles
+- **Panneau rétractable** avec bouton toggle
+- **5 sections** : Transactions, Catégories, Statistiques, Comparaison, Import/Export
 - **Icônes émojis** pour chaque section
-- **Animation fluide** d'ouverture/fermeture avec rotation du bouton
+- **Animation fluide** d'ouverture/fermeture
 
 #### Gestion des Transactions
-- **Sélection multiple** avec Ctrl/Shift + clic pour sélectionner plusieurs transactions
+- **Sélection multiple** avec Ctrl/Shift + clic
 - **Feedback visuel** : transactions sélectionnées en surbrillance bleue
 - **Menu contextuel** (clic droit) avec actions conditionnelles
 - **Catégorisation en lot** via modal avec dropdown catégorie/sous-catégorie
 - **Actions individuelles** : catégoriser, filtrer, supprimer
+- **Notes éditables** : édition inline avec Esc/Enter
+- **Colonnes personnalisables** : affichage/masquage via sélecteur
 
 #### Filtrage et Recherche
 - **Filtre intelligent** avec algorithme de distance de Levenshtein
@@ -296,7 +353,8 @@ Hash calculé : `SHA256(date + label + amount)`
 
 #### Raccourcis Clavier
 - **`/`** : Focus sur le champ de filtrage et nouveau filtre
-- **`Escape`** : Effacer le filtre actuel
+- **`Escape`** : Effacer le filtre actuel ou annuler l'édition de note
+- **`Enter`** : Valider l'édition de note
 - **`?`** : Afficher la liste des raccourcis (modal d'aide)
 
 #### Sélection d'Année
@@ -304,17 +362,30 @@ Hash calculé : `SHA256(date + label + amount)`
 - **Scope** : Affecte les transactions et les graphiques
 - **Persistance** : État maintenu lors des changements de vue
 - **Override** : Option "Tout l'historique" désactive le filtre par année
+- **Variants** : Dropdown dans transactions, boutons horizontaux dans statistiques
 
-### Graphiques
+### Visualisations
+- **Graphique Sankey** : Flux catégories → sous-catégories
 - **Par mois** : Somme dépenses par mois (année sélectionnée)
 - **Par catégorie** : Répartition en % (année sélectionnée)
-- **Recharts** avec tooltips formatés et responsive design
+- **Comparaison inter-annuelle** : Graphiques mensuels et cumulés, top 10 catégories
+- **Recharts & D3** avec tooltips formatés et responsive design
 
-### Import CSV
-- **Prévisualisation** : Affichage des 5 premières lignes avec détection du format
-- **Gestion d'erreurs** : Messages détaillés avec logs backend
-- **Support multi-format** : Standard (virgule) et bancaire (point-virgule)
+### Import CSV/QIF
+- **Support multi-format** : CSV (standard, Boursorama, Banque Populaire), QIF
+- **Prévisualisation** : Tableau complet avec modification des catégories
+- **Gestion d'erreurs** : Messages détaillés avec bannières colorées
 - **Détection doublons** : Basée sur hash SHA256
+- **Bannières de statut** :
+  - Verte : import réussi
+  - Orange : import avec erreurs/doublons
+  - Interface grisée après import
+
+### Export de Données
+- **Export SQLite** : Base de données complète
+- **Export JSON** : Toutes les données structurées
+- **Export CSV transactions** : Toutes les transactions avec détails
+- **Export CSV catégories** : Consolidation par catégorie/sous-catégorie
 
 ## Nouvelles Fonctionnalités Implémentées
 
