@@ -455,6 +455,14 @@ const TransactionList = ({ transactions, categories, subcategories, onUpdate, lo
     return items
   }, [filteredAndSortedTransactions, checkpoints, checkpointBalances, sortConfig, selectedYear, showAllHistory])
 
+  // Calculate sum of selected transactions
+  const selectedSum = React.useMemo(() => {
+    if (selectedTransactions.size === 0) return 0
+    return filteredAndSortedTransactions
+      .filter(t => selectedTransactions.has(t.id))
+      .reduce((sum, t) => sum + parseFloat(t.amount), 0)
+  }, [selectedTransactions, filteredAndSortedTransactions])
+
   const handleCategorize = (transaction = null) => {
     if (selectedTransactions.size > 1) {
       // Multiple transactions selected - use bulk categorization
@@ -949,7 +957,11 @@ const TransactionList = ({ transactions, categories, subcategories, onUpdate, lo
           <p>
             <strong>{filteredAndSortedTransactions.length}</strong> transaction(s) affichée(s)
             {selectedTransactions.size > 0 && (
-              <span> | <strong>{selectedTransactions.size}</strong> sélectionnée(s)</span>
+              <span> | <strong>{selectedTransactions.size}</strong> sélectionnée(s)
+                {' '}(<strong style={{ color: selectedSum <= 0 ? '#10b981' : '#ef4444' }}>
+                  {(-selectedSum).toFixed(2)} €
+                </strong>)
+              </span>
             )}
             {labelFilter.trim() && (
               <span> sur <strong>{transactions.length}</strong> au total</span>
