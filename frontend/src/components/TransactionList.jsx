@@ -1,5 +1,6 @@
 import React, { useState } from 'react'
 import TransactionRow from './TransactionRow'
+import BalanceCheckpointRow from './BalanceCheckpointRow'
 import YearSelector from './Charts/YearSelector'
 import { apiService } from '../services/api'
 
@@ -10,6 +11,8 @@ const TransactionList = ({ transactions, categories, subcategories, onUpdate, lo
   })
   const [labelFilter, setLabelFilter] = useState('')
   const [useFuzzyMatching, setUseFuzzyMatching] = useState(false)
+  const [checkpoints, setCheckpoints] = useState([])
+  const [allTransactions, setAllTransactions] = useState([])
   const [showRuleModal, setShowRuleModal] = useState(false)
   const [selectedCategory, setSelectedCategory] = useState('')
   const [showBulkCategorizeModal, setShowBulkCategorizeModal] = useState(false)
@@ -51,6 +54,13 @@ const TransactionList = ({ transactions, categories, subcategories, onUpdate, lo
     subcategory_id: '',
     notes: ''
   })
+  const [showCheckpointModal, setShowCheckpointModal] = useState(false)
+  const [checkpointToEdit, setCheckpointToEdit] = useState(null)
+  const [newCheckpoint, setNewCheckpoint] = useState({
+    date: new Date().toISOString().split('T')[0],
+    balance: '',
+    notes: ''
+  })
 
   // Cache for Levenshtein distance calculations
   const distanceCache = React.useRef(new Map())
@@ -81,6 +91,23 @@ const TransactionList = ({ transactions, categories, subcategories, onUpdate, lo
       onLoadAllTransactions(showAllHistory)
     }
   }, [showAllHistory, onLoadAllTransactions])
+
+  // Load checkpoints and all transactions for balance calculation
+  React.useEffect(() => {
+    const loadData = async () => {
+      try {
+        const [checkpointsData, allTransactionsData] = await Promise.all([
+          apiService.getCheckpoints(),
+          apiService.getTransactions(null) // Load ALL transactions (no year filter)
+        ])
+        setCheckpoints(checkpointsData)
+        setAllTransactions(allTransactionsData)
+      } catch (error) {
+        console.error('Failed to load checkpoints or transactions:', error)
+      }
+    }
+    loadData()
+  }, [])
 
   // Keyboard shortcuts
   React.useEffect(() => {
@@ -280,6 +307,153 @@ const TransactionList = ({ transactions, categories, subcategories, onUpdate, lo
     }
     return filteredTransactions
   }, [transactions, sortConfig, labelFilter, useFuzzyMatching, showOnlyUncategorized])
+
+  // Calculate checkpoint balances using ALL transactions (ignoring filters)
+  const checkpointBalances = React.useMemo(() => {
+    if (checkpoints.length === 0 || allTransactions.length === 0) {
+      console.log('⚠️ Checkpoint calculation skipped:', { checkpointsCount: checkpoints.length, allTransactionsCount: allTransactions.length })
+      return new Map()
+    }
+
+    console.log('🔢 Calculating checkpoint balances with:', allTransactions.length, 'transactions')
+
+    // Sort ALL transactions chronologically (oldest first)
+    const chronological = [...allTransactions].sort((a, b) => new Date(a.date) - new Date(b.date))
+
+    // Sort checkpoints chronologically
+    const sortedCheckpoints = [...checkpoints].sort((a, b) => new Date(a.date) - new Date(b.date))
+
+    const balances = new Map()
+    let checkpointIndex = 0
+    let runningBalance = 0
+    let isFirstCheckpoint = true
+
+    for (const transaction of chronological) {
+      const transDate = new Date(transaction.date)
+
+      // Process checkpoints that come strictly before this transaction date
+      // Checkpoints represent the balance at END of day, so process them after transactions of that day
+      while (checkpointIndex < sortedCheckpoints.length &&
+             new Date(sortedCheckpoints[checkpointIndex].date) < transDate) {
+        const checkpoint = sortedCheckpoints[checkpointIndex]
+
+        console.log(`📊 Checkpoint ${checkpoint.date} (in loop):`, {
+          calculatedBalance: isFirstCheckpoint ? null : runningBalance,
+          referenceBalance: checkpoint.balance,
+          isFirst: isFirstCheckpoint,
+          transactionDate: transaction.date
+        })
+
+        // Store calculated balance (null for first checkpoint as it's the reference)
+        balances.set(checkpoint.id, {
+          calculatedBalance: isFirstCheckpoint ? null : runningBalance,
+          isFirstCheckpoint: isFirstCheckpoint
+        })
+
+        // Reset running balance to checkpoint balance
+        runningBalance = parseFloat(checkpoint.balance)
+        checkpointIndex++
+        isFirstCheckpoint = false
+      }
+
+      // Subtract transaction amount from running balance
+      // Convention: positive amount = debit (expense), negative amount = credit (income)
+      runningBalance -= parseFloat(transaction.amount)
+    }
+
+    // Process remaining checkpoints
+    while (checkpointIndex < sortedCheckpoints.length) {
+      const checkpoint = sortedCheckpoints[checkpointIndex]
+      console.log(`📊 Checkpoint ${checkpoint.date} (remaining):`, {
+        calculatedBalance: isFirstCheckpoint ? null : runningBalance,
+        referenceBalance: checkpoint.balance,
+        isFirst: isFirstCheckpoint
+      })
+      balances.set(checkpoint.id, {
+        calculatedBalance: isFirstCheckpoint ? null : runningBalance,
+        isFirstCheckpoint: isFirstCheckpoint
+      })
+      runningBalance = parseFloat(checkpoint.balance)
+      checkpointIndex++
+      isFirstCheckpoint = false
+    }
+
+    console.log('✅ Checkpoint balances calculated:', balances)
+    return balances
+  }, [allTransactions, checkpoints])
+
+  // Merge filtered transactions and checkpoints for display
+  const mergedItems = React.useMemo(() => {
+    // Sort filtered transactions chronologically
+    const chronological = [...filteredAndSortedTransactions].sort((a, b) => new Date(a.date) - new Date(b.date))
+
+    // Filter checkpoints by year (if year filter is active)
+    let filteredCheckpoints = [...checkpoints]
+    if (selectedYear && !showAllHistory) {
+      filteredCheckpoints = filteredCheckpoints.filter(checkpoint => {
+        const checkpointYear = new Date(checkpoint.date).getFullYear()
+        return checkpointYear === selectedYear
+      })
+    }
+
+    // Sort checkpoints chronologically
+    const sortedCheckpoints = filteredCheckpoints.sort((a, b) => new Date(a.date) - new Date(b.date))
+
+    const items = []
+    let checkpointIndex = 0
+
+    for (const transaction of chronological) {
+      const transDate = new Date(transaction.date)
+
+      // Insert checkpoints that come strictly before this transaction date
+      while (checkpointIndex < sortedCheckpoints.length &&
+             new Date(sortedCheckpoints[checkpointIndex].date) < transDate) {
+        const checkpoint = sortedCheckpoints[checkpointIndex]
+        const balanceInfo = checkpointBalances.get(checkpoint.id) || { calculatedBalance: null, isFirstCheckpoint: false }
+
+        items.push({
+          type: 'checkpoint',
+          checkpoint: checkpoint,
+          calculatedBalance: balanceInfo.calculatedBalance,
+          date: checkpoint.date,
+          isFirstCheckpoint: balanceInfo.isFirstCheckpoint
+        })
+        checkpointIndex++
+      }
+
+      // Add transaction
+      items.push({
+        type: 'transaction',
+        transaction: transaction,
+        date: transaction.date
+      })
+    }
+
+    // Add remaining checkpoints
+    while (checkpointIndex < sortedCheckpoints.length) {
+      const checkpoint = sortedCheckpoints[checkpointIndex]
+      const balanceInfo = checkpointBalances.get(checkpoint.id) || { calculatedBalance: null, isFirstCheckpoint: false }
+
+      items.push({
+        type: 'checkpoint',
+        checkpoint: checkpoint,
+        calculatedBalance: balanceInfo.calculatedBalance,
+        date: checkpoint.date,
+        isFirstCheckpoint: balanceInfo.isFirstCheckpoint
+      })
+      checkpointIndex++
+    }
+
+    // Sort items according to current sort config
+    if (sortConfig.key === 'date') {
+      items.sort((a, b) => {
+        const dateCompare = new Date(a.date) - new Date(b.date)
+        return sortConfig.direction === 'asc' ? dateCompare : -dateCompare
+      })
+    }
+
+    return items
+  }, [filteredAndSortedTransactions, checkpoints, checkpointBalances, sortConfig, selectedYear, showAllHistory])
 
   const handleCategorize = (transaction = null) => {
     if (selectedTransactions.size > 1) {
@@ -538,6 +712,87 @@ const TransactionList = ({ transactions, categories, subcategories, onUpdate, lo
     return subcategories.filter(sub => sub.category_id.toString() === newTransaction.category_id)
   }
 
+  // Checkpoint handlers
+  const handleAddCheckpoint = () => {
+    setCheckpointToEdit(null)
+    setNewCheckpoint({
+      date: new Date().toISOString().split('T')[0],
+      balance: '',
+      notes: ''
+    })
+    setShowCheckpointModal(true)
+  }
+
+  const handleEditCheckpoint = (checkpoint) => {
+    setCheckpointToEdit(checkpoint)
+    setNewCheckpoint({
+      date: checkpoint.date,
+      balance: checkpoint.balance.toString(),
+      notes: checkpoint.notes || ''
+    })
+    setShowCheckpointModal(true)
+  }
+
+  const handleDeleteCheckpoint = async (id) => {
+    try {
+      await apiService.deleteCheckpoint(id)
+      const [checkpointsData, allTransactionsData] = await Promise.all([
+        apiService.getCheckpoints(),
+        apiService.getTransactions(null)
+      ])
+      setCheckpoints(checkpointsData)
+      setAllTransactions(allTransactionsData)
+    } catch (error) {
+      console.error('Error deleting checkpoint:', error)
+      alert('Erreur lors de la suppression du point de contrôle')
+    }
+  }
+
+  const handleSaveCheckpoint = async () => {
+    if (!newCheckpoint.date || !newCheckpoint.balance) {
+      alert('Veuillez remplir tous les champs requis')
+      return
+    }
+
+    try {
+      if (checkpointToEdit) {
+        // Update existing checkpoint
+        await apiService.updateCheckpoint(checkpointToEdit.id, {
+          date: newCheckpoint.date,
+          balance: parseFloat(newCheckpoint.balance),
+          notes: newCheckpoint.notes.trim() || null
+        })
+      } else {
+        // Create new checkpoint
+        await apiService.createCheckpoint({
+          date: newCheckpoint.date,
+          balance: parseFloat(newCheckpoint.balance),
+          notes: newCheckpoint.notes.trim() || null
+        })
+      }
+
+      // Reload checkpoints and all transactions
+      const [checkpointsData, allTransactionsData] = await Promise.all([
+        apiService.getCheckpoints(),
+        apiService.getTransactions(null)
+      ])
+      setCheckpoints(checkpointsData)
+      setAllTransactions(allTransactionsData)
+
+      // Reset form
+      setNewCheckpoint({
+        date: new Date().toISOString().split('T')[0],
+        balance: '',
+        notes: ''
+      })
+      setShowCheckpointModal(false)
+      setCheckpointToEdit(null)
+    } catch (error) {
+      console.error('Error saving checkpoint:', error)
+      alert('Erreur lors de la sauvegarde du point de contrôle')
+    }
+  }
+
   const getSortIcon = (columnKey) => {
     if (sortConfig.key !== columnKey) {
       return '⇵'
@@ -663,6 +918,13 @@ const TransactionList = ({ transactions, categories, subcategories, onUpdate, lo
                 <line x1="12" y1="5" x2="12" y2="19"></line>
                 <line x1="5" y1="12" x2="19" y2="12"></line>
               </svg>
+            </button>
+            <button
+              className="btn btn-info btn-sm add-checkpoint-btn"
+              onClick={handleAddCheckpoint}
+              title="Ajouter un point de contrôle bancaire"
+            >
+              📊
             </button>
           </div>
         </div>
@@ -805,6 +1067,13 @@ const TransactionList = ({ transactions, categories, subcategories, onUpdate, lo
               <line x1="5" y1="12" x2="19" y2="12"></line>
             </svg>
           </button>
+          <button
+            className="btn btn-info btn-sm add-checkpoint-btn"
+            onClick={handleAddCheckpoint}
+            title="Ajouter un point de contrôle bancaire"
+          >
+            ✓
+          </button>
         </div>
       </div>
 
@@ -882,23 +1151,38 @@ const TransactionList = ({ transactions, categories, subcategories, onUpdate, lo
             </tr>
           </thead>
           <tbody>
-            {filteredAndSortedTransactions.map((transaction, index) => (
-              <TransactionRow
-                key={transaction.id}
-                transaction={transaction}
-                categories={categories}
-                subcategories={subcategories}
-                onCategorize={() => handleCategorize(transaction)}
-                onDelete={() => handleDelete(transaction.id)}
-                onFilter={handleFilter}
-                onUpdate={onUpdate}
-                isSelected={selectedTransactions.has(transaction.id)}
-                onSelect={handleTransactionSelection}
-                index={index}
-                hasMultipleSelected={selectedTransactions.size > 1}
-                visibleColumns={visibleColumns}
-              />
-            ))}
+            {mergedItems.map((item, index) => {
+              if (item.type === 'checkpoint') {
+                return (
+                  <BalanceCheckpointRow
+                    key={`checkpoint-${item.checkpoint.id}`}
+                    checkpoint={item.checkpoint}
+                    calculatedBalance={item.calculatedBalance}
+                    onDelete={handleDeleteCheckpoint}
+                    onEdit={handleEditCheckpoint}
+                    visibleColumns={visibleColumns}
+                  />
+                )
+              } else {
+                return (
+                  <TransactionRow
+                    key={`transaction-${item.transaction.id}`}
+                    transaction={item.transaction}
+                    categories={categories}
+                    subcategories={subcategories}
+                    onCategorize={() => handleCategorize(item.transaction)}
+                    onDelete={() => handleDelete(item.transaction.id)}
+                    onFilter={handleFilter}
+                    onUpdate={onUpdate}
+                    isSelected={selectedTransactions.has(item.transaction.id)}
+                    onSelect={handleTransactionSelection}
+                    index={index}
+                    hasMultipleSelected={selectedTransactions.size > 1}
+                    visibleColumns={visibleColumns}
+                  />
+                )
+              }
+            })}
           </tbody>
         </table>
       </div>
@@ -1393,6 +1677,72 @@ const TransactionList = ({ transactions, categories, subcategories, onUpdate, lo
                 onClick={handleAddTransaction}
               >
                 Ajouter
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Add/Edit Checkpoint Modal */}
+      {showCheckpointModal && (
+        <div className="modal-overlay" onClick={() => setShowCheckpointModal(false)}>
+          <div className="modal" onClick={(e) => e.stopPropagation()}>
+            <h2>{checkpointToEdit ? 'Modifier le point de contrôle' : 'Ajouter un point de contrôle'}</h2>
+
+            <div className="form-group">
+              <label htmlFor="checkpoint-date">Date * :</label>
+              <input
+                id="checkpoint-date"
+                type="date"
+                value={newCheckpoint.date}
+                onChange={(e) => setNewCheckpoint({...newCheckpoint, date: e.target.value})}
+                className="form-input"
+                required
+              />
+            </div>
+
+            <div className="form-group">
+              <label htmlFor="checkpoint-balance">Solde bancaire * :</label>
+              <input
+                id="checkpoint-balance"
+                type="number"
+                step="0.01"
+                value={newCheckpoint.balance}
+                onChange={(e) => setNewCheckpoint({...newCheckpoint, balance: e.target.value})}
+                className="form-input"
+                placeholder="123.45"
+                required
+              />
+              <small className="form-hint">Montant du solde tel qu'indiqué par votre banque</small>
+            </div>
+
+            <div className="form-group">
+              <label htmlFor="checkpoint-notes">Notes :</label>
+              <textarea
+                id="checkpoint-notes"
+                value={newCheckpoint.notes}
+                onChange={(e) => setNewCheckpoint({...newCheckpoint, notes: e.target.value})}
+                className="form-textarea"
+                rows="2"
+                placeholder="Notes optionnelles (ex: relevé de janvier)"
+              />
+            </div>
+
+            <div className="modal-actions">
+              <button
+                className="btn btn-secondary"
+                onClick={() => {
+                  setShowCheckpointModal(false)
+                  setCheckpointToEdit(null)
+                }}
+              >
+                Annuler
+              </button>
+              <button
+                className="btn btn-primary"
+                onClick={handleSaveCheckpoint}
+              >
+                {checkpointToEdit ? 'Modifier' : 'Ajouter'}
               </button>
             </div>
           </div>

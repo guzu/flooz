@@ -185,4 +185,25 @@ export const apiService = {
     const response = await api.get(`/stats/summary/${year}`)
     return response.data.data
   },
+
+  // Balance Checkpoints
+  async getCheckpoints() {
+    const response = await api.get('/checkpoints')
+    return response.data.data
+  },
+
+  async createCheckpoint(checkpointData) {
+    const response = await api.post('/checkpoints', checkpointData)
+    return response.data.data
+  },
+
+  async updateCheckpoint(id, checkpointData) {
+    const response = await api.put(`/checkpoints/${id}`, checkpointData)
+    return response.data.data
+  },
+
+  async deleteCheckpoint(id) {
+    const response = await api.delete(`/checkpoints/${id}`)
+    return response.data
+  },
 }

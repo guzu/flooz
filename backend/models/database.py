@@ -62,6 +62,17 @@ def init_db():
         )
     ''')
 
+    # Create balance_checkpoints table
+    conn.execute('''
+        CREATE TABLE IF NOT EXISTS balance_checkpoints (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            date DATE NOT NULL UNIQUE,
+            balance REAL NOT NULL,
+            notes TEXT,
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+        )
+    ''')
+
     # Add subcategory_id column to transactions table if it doesn't exist
     try:
         conn.execute('ALTER TABLE transactions ADD COLUMN subcategory_id INTEGER REFERENCES subcategories(id)')
@@ -83,6 +94,7 @@ def init_db():
     conn.execute('CREATE INDEX IF NOT EXISTS idx_hash ON transactions(hash)')
     conn.execute('CREATE INDEX IF NOT EXISTS idx_category ON transactions(category_id)')
     conn.execute('CREATE INDEX IF NOT EXISTS idx_subcategory ON transactions(subcategory_id)')
+    conn.execute('CREATE INDEX IF NOT EXISTS idx_checkpoint_date ON balance_checkpoints(date)')
 
     # Insert default categories if not exist
     categories = [
