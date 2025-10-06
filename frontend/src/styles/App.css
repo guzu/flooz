@@ -454,7 +454,6 @@ input:focus, select:focus, textarea:focus {
   background: white;
   border-radius: 0.5rem;
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
-  overflow: hidden;
 }
 
 .transaction-summary {
@@ -466,6 +465,9 @@ input:focus, select:focus, textarea:focus {
   align-items: center;
   gap: 1rem;
   min-height: 2.5rem;
+  position: sticky;
+  top: 0;
+  z-index: 10;
 }
 
 .summary-left {

@@ -384,9 +384,6 @@ const TransactionList = ({ transactions, categories, subcategories, onUpdate, lo
 
   // Merge filtered transactions and checkpoints for display
   const mergedItems = React.useMemo(() => {
-    // Sort filtered transactions chronologically
-    const chronological = [...filteredAndSortedTransactions].sort((a, b) => new Date(a.date) - new Date(b.date))
-
     // Filter checkpoints by year (if year filter is active)
     let filteredCheckpoints = [...checkpoints]
     if (selectedYear && !showAllHistory) {
@@ -396,18 +393,46 @@ const TransactionList = ({ transactions, categories, subcategories, onUpdate, lo
       })
     }
 
-    // Sort checkpoints chronologically
-    const sortedCheckpoints = filteredCheckpoints.sort((a, b) => new Date(a.date) - new Date(b.date))
+    // Only merge checkpoints if sorting by date
+    if (sortConfig.key === 'date') {
+      // Sort filtered transactions chronologically for merging
+      const chronological = [...filteredAndSortedTransactions].sort((a, b) => new Date(a.date) - new Date(b.date))
 
-    const items = []
-    let checkpointIndex = 0
+      // Sort checkpoints chronologically
+      const sortedCheckpoints = filteredCheckpoints.sort((a, b) => new Date(a.date) - new Date(b.date))
 
-    for (const transaction of chronological) {
-      const transDate = new Date(transaction.date)
+      const items = []
+      let checkpointIndex = 0
 
-      // Insert checkpoints that come strictly before this transaction date
-      while (checkpointIndex < sortedCheckpoints.length &&
-             new Date(sortedCheckpoints[checkpointIndex].date) < transDate) {
+      for (const transaction of chronological) {
+        const transDate = new Date(transaction.date)
+
+        // Insert checkpoints that come strictly before this transaction date
+        while (checkpointIndex < sortedCheckpoints.length &&
+               new Date(sortedCheckpoints[checkpointIndex].date) < transDate) {
+          const checkpoint = sortedCheckpoints[checkpointIndex]
+          const balanceInfo = checkpointBalances.get(checkpoint.id) || { calculatedBalance: null, isFirstCheckpoint: false }
+
+          items.push({
+            type: 'checkpoint',
+            checkpoint: checkpoint,
+            calculatedBalance: balanceInfo.calculatedBalance,
+            date: checkpoint.date,
+            isFirstCheckpoint: balanceInfo.isFirstCheckpoint
+          })
+          checkpointIndex++
+        }
+
+        // Add transaction
+        items.push({
+          type: 'transaction',
+          transaction: transaction,
+          date: transaction.date
+        })
+      }
+
+      // Add remaining checkpoints
+      while (checkpointIndex < sortedCheckpoints.length) {
         const checkpoint = sortedCheckpoints[checkpointIndex]
         const balanceInfo = checkpointBalances.get(checkpoint.id) || { calculatedBalance: null, isFirstCheckpoint: false }
 
@@ -421,38 +446,21 @@ const TransactionList = ({ transactions, categories, subcategories, onUpdate, lo
         checkpointIndex++
       }
 
-      // Add transaction
-      items.push({
-        type: 'transaction',
-        transaction: transaction,
-        date: transaction.date
-      })
-    }
-
-    // Add remaining checkpoints
-    while (checkpointIndex < sortedCheckpoints.length) {
-      const checkpoint = sortedCheckpoints[checkpointIndex]
-      const balanceInfo = checkpointBalances.get(checkpoint.id) || { calculatedBalance: null, isFirstCheckpoint: false }
-
-      items.push({
-        type: 'checkpoint',
-        checkpoint: checkpoint,
-        calculatedBalance: balanceInfo.calculatedBalance,
-        date: checkpoint.date,
-        isFirstCheckpoint: balanceInfo.isFirstCheckpoint
-      })
-      checkpointIndex++
-    }
-
-    // Sort items according to current sort config
-    if (sortConfig.key === 'date') {
+      // Apply sort direction
       items.sort((a, b) => {
         const dateCompare = new Date(a.date) - new Date(b.date)
         return sortConfig.direction === 'asc' ? dateCompare : -dateCompare
       })
-    }
 
-    return items
+      return items
+    } else {
+      // For non-date sorting, just return transactions (no checkpoint merging)
+      return filteredAndSortedTransactions.map(transaction => ({
+        type: 'transaction',
+        transaction: transaction,
+        date: transaction.date
+      }))
+    }
   }, [filteredAndSortedTransactions, checkpoints, checkpointBalances, sortConfig, selectedYear, showAllHistory])
 
   // Calculate sum of selected transactions
