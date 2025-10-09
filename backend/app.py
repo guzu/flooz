@@ -19,6 +19,7 @@ def create_app():
     from routes.export_routes import export_bp
     from routes.stats import stats_bp
     from routes.checkpoints import checkpoints_bp
+    from routes.ai_analysis import ai_analysis_bp
 
     app.register_blueprint(transactions_bp, url_prefix='/api')
     app.register_blueprint(categories_bp, url_prefix='/api')
@@ -27,6 +28,7 @@ def create_app():
     app.register_blueprint(export_bp, url_prefix='/api')
     app.register_blueprint(stats_bp, url_prefix='/api')
     app.register_blueprint(checkpoints_bp, url_prefix='/api')
+    app.register_blueprint(ai_analysis_bp, url_prefix='/api')
 
     return app
 

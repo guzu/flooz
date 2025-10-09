@@ -8,6 +8,7 @@ import CategoryChart from './components/Charts/CategoryChart'
 import SankeyChart from './components/Charts/SankeyChart'
 import YearSelector from './components/Charts/YearSelector'
 import ComparisonView from './components/ComparisonView'
+import AIAnalysisPanel from './components/AIAnalysisPanel'
 import { apiService } from './services/api'
 
 function App() {
@@ -148,6 +149,10 @@ function App() {
         return (
           <ComparisonView availableYears={availableYears} />
         )
+      case 'ai-analysis':
+        return (
+          <AIAnalysisPanel availableYears={availableYears} />
+        )
       default:
         return (
           <TransactionList
@@ -252,6 +257,13 @@ function App() {
               >
                 <span className="nav-icon">📈</span>
                 {sidebarOpen && <span className="nav-label">Comparaison</span>}
+              </button>
+              <button
+                className={currentView === 'ai-analysis' ? 'active' : ''}
+                onClick={() => setCurrentView('ai-analysis')}
+              >
+                <span className="nav-icon">🤖</span>
+                {sidebarOpen && <span className="nav-label">Analyse IA</span>}
               </button>
             </div>
             <div className="nav-admin">

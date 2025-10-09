@@ -7,8 +7,23 @@ const api = axios.create({
   timeout: 10000,
 })
 
+// Create a separate instance for AI analysis with longer timeout
+const aiApi = axios.create({
+  baseURL: API_BASE,
+  timeout: 300000, // 5 minutes for AI analysis (Ollama can be very slow on CPU)
+})
+
 // Response interceptor for error handling
 api.interceptors.response.use(
+  (response) => response,
+  (error) => {
+    console.error('API Error:', error.response?.data || error.message)
+    throw error
+  }
+)
+
+// Same interceptor for AI API
+aiApi.interceptors.response.use(
   (response) => response,
   (error) => {
     console.error('API Error:', error.response?.data || error.message)
@@ -204,6 +219,67 @@ export const apiService = {
 
   async deleteCheckpoint(id) {
     const response = await api.delete(`/checkpoints/${id}`)
+    return response.data
+  },
+
+  // AI Analysis
+  async analyzeSingleYear(year, analysisType, provider = 'ollama', apiKey = null, model = null) {
+    const payload = {
+      year,
+      analysis_type: analysisType,
+      provider
+    }
+    if (apiKey) {
+      payload.api_key = apiKey
+    }
+    if (model) {
+      payload.model = model
+    }
+    const response = await aiApi.post('/analysis/single', payload)
+    return response.data.data
+  },
+
+  async compareYears(years, provider = 'ollama', apiKey = null, model = null) {
+    const payload = {
+      years,
+      provider
+    }
+    if (apiKey) {
+      payload.api_key = apiKey
+    }
+    if (model) {
+      payload.model = model
+    }
+    const response = await aiApi.post('/analysis/compare', payload)
+    return response.data.data
+  },
+
+  async getAIConfig() {
+    const response = await api.get('/analysis/config')
+    return response.data.data
+  },
+
+  async testAPIKey(apiKey, provider = 'claude', model = null) {
+    const payload = { provider }
+    if (apiKey) {
+      payload.api_key = apiKey
+    }
+    if (model) {
+      payload.model = model
+    }
+    const response = await aiApi.post('/analysis/test-key', payload)
+    return response.data
+  },
+
+  async testModel(provider = 'ollama', model = null, apiKey = null) {
+    const payload = { provider }
+    if (model) {
+      payload.model = model
+    }
+    if (apiKey) {
+      payload.api_key = apiKey
+    }
+    const response = await aiApi.post('/analysis/test-model', payload)
     return response.data
   },
 }
