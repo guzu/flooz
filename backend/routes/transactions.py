@@ -130,15 +130,20 @@ def update_transaction(transaction_id):
             }), 404
 
         # Update transaction
-        updated_transaction = Transaction.update(
-            transaction_id,
-            date=data.get('date'),
-            label=data.get('label'),
-            amount=float(data['amount']) if 'amount' in data else None,
-            category_id=data.get('category_id'),
-            subcategory_id=data.get('subcategory_id'),
-            notes=data.get('notes')
-        )
+        update_params = {
+            'transaction_id': transaction_id,
+            'date': data.get('date'),
+            'label': data.get('label'),
+            'amount': float(data['amount']) if 'amount' in data else None,
+            'category_id': data.get('category_id'),
+            'subcategory_id': data.get('subcategory_id')
+        }
+
+        # Only include notes if explicitly provided in the request
+        if 'notes' in data:
+            update_params['notes'] = data.get('notes')
+
+        updated_transaction = Transaction.update(**update_params)
 
         return jsonify({
             'success': True,
