@@ -474,6 +474,14 @@ const TransactionList = ({ transactions, categories, subcategories, onUpdate, lo
   const handleCategorize = (transaction = null) => {
     if (selectedTransactions.size > 1) {
       // Multiple transactions selected - use bulk categorization
+      // Pre-select common category and subcategory if all selected transactions have the same ones
+      const selectedTransactionsList = filteredAndSortedTransactions.filter(t => selectedTransactions.has(t.id))
+
+      const allSameCategory = selectedTransactionsList.every(t => t.category_id === selectedTransactionsList[0].category_id)
+      const allSameSubcategory = selectedTransactionsList.every(t => t.subcategory_id === selectedTransactionsList[0].subcategory_id)
+
+      setBulkCategory(allSameCategory && selectedTransactionsList[0].category_id ? selectedTransactionsList[0].category_id.toString() : '')
+      setBulkSubcategory(allSameSubcategory && selectedTransactionsList[0].subcategory_id ? selectedTransactionsList[0].subcategory_id.toString() : '')
       setShowBulkCategorizeModal(true)
     } else if (selectedTransactions.size === 1) {
       // Single transaction selected from multi-selection
@@ -612,11 +620,25 @@ const TransactionList = ({ transactions, categories, subcategories, onUpdate, lo
 
   const handleBulkCategorize = () => {
     if (selectedTransactions.size > 0) {
+      // Pre-select common category and subcategory if all selected transactions have the same ones
+      const selectedTransactionsList = filteredAndSortedTransactions.filter(t => selectedTransactions.has(t.id))
+
+      const allSameCategory = selectedTransactionsList.every(t => t.category_id === selectedTransactionsList[0].category_id)
+      const allSameSubcategory = selectedTransactionsList.every(t => t.subcategory_id === selectedTransactionsList[0].subcategory_id)
+
+      setBulkCategory(allSameCategory && selectedTransactionsList[0].category_id ? selectedTransactionsList[0].category_id.toString() : '')
+      setBulkSubcategory(allSameSubcategory && selectedTransactionsList[0].subcategory_id ? selectedTransactionsList[0].subcategory_id.toString() : '')
       setShowBulkCategorizeModal(true)
     } else if (filteredAndSortedTransactions.length === 0) {
       alert('Aucune transaction à catégoriser')
       return
     } else {
+      // Pre-select common category and subcategory if all filtered transactions have the same ones
+      const allSameCategory = filteredAndSortedTransactions.every(t => t.category_id === filteredAndSortedTransactions[0].category_id)
+      const allSameSubcategory = filteredAndSortedTransactions.every(t => t.subcategory_id === filteredAndSortedTransactions[0].subcategory_id)
+
+      setBulkCategory(allSameCategory && filteredAndSortedTransactions[0].category_id ? filteredAndSortedTransactions[0].category_id.toString() : '')
+      setBulkSubcategory(allSameSubcategory && filteredAndSortedTransactions[0].subcategory_id ? filteredAndSortedTransactions[0].subcategory_id.toString() : '')
       setShowBulkCategorizeModal(true)
     }
   }
