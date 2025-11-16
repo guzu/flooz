@@ -1,0 +1,144 @@
+{
+  "list": {
+    "title": "Transactions",
+    "filter": {
+      "label": "Filtrer par libellé",
+      "placeholder": "Rechercher dans les libellés...",
+      "placeholderFuzzy": "Recherche intelligente (tolère les fautes de frappe)...",
+      "fuzzy": "Recherche floue",
+      "fuzzyHint": "Permet de trouver \"CARREFOUR\" en tapant \"crfr\"",
+      "allHistory": "Tout l'historique",
+      "allHistoryHint": "Rechercher dans toutes les années",
+      "uncategorized": "Non catégorisées uniquement",
+      "uncategorizedHint": "Afficher seulement les transactions sans catégorie",
+      "createRule": "Créer une règle de catégorisation automatique"
+    },
+    "table": {
+      "headers": {
+        "date": "Date valeur",
+        "operationDate": "Date op.",
+        "label": "Libellé",
+        "notes": "Notes",
+        "amount": "Montant",
+        "category": "Catégorie",
+        "subcategory": "Sous-catégorie",
+        "actions": "Actions"
+      }
+    },
+    "summary": {
+      "displayed": "<strong>{{count}}</strong> transaction(s) affichée(s)",
+      "selected": "<strong>{{count}}</strong> sélectionnée(s)",
+      "selectedSum": "(<strong style=\"color: {{color}}\">{{sum}} €</strong>)",
+      "total": "sur <strong>{{count}}</strong> au total"
+    },
+    "loading": "Chargement des transactions...",
+    "empty": "Aucune transaction trouvée pour cette période.",
+    "emptyImport": "Importez un fichier CSV pour commencer !",
+    "emptyFilter": "Aucune transaction ne correspond au filtre \"<strong>{{filter}}</strong>\".",
+    "clearFilter": "Effacer le filtre",
+    "deleteConfirm": "Êtes-vous sûr de vouloir supprimer cette transaction ?"
+  },
+  "categorize": {
+    "title": "Catégoriser la transaction",
+    "info": {
+      "label": "Libellé :",
+      "amount": "Montant :",
+      "date": "Date :"
+    },
+    "category": "Catégorie :",
+    "subcategory": "Sous-catégorie :",
+    "noCategoryOption": "Non catégorisé",
+    "noSubcategoryOption": "-",
+    "errorSingle": "Erreur lors de la catégorisation de la transaction",
+    "errorBulk": "Erreur lors de la catégorisation en masse"
+  },
+  "bulk": {
+    "title": "Catégoriser en masse",
+    "message": "Catégoriser <strong>{{count}}</strong> transaction(s){{context}}",
+    "contextSelected": " sélectionnée(s)",
+    "contextFilter": " correspondant à \"{{filter}}\"",
+    "batch": "Batch ({{count}})",
+    "deselectAll": "Désélectionner ({{count}})",
+    "noTransactions": "Aucune transaction à catégoriser",
+    "newCategory": "Nouvelle catégorie :",
+    "newCategoryPlaceholder": "Nom de la catégorie",
+    "newCategoryColor": "Couleur :",
+    "newCategoryError": "Veuillez saisir un nom de catégorie",
+    "newCategoryCreateError": "Erreur lors de la création de la catégorie"
+  },
+  "rule": {
+    "title": "Créer une règle de catégorisation",
+    "message": "Créer une règle pour catégoriser automatiquement les transactions contenant \"<strong>{{pattern}}</strong>\" lors des futurs imports.",
+    "category": "Catégorie :",
+    "selectCategory": "Sélectionner une catégorie",
+    "noFilter": "Aucun filtre actif pour créer une règle",
+    "selectCategoryError": "Veuillez sélectionner une catégorie",
+    "createError": "Erreur lors de la création de la règle"
+  },
+  "shortcuts": {
+    "title": "Raccourcis clavier",
+    "slash": "Aller au champ de filtrage",
+    "escape": "Effacer le filtre courant / Fermer cette aide",
+    "question": "Afficher cette aide",
+    "ctrlA": "Sélectionner toutes les transactions visibles"
+  },
+  "addTransaction": {
+    "title": "Ajouter une transaction",
+    "date": "Date de valeur :",
+    "operationDate": "Date d'opération :",
+    "label": "Libellé * :",
+    "labelPlaceholder": "Description de la transaction",
+    "amount": "Montant * :",
+    "amountPlaceholder": "0.00",
+    "isCredit": "Crédit",
+    "category": "Catégorie :",
+    "subcategory": "Sous-catégorie :",
+    "notes": "Notes :",
+    "notesPlaceholder": "Notes optionnelles",
+    "noCategoryOption": "Non catégorisé",
+    "noSubcategoryOption": "-",
+    "addButton": "Ajouter une transaction manuellement",
+    "validationError": "Veuillez remplir au minimum le libellé et le montant",
+    "createError": "Erreur lors de la création de la transaction"
+  },
+  "checkpoint": {
+    "title": "Point de contrôle bancaire",
+    "addButton": "Ajouter un point de contrôle bancaire",
+    "addTitle": "Ajouter un point de contrôle",
+    "editTitle": "Modifier le point de contrôle",
+    "date": "Date * :",
+    "balance": "Solde bancaire * :",
+    "balancePlaceholder": "123.45",
+    "balanceHint": "Montant du solde tel qu'indiqué par votre banque",
+    "notes": "Notes :",
+    "notesPlaceholder": "Notes optionnelles (ex: relevé de janvier)",
+    "validationError": "Veuillez remplir tous les champs requis",
+    "saveError": "Erreur lors de la sauvegarde du point de contrôle",
+    "deleteError": "Erreur lors de la suppression du point de contrôle"
+  },
+  "columns": {
+    "title": "Colonnes affichées",
+    "dateValue": "Date valeur",
+    "operationDate": "Date opération",
+    "label": "Libellé",
+    "notes": "Notes",
+    "amount": "Montant",
+    "category": "Catégorie",
+    "subcategory": "Sous-catégorie",
+    "requiredBadge": "Obligatoire"
+  },
+  "row": {
+    "notesPlaceholder": "Ajouter une note...",
+    "actions": "Actions",
+    "uncategorized": "Non catégorisé",
+    "noSubcategory": "-",
+    "contextMenu": {
+      "categorize": "Catégoriser",
+      "filter": "Filtrer",
+      "delete": "Supprimer"
+    }
+  },
+  "yearSelector": {
+    "label": "Année :"
+  }
+}

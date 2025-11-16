@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react'
+import { useTranslation } from 'react-i18next'
 import { formatAmount, formatDate, formatDateForInput, getAmountColor } from '../utils/formatters'
 
 const TransactionRow = ({
@@ -15,6 +16,7 @@ const TransactionRow = ({
   hasMultipleSelected,
   visibleColumns,
 }) => {
+  const { t } = useTranslation(['transactions', 'common'])
   const [contextMenu, setContextMenu] = useState({ visible: false, x: 0, y: 0 })
   const [notes, setNotes] = useState(transaction.notes || '')
   const originalNotesRef = useRef(transaction.notes || '')
@@ -128,17 +130,17 @@ const TransactionRow = ({
   }
 
   const getCategoryInfo = () => {
-    if (!transaction.category_id) return { name: 'Non catégorisé', color: '#6b7280' }
+    if (!transaction.category_id) return { name: t('row.uncategorized'), color: '#6b7280' }
     return {
-      name: transaction.category_name || 'Non catégorisé',
+      name: transaction.category_name || t('row.uncategorized'),
       color: transaction.category_color || '#6b7280'
     }
   }
 
   const getSubcategoryInfo = () => {
-    if (!transaction.subcategory_id) return { name: '-' }
+    if (!transaction.subcategory_id) return { name: t('row.noSubcategory') }
     return {
-      name: transaction.subcategory_name || '-'
+      name: transaction.subcategory_name || t('row.noSubcategory')
     }
   }
 
@@ -180,7 +182,7 @@ const TransactionRow = ({
             onKeyDown={handleNotesKeyDown}
             onClick={(e) => e.stopPropagation()}
             className="notes-input"
-            placeholder="Ajouter une note..."
+            placeholder={t('row.notesPlaceholder')}
           />
         </td>
       )}
@@ -217,7 +219,7 @@ const TransactionRow = ({
         <button
           onClick={handleActionsClick}
           className="btn btn-outline btn-sm"
-          title="Actions"
+          title={t('row.actions')}
         >
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
             <circle cx="12" cy="12" r="1"></circle>
@@ -242,14 +244,14 @@ const TransactionRow = ({
         >
           <div className="context-menu-item" onClick={handleContextMenuCategorize}>
             <span className="context-menu-icon">🏷️</span>
-            <span>Catégoriser</span>
+            <span>{t('row.contextMenu.categorize')}</span>
           </div>
           <div
             className={`context-menu-item ${hasMultipleSelected ? 'disabled' : ''}`}
             onClick={hasMultipleSelected ? undefined : handleContextMenuFilter}
           >
             <span className="context-menu-icon">🔍</span>
-            <span>Filtrer</span>
+            <span>{t('row.contextMenu.filter')}</span>
           </div>
           <div
             className={`context-menu-item ${hasMultipleSelected ? 'disabled' : ''}`}
@@ -261,7 +263,7 @@ const TransactionRow = ({
                 <line x1="6" y1="6" x2="18" y2="18"></line>
               </svg>
             </span>
-            <span>Supprimer</span>
+            <span>{t('row.contextMenu.delete')}</span>
           </div>
         </div>
       )}

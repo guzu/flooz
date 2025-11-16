@@ -1,8 +1,10 @@
 import React, { useState, useEffect, useRef } from 'react'
+import { useTranslation } from 'react-i18next'
 import { sankey, sankeyLinkHorizontal } from 'd3-sankey'
 import { apiService } from '../../services/api'
 
 const SankeyChart = ({ year }) => {
+  const { t } = useTranslation(['charts'])
   const [data, setData] = useState(null)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState(null)
@@ -21,7 +23,7 @@ const SankeyChart = ({ year }) => {
       setData(sankeyData)
     } catch (error) {
       console.error('Error loading Sankey data:', error)
-      setError('Erreur lors du chargement du diagramme')
+      setError(t('stats.error'))
     } finally {
       setLoading(false)
     }
@@ -118,7 +120,7 @@ const SankeyChart = ({ year }) => {
   if (loading) {
     return (
       <div className="chart-loading">
-        <p>Chargement des données...</p>
+        <p>{t('stats.loading')}</p>
       </div>
     )
   }
@@ -134,7 +136,7 @@ const SankeyChart = ({ year }) => {
   if (!data || !data.nodes || data.nodes.length === 0) {
     return (
       <div className="chart-empty">
-        <p>Aucune donnée disponible pour {year}</p>
+        <p>{t('stats.noData')}</p>
       </div>
     )
   }
@@ -143,7 +145,7 @@ const SankeyChart = ({ year }) => {
     <div className="sankey-chart">
       <div className="sankey-header">
         <div className="sankey-summary">
-          <p><strong>Total des dépenses :</strong> {formatCurrency(data.total || 0)}</p>
+          <p><strong>{t('stats.totalExpenses')}:</strong> {formatCurrency(data.total || 0)}</p>
         </div>
       </div>
       <div className="sankey-toggle">

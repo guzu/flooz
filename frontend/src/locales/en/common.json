@@ -1,0 +1,39 @@
+{
+  "nav": {
+    "transactions": "Transactions",
+    "categories": "Categories",
+    "stats": "Statistics",
+    "comparison": "Comparison",
+    "aiAnalysis": "AI Analysis",
+    "importExport": "Import / Export"
+  },
+  "actions": {
+    "cancel": "Cancel",
+    "save": "Save",
+    "delete": "Delete",
+    "edit": "Edit",
+    "create": "Create",
+    "add": "Add",
+    "close": "Close",
+    "confirm": "Confirm",
+    "search": "Search",
+    "filter": "Filter",
+    "clear": "Clear",
+    "select": "Select",
+    "deselect": "Deselect"
+  },
+  "common": {
+    "loading": "Loading...",
+    "error": "Error",
+    "success": "Success",
+    "required": "Required",
+    "optional": "Optional",
+    "yes": "Yes",
+    "no": "No"
+  },
+  "tooltip": {
+    "collapseMenu": "Collapse menu",
+    "expandMenu": "Expand menu",
+    "viewSource": "View source code on GitHub"
+  }
+}

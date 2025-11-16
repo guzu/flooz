@@ -1,0 +1,144 @@
+{
+  "list": {
+    "title": "Transactions",
+    "filter": {
+      "label": "Filter by label",
+      "placeholder": "Search in labels...",
+      "placeholderFuzzy": "Smart search (tolerates typos)...",
+      "fuzzy": "Fuzzy search",
+      "fuzzyHint": "Allows finding \"CARREFOUR\" by typing \"crfr\"",
+      "allHistory": "All history",
+      "allHistoryHint": "Search across all years",
+      "uncategorized": "Uncategorized only",
+      "uncategorizedHint": "Show only transactions without category",
+      "createRule": "Create automatic categorization rule"
+    },
+    "table": {
+      "headers": {
+        "date": "Value date",
+        "operationDate": "Op. date",
+        "label": "Label",
+        "notes": "Notes",
+        "amount": "Amount",
+        "category": "Category",
+        "subcategory": "Subcategory",
+        "actions": "Actions"
+      }
+    },
+    "summary": {
+      "displayed": "<strong>{{count}}</strong> transaction(s) displayed",
+      "selected": "<strong>{{count}}</strong> selected",
+      "selectedSum": "(<strong style=\"color: {{color}}\">{{sum}} €</strong>)",
+      "total": "out of <strong>{{count}}</strong> total"
+    },
+    "loading": "Loading transactions...",
+    "empty": "No transactions found for this period.",
+    "emptyImport": "Import a CSV file to get started!",
+    "emptyFilter": "No transaction matches the filter \"<strong>{{filter}}</strong>\".",
+    "clearFilter": "Clear filter",
+    "deleteConfirm": "Are you sure you want to delete this transaction?"
+  },
+  "categorize": {
+    "title": "Categorize transaction",
+    "info": {
+      "label": "Label:",
+      "amount": "Amount:",
+      "date": "Date:"
+    },
+    "category": "Category:",
+    "subcategory": "Subcategory:",
+    "noCategoryOption": "Uncategorized",
+    "noSubcategoryOption": "-",
+    "errorSingle": "Error categorizing transaction",
+    "errorBulk": "Error bulk categorizing"
+  },
+  "bulk": {
+    "title": "Bulk categorize",
+    "message": "Categorize <strong>{{count}}</strong> transaction(s){{context}}",
+    "contextSelected": " selected",
+    "contextFilter": " matching \"{{filter}}\"",
+    "batch": "Batch ({{count}})",
+    "deselectAll": "Deselect ({{count}})",
+    "noTransactions": "No transactions to categorize",
+    "newCategory": "New category:",
+    "newCategoryPlaceholder": "Category name",
+    "newCategoryColor": "Color:",
+    "newCategoryError": "Please enter a category name",
+    "newCategoryCreateError": "Error creating category"
+  },
+  "rule": {
+    "title": "Create categorization rule",
+    "message": "Create a rule to automatically categorize transactions containing \"<strong>{{pattern}}</strong>\" during future imports.",
+    "category": "Category:",
+    "selectCategory": "Select a category",
+    "noFilter": "No active filter to create a rule",
+    "selectCategoryError": "Please select a category",
+    "createError": "Error creating rule"
+  },
+  "shortcuts": {
+    "title": "Keyboard shortcuts",
+    "slash": "Go to filter field",
+    "escape": "Clear current filter / Close this help",
+    "question": "Show this help",
+    "ctrlA": "Select all visible transactions"
+  },
+  "addTransaction": {
+    "title": "Add transaction",
+    "date": "Value date:",
+    "operationDate": "Operation date:",
+    "label": "Label *:",
+    "labelPlaceholder": "Transaction description",
+    "amount": "Amount *:",
+    "amountPlaceholder": "0.00",
+    "isCredit": "Credit",
+    "category": "Category:",
+    "subcategory": "Subcategory:",
+    "notes": "Notes:",
+    "notesPlaceholder": "Optional notes",
+    "noCategoryOption": "Uncategorized",
+    "noSubcategoryOption": "-",
+    "addButton": "Add transaction manually",
+    "validationError": "Please fill in at least label and amount",
+    "createError": "Error creating transaction"
+  },
+  "checkpoint": {
+    "title": "Bank checkpoint",
+    "addButton": "Add bank checkpoint",
+    "addTitle": "Add checkpoint",
+    "editTitle": "Edit checkpoint",
+    "date": "Date *:",
+    "balance": "Bank balance *:",
+    "balancePlaceholder": "123.45",
+    "balanceHint": "Balance amount as shown by your bank",
+    "notes": "Notes:",
+    "notesPlaceholder": "Optional notes (e.g., January statement)",
+    "validationError": "Please fill in all required fields",
+    "saveError": "Error saving checkpoint",
+    "deleteError": "Error deleting checkpoint"
+  },
+  "columns": {
+    "title": "Displayed columns",
+    "dateValue": "Value date",
+    "operationDate": "Operation date",
+    "label": "Label",
+    "notes": "Notes",
+    "amount": "Amount",
+    "category": "Category",
+    "subcategory": "Subcategory",
+    "requiredBadge": "Required"
+  },
+  "row": {
+    "notesPlaceholder": "Add a note...",
+    "actions": "Actions",
+    "uncategorized": "Uncategorized",
+    "noSubcategory": "-",
+    "contextMenu": {
+      "categorize": "Categorize",
+      "filter": "Filter",
+      "delete": "Delete"
+    }
+  },
+  "yearSelector": {
+    "label": "Year:"
+  }
+}

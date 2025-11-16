@@ -1,10 +1,12 @@
 import React, { useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import TransactionRow from './TransactionRow'
 import BalanceCheckpointRow from './BalanceCheckpointRow'
 import YearSelector from './Charts/YearSelector'
 import { apiService } from '../services/api'
 
 const TransactionList = ({ transactions, categories, subcategories, onUpdate, loading, availableYears, selectedYear, onYearChange, onLoadAllTransactions }) => {
+  const { t } = useTranslation(['transactions', 'common'])
   const [sortConfig, setSortConfig] = useState(() => {
     const saved = localStorage.getItem('flooz_sort_config')
     return saved ? JSON.parse(saved) : { key: 'date', direction: 'desc' }
@@ -516,7 +518,7 @@ const TransactionList = ({ transactions, categories, subcategories, onUpdate, lo
       onUpdate() // Refresh transactions
     } catch (error) {
       console.error('Error categorizing transaction:', error)
-      alert('Erreur lors de la catégorisation de la transaction')
+      alert(t('categorize.errorSingle'))
     }
   }
 
@@ -572,13 +574,13 @@ const TransactionList = ({ transactions, categories, subcategories, onUpdate, lo
   }
 
   const handleDelete = async (id) => {
-    if (window.confirm('Êtes-vous sûr de vouloir supprimer cette transaction ?')) {
+    if (window.confirm(t('list.deleteConfirm'))) {
       try {
         await apiService.deleteTransaction(id)
         onUpdate()
       } catch (error) {
         console.error('Error deleting transaction:', error)
-        alert('Erreur lors de la suppression de la transaction')
+        alert(t('categorize.errorSingle'))
       }
     }
   }
@@ -591,7 +593,7 @@ const TransactionList = ({ transactions, categories, subcategories, onUpdate, lo
 
   const handleCreateRule = () => {
     if (!labelFilter.trim()) {
-      alert('Aucun filtre actif pour créer une règle')
+      alert(t('rule.noFilter'))
       return
     }
     setShowRuleModal(true)
@@ -599,7 +601,7 @@ const TransactionList = ({ transactions, categories, subcategories, onUpdate, lo
 
   const handleRuleSubmit = async () => {
     if (!selectedCategory) {
-      alert('Veuillez sélectionner une catégorie')
+      alert(t('rule.selectCategoryError'))
       return
     }
 
@@ -614,7 +616,7 @@ const TransactionList = ({ transactions, categories, subcategories, onUpdate, lo
       setSelectedCategory('')
     } catch (error) {
       console.error('Error creating rule:', error)
-      alert('Erreur lors de la création de la règle')
+      alert(t('rule.createError'))
     }
   }
 
@@ -630,7 +632,7 @@ const TransactionList = ({ transactions, categories, subcategories, onUpdate, lo
       setBulkSubcategory(allSameSubcategory && selectedTransactionsList[0].subcategory_id ? selectedTransactionsList[0].subcategory_id.toString() : '')
       setShowBulkCategorizeModal(true)
     } else if (filteredAndSortedTransactions.length === 0) {
-      alert('Aucune transaction à catégoriser')
+      alert(t('bulk.noTransactions'))
       return
     } else {
       // Pre-select common category and subcategory if all filtered transactions have the same ones
@@ -645,7 +647,7 @@ const TransactionList = ({ transactions, categories, subcategories, onUpdate, lo
 
   const handleCreateNewCategory = async () => {
     if (!newCategoryName.trim()) {
-      alert('Veuillez saisir un nom de catégorie')
+      alert(t('bulk.newCategoryError'))
       return
     }
 
@@ -663,13 +665,13 @@ const TransactionList = ({ transactions, categories, subcategories, onUpdate, lo
       setNewCategoryColor('#667eea')
     } catch (error) {
       console.error('Error creating category:', error)
-      alert('Erreur lors de la création de la catégorie')
+      alert(t('bulk.newCategoryCreateError'))
     }
   }
 
   const handleBulkCategorizeSubmit = async () => {
     if (!bulkCategory) {
-      alert('Veuillez sélectionner une catégorie')
+      alert(t('rule.selectCategoryError'))
       return
     }
 
@@ -695,7 +697,7 @@ const TransactionList = ({ transactions, categories, subcategories, onUpdate, lo
       onUpdate() // Refresh transactions
     } catch (error) {
       console.error('Error bulk categorizing:', error)
-      alert('Erreur lors de la catégorisation en masse')
+      alert(t('categorize.errorBulk'))
     }
   }
 
@@ -706,7 +708,7 @@ const TransactionList = ({ transactions, categories, subcategories, onUpdate, lo
 
   const handleAddTransaction = async () => {
     if (!newTransaction.label.trim() || !newTransaction.amount) {
-      alert('Veuillez remplir au minimum le libellé et le montant')
+      alert(t('addTransaction.validationError'))
       return
     }
 
@@ -741,7 +743,7 @@ const TransactionList = ({ transactions, categories, subcategories, onUpdate, lo
       onUpdate() // Refresh transactions
     } catch (error) {
       console.error('Error creating transaction:', error)
-      alert('Erreur lors de la création de la transaction')
+      alert(t('addTransaction.createError'))
     }
   }
 
@@ -782,13 +784,13 @@ const TransactionList = ({ transactions, categories, subcategories, onUpdate, lo
       setAllTransactions(allTransactionsData)
     } catch (error) {
       console.error('Error deleting checkpoint:', error)
-      alert('Erreur lors de la suppression du point de contrôle')
+      alert(t('checkpoint.deleteError'))
     }
   }
 
   const handleSaveCheckpoint = async () => {
     if (!newCheckpoint.date || !newCheckpoint.balance) {
-      alert('Veuillez remplir tous les champs requis')
+      alert(t('checkpoint.validationError'))
       return
     }
 
@@ -827,7 +829,7 @@ const TransactionList = ({ transactions, categories, subcategories, onUpdate, lo
       setCheckpointToEdit(null)
     } catch (error) {
       console.error('Error saving checkpoint:', error)
-      alert('Erreur lors de la sauvegarde du point de contrôle')
+      alert(t('checkpoint.saveError'))
     }
   }
 
@@ -841,7 +843,7 @@ const TransactionList = ({ transactions, categories, subcategories, onUpdate, lo
   if (loading) {
     return (
       <div className="loading">
-        <p>Chargement des transactions...</p>
+        <p>{t('list.loading')}</p>
       </div>
     )
   }
@@ -849,8 +851,8 @@ const TransactionList = ({ transactions, categories, subcategories, onUpdate, lo
   if (transactions.length === 0) {
     return (
       <div className="empty-state">
-        <p>Aucune transaction trouvée pour cette période.</p>
-        <p>Importez un fichier CSV pour commencer !</p>
+        <p>{t('list.empty')}</p>
+        <p>{t('list.emptyImport')}</p>
       </div>
     )
   }
@@ -860,9 +862,7 @@ const TransactionList = ({ transactions, categories, subcategories, onUpdate, lo
       <div className="transaction-list">
         <div className="transaction-summary">
           <div className="summary-left">
-            <p>
-              <strong>{transactions.length}</strong> transaction(s) au total
-            </p>
+            <p dangerouslySetInnerHTML={{ __html: t('list.summary.displayed', { count: transactions.length }) }} />
           </div>
           <div className="summary-right">
             {availableYears && selectedYear && onYearChange && (
@@ -878,14 +878,14 @@ const TransactionList = ({ transactions, categories, subcategories, onUpdate, lo
         <div className="filter-section-wrapper">
           <div className="filter-section">
             <div className="filter-group">
-              <label htmlFor="label-filter">Filtrer par libellé :</label>
+              <label htmlFor="label-filter">{t('list.filter.label')}</label>
               <input
                 ref={filterInputRef}
                 id="label-filter"
                 type="text"
                 value={labelFilter}
                 onChange={(e) => setLabelFilter(e.target.value)}
-                placeholder={useFuzzyMatching ? "Recherche intelligente (tolère les fautes de frappe)..." : "Rechercher dans les libellés..."}
+                placeholder={useFuzzyMatching ? t('list.filter.placeholderFuzzy') : t('list.filter.placeholder')}
                 className="filter-input"
               />
               {labelFilter.trim() && (
@@ -893,14 +893,14 @@ const TransactionList = ({ transactions, categories, subcategories, onUpdate, lo
                   <button
                     className="btn btn-outline btn-sm"
                     onClick={() => setLabelFilter('')}
-                    title="Effacer le filtre"
+                    title={t('list.clearFilter')}
                   >
                     ✕
                   </button>
                   <button
                     className="btn btn-primary btn-sm create-rule-btn"
                     onClick={handleCreateRule}
-                    title="Créer une règle de catégorisation automatique"
+                    title={t('list.filter.createRule')}
                   >
                     ➕
                   </button>
@@ -915,9 +915,9 @@ const TransactionList = ({ transactions, categories, subcategories, onUpdate, lo
                   onChange={(e) => setUseFuzzyMatching(e.target.checked)}
                   className="filter-checkbox"
                 />
-                <span>Recherche floue</span>
+                <span>{t('list.filter.fuzzy')}</span>
                 <small className="checkbox-hint">
-                  Permet de trouver "CARREFOUR" en tapant "crfr"
+                  {t('list.filter.fuzzyHint')}
                 </small>
               </label>
               <label className="checkbox-label">
@@ -927,9 +927,9 @@ const TransactionList = ({ transactions, categories, subcategories, onUpdate, lo
                   onChange={(e) => setShowAllHistory(e.target.checked)}
                   className="filter-checkbox"
                 />
-                <span>Tout l'historique</span>
+                <span>{t('list.filter.allHistory')}</span>
                 <small className="checkbox-hint">
-                  Rechercher dans toutes les années
+                  {t('list.filter.allHistoryHint')}
                 </small>
               </label>
               <label className="checkbox-label">
@@ -939,9 +939,9 @@ const TransactionList = ({ transactions, categories, subcategories, onUpdate, lo
                   onChange={(e) => setShowOnlyUncategorized(e.target.checked)}
                   className="filter-checkbox"
                 />
-                <span>Non catégorisées uniquement</span>
+                <span>{t('list.filter.uncategorized')}</span>
                 <small className="checkbox-hint">
-                  Afficher seulement les transactions sans catégorie
+                  {t('list.filter.uncategorizedHint')}
                 </small>
               </label>
             </div>
@@ -950,7 +950,7 @@ const TransactionList = ({ transactions, categories, subcategories, onUpdate, lo
             <button
               className="btn btn-success btn-sm add-transaction-btn"
               onClick={() => setShowAddTransactionModal(true)}
-              title="Ajouter une transaction manuellement"
+              title={t('addTransaction.addButton')}
             >
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
                 <line x1="12" y1="5" x2="12" y2="19"></line>
@@ -960,7 +960,7 @@ const TransactionList = ({ transactions, categories, subcategories, onUpdate, lo
             <button
               className="btn btn-info btn-sm add-checkpoint-btn"
               onClick={handleAddCheckpoint}
-              title="Ajouter un point de contrôle bancaire"
+              title={t('checkpoint.addButton')}
             >
               📊
             </button>
@@ -968,12 +968,12 @@ const TransactionList = ({ transactions, categories, subcategories, onUpdate, lo
         </div>
 
         <div className="empty-state">
-          <p>Aucune transaction ne correspond au filtre "<strong>{labelFilter}</strong>".</p>
+          <p dangerouslySetInnerHTML={{ __html: t('list.emptyFilter', { filter: labelFilter }) }} />
           <button
             className="btn btn-outline btn-sm"
             onClick={() => setLabelFilter('')}
           >
-            Effacer le filtre
+            {t('list.clearFilter')}
           </button>
         </div>
       </div>
@@ -985,16 +985,20 @@ const TransactionList = ({ transactions, categories, subcategories, onUpdate, lo
       <div className="transaction-summary">
         <div className="summary-left">
           <p>
-            <strong>{filteredAndSortedTransactions.length}</strong> transaction(s) affichée(s)
+            <span dangerouslySetInnerHTML={{ __html: t('list.summary.displayed', { count: filteredAndSortedTransactions.length }) }} />
             {selectedTransactions.size > 0 && (
-              <span> | <strong>{selectedTransactions.size}</strong> sélectionnée(s)
-                {' '}(<strong style={{ color: selectedSum <= 0 ? '#10b981' : '#ef4444' }}>
-                  {(-selectedSum).toFixed(2)} €
-                </strong>)
+              <span>
+                {' | '}
+                <span dangerouslySetInnerHTML={{ __html: t('list.summary.selected', { count: selectedTransactions.size }) }} />
+                {' '}
+                <span dangerouslySetInnerHTML={{ __html: t('list.summary.selectedSum', { sum: (-selectedSum).toFixed(2), color: selectedSum <= 0 ? '#10b981' : '#ef4444' }) }} />
               </span>
             )}
             {labelFilter.trim() && (
-              <span> sur <strong>{transactions.length}</strong> au total</span>
+              <span>
+                {' '}
+                <span dangerouslySetInnerHTML={{ __html: t('list.summary.total', { count: transactions.length }) }} />
+              </span>
             )}
           </p>
         </div>
@@ -1012,14 +1016,14 @@ const TransactionList = ({ transactions, categories, subcategories, onUpdate, lo
       <div className="filter-section-wrapper">
         <div className="filter-section">
           <div className="filter-group">
-            <label htmlFor="label-filter">Filtrer par libellé :</label>
+            <label htmlFor="label-filter">{t('list.filter.label')}</label>
             <input
               ref={filterInputRef}
               id="label-filter"
               type="text"
               value={labelFilter}
               onChange={(e) => setLabelFilter(e.target.value)}
-              placeholder={useFuzzyMatching ? "Recherche intelligente (tolère les fautes de frappe)..." : "Rechercher dans les libellés..."}
+              placeholder={useFuzzyMatching ? t('list.filter.placeholderFuzzy') : t('list.filter.placeholder')}
               className="filter-input"
             />
             {labelFilter.trim() && (
@@ -1027,14 +1031,14 @@ const TransactionList = ({ transactions, categories, subcategories, onUpdate, lo
                 <button
                   className="btn btn-outline btn-sm"
                   onClick={() => setLabelFilter('')}
-                  title="Effacer le filtre"
+                  title={t('list.clearFilter')}
                 >
                   ✕
                 </button>
                 <button
                   className="btn btn-primary btn-sm create-rule-btn"
                   onClick={handleCreateRule}
-                  title="Créer une règle de catégorisation automatique"
+                  title={t('list.filter.createRule')}
                 >
                   ➕
                 </button>
@@ -1042,18 +1046,18 @@ const TransactionList = ({ transactions, categories, subcategories, onUpdate, lo
                   <button
                     className="btn btn-secondary btn-sm"
                     onClick={handleBulkCategorize}
-                    title="Catégoriser toutes les transactions filtrées"
+                    title={t('bulk.title')}
                   >
-                    🏷️ Batch ({selectedTransactions.size > 0 ? selectedTransactions.size : filteredAndSortedTransactions.length})
+                    🏷️ {t('bulk.batch', { count: selectedTransactions.size > 0 ? selectedTransactions.size : filteredAndSortedTransactions.length })}
                   </button>
                 )}
                 {selectedTransactions.size > 0 && (
                   <button
                     className="btn btn-outline btn-sm"
                     onClick={clearSelection}
-                    title="Désélectionner toutes les transactions"
+                    title={t('bulk.deselectAll')}
                   >
-                    Désélectionner ({selectedTransactions.size})
+                    {t('bulk.deselectAll', { count: selectedTransactions.size })}
                   </button>
                 )}
               </>
@@ -1067,9 +1071,9 @@ const TransactionList = ({ transactions, categories, subcategories, onUpdate, lo
               onChange={(e) => setUseFuzzyMatching(e.target.checked)}
               className="filter-checkbox"
             />
-            <span>Recherche floue</span>
+            <span>{t('list.filter.fuzzy')}</span>
             <small className="checkbox-hint">
-              Permet de trouver "CARREFOUR" en tapant "crfr"
+              {t('list.filter.fuzzyHint')}
             </small>
           </label>
           <label className="checkbox-label">
@@ -1079,9 +1083,9 @@ const TransactionList = ({ transactions, categories, subcategories, onUpdate, lo
               onChange={(e) => setShowAllHistory(e.target.checked)}
               className="filter-checkbox"
             />
-            <span>Tout l'historique</span>
+            <span>{t('list.filter.allHistory')}</span>
             <small className="checkbox-hint">
-              Rechercher dans toutes les années
+              {t('list.filter.allHistoryHint')}
             </small>
           </label>
           <label className="checkbox-label">
@@ -1091,9 +1095,9 @@ const TransactionList = ({ transactions, categories, subcategories, onUpdate, lo
               onChange={(e) => setShowOnlyUncategorized(e.target.checked)}
               className="filter-checkbox"
             />
-            <span>Non catégorisées uniquement</span>
+            <span>{t('list.filter.uncategorized')}</span>
             <small className="checkbox-hint">
-              Afficher seulement les transactions sans catégorie
+              {t('list.filter.uncategorizedHint')}
             </small>
           </label>
         </div>
@@ -1102,7 +1106,7 @@ const TransactionList = ({ transactions, categories, subcategories, onUpdate, lo
           <button
             className="btn btn-success btn-sm add-transaction-btn"
             onClick={() => setShowAddTransactionModal(true)}
-            title="Ajouter une transaction manuellement"
+            title={t('addTransaction.addButton')}
           >
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
               <line x1="12" y1="5" x2="12" y2="19"></line>
@@ -1112,7 +1116,7 @@ const TransactionList = ({ transactions, categories, subcategories, onUpdate, lo
           <button
             className="btn btn-info btn-sm add-checkpoint-btn"
             onClick={handleAddCheckpoint}
-            title="Ajouter un point de contrôle bancaire"
+            title={t('checkpoint.addButton')}
           >
             ✓
           </button>
@@ -1128,7 +1132,7 @@ const TransactionList = ({ transactions, categories, subcategories, onUpdate, lo
                   onClick={() => handleSort('date')}
                   className="sortable date-col"
                 >
-                  Date valeur {getSortIcon('date')}
+                  {t('list.table.headers.date')} {getSortIcon('date')}
                 </th>
               )}
               {visibleColumns.operation_date && (
@@ -1136,7 +1140,7 @@ const TransactionList = ({ transactions, categories, subcategories, onUpdate, lo
                   onClick={() => handleSort('operation_date')}
                   className="sortable operation-date-col"
                 >
-                  Date op. {getSortIcon('operation_date')}
+                  {t('list.table.headers.operationDate')} {getSortIcon('operation_date')}
                 </th>
               )}
               {visibleColumns.label && (
@@ -1144,12 +1148,12 @@ const TransactionList = ({ transactions, categories, subcategories, onUpdate, lo
                   onClick={() => handleSort('label')}
                   className="sortable label-col"
                 >
-                  Libellé {getSortIcon('label')}
+                  {t('list.table.headers.label')} {getSortIcon('label')}
                 </th>
               )}
               {visibleColumns.notes && (
                 <th className="notes-col">
-                  Notes
+                  {t('list.table.headers.notes')}
                 </th>
               )}
               {visibleColumns.amount && (
@@ -1157,7 +1161,7 @@ const TransactionList = ({ transactions, categories, subcategories, onUpdate, lo
                   onClick={() => handleSort('amount')}
                   className="sortable amount-col"
                 >
-                  Montant {getSortIcon('amount')}
+                  {t('list.table.headers.amount')} {getSortIcon('amount')}
                 </th>
               )}
               {visibleColumns.category && (
@@ -1165,7 +1169,7 @@ const TransactionList = ({ transactions, categories, subcategories, onUpdate, lo
                   onClick={() => handleSort('category_name')}
                   className="sortable category-col"
                 >
-                  Catégorie {getSortIcon('category_name')}
+                  {t('list.table.headers.category')} {getSortIcon('category_name')}
                 </th>
               )}
               {visibleColumns.subcategory && (
@@ -1173,15 +1177,15 @@ const TransactionList = ({ transactions, categories, subcategories, onUpdate, lo
                   onClick={() => handleSort('subcategory_name')}
                   className="sortable subcategory-col"
                 >
-                  Sous-catégorie {getSortIcon('subcategory_name')}
+                  {t('list.table.headers.subcategory')} {getSortIcon('subcategory_name')}
                 </th>
               )}
               <th className="actions-col">
-                Actions
+                {t('list.table.headers.actions')}
                 <button
                   className="column-selector-btn"
                   onClick={() => setShowColumnSelector(!showColumnSelector)}
-                  title="Sélectionner les colonnes à afficher"
+                  title={t('columns.title')}
                 >
                   <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                     <rect x="3" y="3" width="18" height="18" rx="2"/>
@@ -1233,21 +1237,20 @@ const TransactionList = ({ transactions, categories, subcategories, onUpdate, lo
       {showRuleModal && (
         <div className="modal-overlay" onClick={() => setShowRuleModal(false)}>
           <div className="modal" onClick={(e) => e.stopPropagation()}>
-            <h3>Créer une règle de catégorisation</h3>
+            <h3>{t('rule.title')}</h3>
             <p>
-              Créer une règle pour catégoriser automatiquement les transactions contenant
-              "<strong>{labelFilter}</strong>" lors des futurs imports.
+              {t('rule.message', { pattern: labelFilter }).split('<strong>').map((part, i) => i === 1 ? <strong key={i}>{part.split('</strong>')[0]}</strong> : part)}
             </p>
 
             <div className="form-group">
-              <label htmlFor="rule-category">Catégorie :</label>
+              <label htmlFor="rule-category">{t('rule.category')}</label>
               <select
                 id="rule-category"
                 value={selectedCategory}
                 onChange={(e) => setSelectedCategory(e.target.value)}
                 className="edit-select"
               >
-                <option value="">Sélectionner une catégorie</option>
+                <option value="">{t('rule.selectCategory')}</option>
                 {categories.map((category) => (
                   <option key={category.id} value={category.id}>
                     {category.name}
@@ -1260,16 +1263,12 @@ const TransactionList = ({ transactions, categories, subcategories, onUpdate, lo
               <button
                 className="btn btn-secondary"
                 onClick={() => setShowRuleModal(false)}
-              >
-                Annuler
-              </button>
+              >{t('common:actions.cancel')}</button>
               <button
                 className="btn btn-primary"
                 onClick={handleRuleSubmit}
                 disabled={!selectedCategory}
-              >
-                Créer la règle
-              </button>
+              >{t('common:actions.create')}</button>
             </div>
           </div>
         </div>
@@ -1279,20 +1278,18 @@ const TransactionList = ({ transactions, categories, subcategories, onUpdate, lo
       {showBulkCategorizeModal && (
         <div className="modal-overlay" onClick={() => setShowBulkCategorizeModal(false)}>
           <div className="modal" onClick={(e) => e.stopPropagation()}>
-            <h3>Catégoriser en masse</h3>
-            <p>
-              Catégoriser <strong>
-                {selectedTransactions.size > 0
-                  ? selectedTransactions.size
-                  : filteredAndSortedTransactions.length}
-              </strong> transaction(s)
-              {selectedTransactions.size > 0
-                ? ' sélectionnée(s)'
-                : labelFilter && ` correspondant à "${labelFilter}"`}
-            </p>
+            <h3>{t('bulk.title')}</h3>
+            <p dangerouslySetInnerHTML={{
+              __html: t('bulk.message', {
+                count: selectedTransactions.size > 0 ? selectedTransactions.size : filteredAndSortedTransactions.length,
+                context: selectedTransactions.size > 0
+                  ? t('bulk.contextSelected')
+                  : (labelFilter ? t('bulk.contextFilter', { filter: labelFilter }) : '')
+              })
+            }} />
 
             <div className="form-group">
-              <label htmlFor="bulk-category">Catégorie :</label>
+              <label htmlFor="bulk-category">{t('categorize.category')}</label>
               <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
                 <select
                   id="bulk-category"
@@ -1304,7 +1301,7 @@ const TransactionList = ({ transactions, categories, subcategories, onUpdate, lo
                   className="edit-select"
                   style={{ flex: 1 }}
                 >
-                  <option value="">Sélectionner une catégorie</option>
+                  <option value="">{t('rule.selectCategory')}</option>
                   {categories.map((category) => (
                     <option key={category.id} value={category.id}>
                       {category.name}
@@ -1314,7 +1311,7 @@ const TransactionList = ({ transactions, categories, subcategories, onUpdate, lo
                 <button
                   className="btn btn-outline btn-sm"
                   onClick={() => setShowNewCategoryForm(!showNewCategoryForm)}
-                  title="Créer une nouvelle catégorie"
+                  title={t('bulk.newCategory')}
                 >
                   ➕
                 </button>
@@ -1324,16 +1321,16 @@ const TransactionList = ({ transactions, categories, subcategories, onUpdate, lo
             {/* New Category Form */}
             {showNewCategoryForm && (
               <div className="form-group" style={{ background: '#f9fafb', padding: '1rem', borderRadius: '0.5rem', marginBottom: '1rem' }}>
-                <label htmlFor="new-category-name">Nouvelle catégorie :</label>
+                <label htmlFor="new-category-name">{t('bulk.newCategory')}</label>
                 <input
                   id="new-category-name"
                   type="text"
                   value={newCategoryName}
                   onChange={(e) => setNewCategoryName(e.target.value)}
-                  placeholder="Nom de la catégorie"
+                  placeholder={t('bulk.newCategoryPlaceholder')}
                   className="edit-input"
                 />
-                <label htmlFor="new-category-color" style={{ marginTop: '0.5rem' }}>Couleur :</label>
+                <label htmlFor="new-category-color" style={{ marginTop: '0.5rem' }}>{t('bulk.newCategoryColor')}</label>
                 <input
                   id="new-category-color"
                   type="color"
@@ -1346,9 +1343,7 @@ const TransactionList = ({ transactions, categories, subcategories, onUpdate, lo
                     className="btn btn-success btn-sm"
                     onClick={handleCreateNewCategory}
                     style={{ marginRight: '0.5rem' }}
-                  >
-                    Créer
-                  </button>
+                  >{t('common:actions.create')}</button>
                   <button
                     className="btn btn-secondary btn-sm"
                     onClick={() => {
@@ -1356,15 +1351,13 @@ const TransactionList = ({ transactions, categories, subcategories, onUpdate, lo
                       setNewCategoryName('')
                       setNewCategoryColor('#667eea')
                     }}
-                  >
-                    Annuler
-                  </button>
+                  >{t('common:actions.cancel')}</button>
                 </div>
               </div>
             )}
 
             <div className="form-group">
-              <label htmlFor="bulk-subcategory">Sous-catégorie (optionnel) :</label>
+              <label htmlFor="bulk-subcategory">{t('categorize.subcategory')}</label>
               <select
                 id="bulk-subcategory"
                 value={bulkSubcategory}
@@ -1372,7 +1365,7 @@ const TransactionList = ({ transactions, categories, subcategories, onUpdate, lo
                 className="edit-select"
                 disabled={!bulkCategory}
               >
-                <option value="">Aucune sous-catégorie</option>
+                <option value="">{t('categorize.noSubcategoryOption')}</option>
                 {getAvailableSubcategoriesForBulk().map((subcategory) => (
                   <option key={subcategory.id} value={subcategory.id}>
                     {subcategory.name}
@@ -1392,15 +1385,13 @@ const TransactionList = ({ transactions, categories, subcategories, onUpdate, lo
                   setNewCategoryName('')
                   setNewCategoryColor('#667eea')
                 }}
-              >
-                Annuler
-              </button>
+              >{t('common:actions.cancel')}</button>
               <button
                 className="btn btn-primary"
                 onClick={handleBulkCategorizeSubmit}
                 disabled={!bulkCategory}
               >
-                Catégoriser ({selectedTransactions.size > 0 ? selectedTransactions.size : filteredAndSortedTransactions.length})
+                {t('bulk.batch', { count: selectedTransactions.size > 0 ? selectedTransactions.size : filteredAndSortedTransactions.length })}
               </button>
             </div>
           </div>
@@ -1411,32 +1402,30 @@ const TransactionList = ({ transactions, categories, subcategories, onUpdate, lo
       {showShortcuts && (
         <div className="modal-overlay" onClick={() => setShowShortcuts(false)}>
           <div className="modal" onClick={(e) => e.stopPropagation()}>
-            <h3>Raccourcis clavier</h3>
+            <h3>{t('shortcuts.title')}</h3>
             <div className="shortcuts-list">
               <div className="shortcut-item">
                 <kbd>/</kbd>
-                <span>Aller au champ de filtrage</span>
+                <span>{t('shortcuts.slash')}</span>
               </div>
               <div className="shortcut-item">
                 <kbd>Escape</kbd>
-                <span>Effacer le filtre courant / Fermer cette aide</span>
+                <span>{t('shortcuts.escape')}</span>
               </div>
               <div className="shortcut-item">
                 <kbd>?</kbd>
-                <span>Afficher cette aide</span>
+                <span>{t('shortcuts.question')}</span>
               </div>
               <div className="shortcut-item">
                 <kbd>Ctrl+A</kbd>
-                <span>Sélectionner toutes les transactions visibles</span>
+                <span>{t('shortcuts.ctrlA')}</span>
               </div>
             </div>
             <div className="modal-actions">
               <button
                 className="btn btn-secondary"
                 onClick={() => setShowShortcuts(false)}
-              >
-                Fermer
-              </button>
+              >{t('common:actions.close')}</button>
             </div>
           </div>
         </div>
@@ -1446,21 +1435,21 @@ const TransactionList = ({ transactions, categories, subcategories, onUpdate, lo
       {showCategorizeModal && transactionToCategorize && (
         <div className="modal-overlay" onClick={() => setShowCategorizeModal(false)}>
           <div className="modal" onClick={(e) => e.stopPropagation()}>
-            <h3>Catégoriser la transaction</h3>
+            <h3>{t('categorize.title')}</h3>
             <div className="transaction-info">
-              <p><strong>Libellé :</strong> {transactionToCategorize.label}</p>
-              <p><strong>Montant :</strong> {transactionToCategorize.amount}€</p>
-              <p><strong>Date :</strong> {new Date(transactionToCategorize.date).toLocaleDateString('fr-FR')}</p>
+              <p><strong>{t('categorize.info.label')}</strong> {transactionToCategorize.label}</p>
+              <p><strong>{t('categorize.info.amount')}</strong> {transactionToCategorize.amount}€</p>
+              <p><strong>{t('categorize.info.date')}</strong> {new Date(transactionToCategorize.date).toLocaleDateString('fr-FR')}</p>
             </div>
 
             <div className="form-group">
-              <label>Catégorie :</label>
+              <label>{t('categorize.category')}</label>
               <select
                 value={selectedCategoryForSingle}
                 onChange={(e) => handleSingleCategoryChange(e.target.value)}
                 className="form-select"
               >
-                <option value="">Non catégorisé</option>
+                <option value="">{t('categorize.noCategoryOption')}</option>
                 {categories.map((category) => (
                   <option key={category.id} value={category.id}>
                     {category.name}
@@ -1470,14 +1459,14 @@ const TransactionList = ({ transactions, categories, subcategories, onUpdate, lo
             </div>
 
             <div className="form-group">
-              <label>Sous-catégorie :</label>
+              <label>{t('categorize.subcategory')}</label>
               <select
                 value={selectedSubcategoryForSingle}
                 onChange={(e) => setSelectedSubcategoryForSingle(e.target.value)}
                 className="form-select"
                 disabled={!selectedCategoryForSingle}
               >
-                <option value="">-</option>
+                <option value="">{t('categorize.noSubcategoryOption')}</option>
                 {getAvailableSubcategoriesForSingle().map((subcategory) => (
                   <option key={subcategory.id} value={subcategory.id}>
                     {subcategory.name}
@@ -1490,9 +1479,7 @@ const TransactionList = ({ transactions, categories, subcategories, onUpdate, lo
               <button
                 className="btn btn-secondary"
                 onClick={() => setShowCategorizeModal(false)}
-              >
-                Annuler
-              </button>
+              >{t('common:actions.cancel')}</button>
               <button
                 className="btn btn-primary"
                 onClick={handleSingleCategorizeSubmit}
@@ -1508,7 +1495,7 @@ const TransactionList = ({ transactions, categories, subcategories, onUpdate, lo
       {showColumnSelector && (
         <div className="modal-overlay" onClick={() => setShowColumnSelector(false)}>
           <div className="modal column-selector-modal" onClick={(e) => e.stopPropagation()}>
-            <h3>Colonnes affichées</h3>
+            <h3>{t('columns.title')}</h3>
             <div className="column-selector-list">
               <label className={`column-selector-item ${!visibleColumns.date ? 'disabled' : ''}`}>
                 <input
@@ -1517,8 +1504,8 @@ const TransactionList = ({ transactions, categories, subcategories, onUpdate, lo
                   disabled={true}
                   readOnly
                 />
-                <span>Date valeur</span>
-                <small className="required-badge">Obligatoire</small>
+                <span>{t('columns.dateValue')}</span>
+                <small className="required-badge">{t('columns.requiredBadge')}</small>
               </label>
 
               <label className="column-selector-item">
@@ -1527,7 +1514,7 @@ const TransactionList = ({ transactions, categories, subcategories, onUpdate, lo
                   checked={visibleColumns.operation_date}
                   onChange={(e) => setVisibleColumns({...visibleColumns, operation_date: e.target.checked})}
                 />
-                <span>Date opération</span>
+                <span>{t('columns.operationDate')}</span>
               </label>
 
               <label className={`column-selector-item ${!visibleColumns.label ? 'disabled' : ''}`}>
@@ -1537,8 +1524,8 @@ const TransactionList = ({ transactions, categories, subcategories, onUpdate, lo
                   disabled={true}
                   readOnly
                 />
-                <span>Libellé</span>
-                <small className="required-badge">Obligatoire</small>
+                <span>{t('columns.label')}</span>
+                <small className="required-badge">{t('columns.requiredBadge')}</small>
               </label>
 
               <label className="column-selector-item">
@@ -1547,7 +1534,7 @@ const TransactionList = ({ transactions, categories, subcategories, onUpdate, lo
                   checked={visibleColumns.notes}
                   onChange={(e) => setVisibleColumns({...visibleColumns, notes: e.target.checked})}
                 />
-                <span>Notes</span>
+                <span>{t('columns.notes')}</span>
               </label>
 
               <label className={`column-selector-item ${!visibleColumns.amount ? 'disabled' : ''}`}>
@@ -1557,8 +1544,8 @@ const TransactionList = ({ transactions, categories, subcategories, onUpdate, lo
                   disabled={true}
                   readOnly
                 />
-                <span>Montant</span>
-                <small className="required-badge">Obligatoire</small>
+                <span>{t('columns.amount')}</span>
+                <small className="required-badge">{t('columns.requiredBadge')}</small>
               </label>
 
               <label className="column-selector-item">
@@ -1567,7 +1554,7 @@ const TransactionList = ({ transactions, categories, subcategories, onUpdate, lo
                   checked={visibleColumns.category}
                   onChange={(e) => setVisibleColumns({...visibleColumns, category: e.target.checked})}
                 />
-                <span>Catégorie</span>
+                <span>{t('columns.category')}</span>
               </label>
 
               <label className="column-selector-item">
@@ -1576,16 +1563,14 @@ const TransactionList = ({ transactions, categories, subcategories, onUpdate, lo
                   checked={visibleColumns.subcategory}
                   onChange={(e) => setVisibleColumns({...visibleColumns, subcategory: e.target.checked})}
                 />
-                <span>Sous-catégorie</span>
+                <span>{t('columns.subcategory')}</span>
               </label>
             </div>
             <div className="modal-actions">
               <button
                 className="btn btn-secondary"
                 onClick={() => setShowColumnSelector(false)}
-              >
-                Fermer
-              </button>
+              >{t('common:actions.close')}</button>
             </div>
           </div>
         </div>
@@ -1595,10 +1580,10 @@ const TransactionList = ({ transactions, categories, subcategories, onUpdate, lo
       {showAddTransactionModal && (
         <div className="modal-overlay" onClick={() => setShowAddTransactionModal(false)}>
           <div className="modal" onClick={(e) => e.stopPropagation()}>
-            <h3>Ajouter une transaction</h3>
+            <h3>{t('addTransaction.title')}</h3>
 
             <div className="form-group">
-              <label htmlFor="new-date">Date de valeur :</label>
+              <label htmlFor="new-date">{t('addTransaction.date')}</label>
               <input
                 id="new-date"
                 type="date"
@@ -1609,7 +1594,7 @@ const TransactionList = ({ transactions, categories, subcategories, onUpdate, lo
             </div>
 
             <div className="form-group">
-              <label htmlFor="new-operation-date">Date d'opération :</label>
+              <label htmlFor="new-operation-date">{t('addTransaction.operationDate')}</label>
               <input
                 id="new-operation-date"
                 type="date"
@@ -1620,27 +1605,27 @@ const TransactionList = ({ transactions, categories, subcategories, onUpdate, lo
             </div>
 
             <div className="form-group">
-              <label htmlFor="new-label">Libellé * :</label>
+              <label htmlFor="new-label">{t('addTransaction.label')}</label>
               <input
                 id="new-label"
                 type="text"
                 value={newTransaction.label}
                 onChange={(e) => setNewTransaction({...newTransaction, label: e.target.value})}
                 className="form-input"
-                placeholder="Description de la transaction"
+                placeholder={t('addTransaction.labelPlaceholder')}
               />
             </div>
 
             <div className="form-group">
               <div style={{ display: 'flex', alignItems: 'center', gap: '2rem' }}>
-                <label htmlFor="new-amount">Montant * :</label>
+                <label htmlFor="new-amount">{t('addTransaction.amount')}</label>
                 <label className="checkbox-label" style={{ whiteSpace: 'nowrap', gap: '0.25rem' }}>
                   <input
                     type="checkbox"
                     checked={newTransaction.is_credit}
                     onChange={(e) => setNewTransaction({...newTransaction, is_credit: e.target.checked})}
                   />
-                  <span>Crédit</span>
+                  <span>{t('addTransaction.isCredit')}</span>
                 </label>
               </div>
               <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
@@ -1654,21 +1639,21 @@ const TransactionList = ({ transactions, categories, subcategories, onUpdate, lo
                   value={newTransaction.amount}
                   onChange={(e) => setNewTransaction({...newTransaction, amount: e.target.value})}
                   className="form-input"
-                  placeholder="0.00"
+                  placeholder={t('addTransaction.amountPlaceholder')}
                   style={{ flex: 1 }}
                 />
               </div>
             </div>
 
             <div className="form-group">
-              <label htmlFor="new-category">Catégorie :</label>
+              <label htmlFor="new-category">{t('addTransaction.category')}</label>
               <select
                 id="new-category"
                 value={newTransaction.category_id}
                 onChange={(e) => setNewTransaction({...newTransaction, category_id: e.target.value, subcategory_id: ''})}
                 className="form-select"
               >
-                <option value="">Non catégorisé</option>
+                <option value="">{t('categorize.noCategoryOption')}</option>
                 {categories.map((category) => (
                   <option key={category.id} value={category.id}>
                     {category.name}
@@ -1678,7 +1663,7 @@ const TransactionList = ({ transactions, categories, subcategories, onUpdate, lo
             </div>
 
             <div className="form-group">
-              <label htmlFor="new-subcategory">Sous-catégorie :</label>
+              <label htmlFor="new-subcategory">{t('addTransaction.subcategory')}</label>
               <select
                 id="new-subcategory"
                 value={newTransaction.subcategory_id}
@@ -1686,7 +1671,7 @@ const TransactionList = ({ transactions, categories, subcategories, onUpdate, lo
                 className="form-select"
                 disabled={!newTransaction.category_id}
               >
-                <option value="">-</option>
+                <option value="">{t('categorize.noSubcategoryOption')}</option>
                 {getAvailableSubcategoriesForAdd().map((subcategory) => (
                   <option key={subcategory.id} value={subcategory.id}>
                     {subcategory.name}
@@ -1696,14 +1681,14 @@ const TransactionList = ({ transactions, categories, subcategories, onUpdate, lo
             </div>
 
             <div className="form-group">
-              <label htmlFor="new-notes">Notes :</label>
+              <label htmlFor="new-notes">{t('addTransaction.notes')}</label>
               <textarea
                 id="new-notes"
                 value={newTransaction.notes}
                 onChange={(e) => setNewTransaction({...newTransaction, notes: e.target.value})}
                 className="form-textarea"
                 rows="3"
-                placeholder="Notes optionnelles"
+                placeholder={t('addTransaction.notesPlaceholder')}
               />
             </div>
 
@@ -1711,15 +1696,11 @@ const TransactionList = ({ transactions, categories, subcategories, onUpdate, lo
               <button
                 className="btn btn-secondary"
                 onClick={() => setShowAddTransactionModal(false)}
-              >
-                Annuler
-              </button>
+              >{t('common:actions.cancel')}</button>
               <button
                 className="btn btn-primary"
                 onClick={handleAddTransaction}
-              >
-                Ajouter
-              </button>
+              >{t('common:actions.add')}</button>
             </div>
           </div>
         </div>
@@ -1729,10 +1710,10 @@ const TransactionList = ({ transactions, categories, subcategories, onUpdate, lo
       {showCheckpointModal && (
         <div className="modal-overlay" onClick={() => setShowCheckpointModal(false)}>
           <div className="modal" onClick={(e) => e.stopPropagation()}>
-            <h2>{checkpointToEdit ? 'Modifier le point de contrôle' : 'Ajouter un point de contrôle'}</h2>
+            <h2>{checkpointToEdit ? t('checkpoint.editTitle') : t('checkpoint.addTitle')}</h2>
 
             <div className="form-group">
-              <label htmlFor="checkpoint-date">Date * :</label>
+              <label htmlFor="checkpoint-date">{t('checkpoint.date')}</label>
               <input
                 id="checkpoint-date"
                 type="date"
@@ -1744,7 +1725,7 @@ const TransactionList = ({ transactions, categories, subcategories, onUpdate, lo
             </div>
 
             <div className="form-group">
-              <label htmlFor="checkpoint-balance">Solde bancaire * :</label>
+              <label htmlFor="checkpoint-balance">{t('checkpoint.balance')}</label>
               <input
                 id="checkpoint-balance"
                 type="number"
@@ -1752,21 +1733,21 @@ const TransactionList = ({ transactions, categories, subcategories, onUpdate, lo
                 value={newCheckpoint.balance}
                 onChange={(e) => setNewCheckpoint({...newCheckpoint, balance: e.target.value})}
                 className="form-input"
-                placeholder="123.45"
+                placeholder={t('checkpoint.balancePlaceholder')}
                 required
               />
-              <small className="form-hint">Montant du solde tel qu'indiqué par votre banque</small>
+              <small className="form-hint">{t('checkpoint.balanceHint')}</small>
             </div>
 
             <div className="form-group">
-              <label htmlFor="checkpoint-notes">Notes :</label>
+              <label htmlFor="checkpoint-notes">{t('checkpoint.notes')}</label>
               <textarea
                 id="checkpoint-notes"
                 value={newCheckpoint.notes}
                 onChange={(e) => setNewCheckpoint({...newCheckpoint, notes: e.target.value})}
                 className="form-textarea"
                 rows="2"
-                placeholder="Notes optionnelles (ex: relevé de janvier)"
+                placeholder={t('checkpoint.notesPlaceholder')}
               />
             </div>
 
@@ -1777,14 +1758,12 @@ const TransactionList = ({ transactions, categories, subcategories, onUpdate, lo
                   setShowCheckpointModal(false)
                   setCheckpointToEdit(null)
                 }}
-              >
-                Annuler
-              </button>
+              >{t('common:actions.cancel')}</button>
               <button
                 className="btn btn-primary"
                 onClick={handleSaveCheckpoint}
               >
-                {checkpointToEdit ? 'Modifier' : 'Ajouter'}
+                {checkpointToEdit ? t('common:actions.edit') : t('common:actions.add')}
               </button>
             </div>
           </div>

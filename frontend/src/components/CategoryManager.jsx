@@ -1,7 +1,9 @@
 import React, { useState, useEffect } from 'react'
+import { useTranslation } from 'react-i18next'
 import { apiService } from '../services/api'
 
 const CategoryManager = ({ categories, onUpdate }) => {
+  const { t } = useTranslation(['categories'])
   const [activeTab, setActiveTab] = useState('categories')
   const [subcategories, setSubcategories] = useState([])
   const [rules, setRules] = useState([])
@@ -79,18 +81,18 @@ const CategoryManager = ({ categories, onUpdate }) => {
       onUpdate()
     } catch (error) {
       console.error('Error saving category:', error)
-      alert('Erreur lors de la sauvegarde de la catégorie')
+      alert(t('alerts.category.saveError'))
     }
   }
 
   const handleDeleteCategory = async (id, name) => {
-    if (window.confirm(`Êtes-vous sûr de vouloir supprimer la catégorie "${name}" ?`)) {
+    if (window.confirm(t('alerts.category.deleteConfirm', { name }))) {
       try {
         await apiService.deleteCategory(id)
         onUpdate()
       } catch (error) {
         console.error('Error deleting category:', error)
-        alert('Erreur lors de la suppression : ' + (error.response?.data?.error || error.message))
+        alert(t('alerts.category.deleteError', { error: error.response?.data?.error || error.message }))
       }
     }
   }
@@ -133,19 +135,19 @@ const CategoryManager = ({ categories, onUpdate }) => {
       onUpdate()
     } catch (error) {
       console.error('Error saving subcategory:', error)
-      alert('Erreur lors de la sauvegarde de la sous-catégorie')
+      alert(t('alerts.subcategory.saveError'))
     }
   }
 
   const handleDeleteSubcategory = async (id, name) => {
-    if (window.confirm(`Êtes-vous sûr de vouloir supprimer la sous-catégorie "${name}" ?`)) {
+    if (window.confirm(t('alerts.subcategory.deleteConfirm', { name }))) {
       try {
         await apiService.deleteSubcategory(id)
         await loadSubcategories()
         onUpdate()
       } catch (error) {
         console.error('Error deleting subcategory:', error)
-        alert('Erreur lors de la suppression : ' + (error.response?.data?.error || error.message))
+        alert(t('alerts.subcategory.deleteError', { error: error.response?.data?.error || error.message }))
       }
     }
   }
@@ -161,18 +163,18 @@ const CategoryManager = ({ categories, onUpdate }) => {
       loadRules()
     } catch (error) {
       console.error('Error creating rule:', error)
-      alert('Erreur lors de la création de la règle')
+      alert(t('alerts.rule.createError'))
     }
   }
 
   const handleDeleteRule = async (id) => {
-    if (window.confirm('Êtes-vous sûr de vouloir supprimer cette règle ?')) {
+    if (window.confirm(t('alerts.rule.deleteConfirm'))) {
       try {
         await apiService.deleteCategorizationRule(id)
         loadRules()
       } catch (error) {
         console.error('Error deleting rule:', error)
-        alert('Erreur lors de la suppression de la règle')
+        alert(t('alerts.rule.deleteError'))
       }
     }
   }
@@ -180,7 +182,7 @@ const CategoryManager = ({ categories, onUpdate }) => {
   // Build hierarchical data structure
   const getHierarchicalData = () => {
     return categories
-      .filter(category => category.name !== 'Non catégorisé')
+      .filter(category => category.name !== t('list.uncategorized'))
       .map(category => ({
         ...category,
         subcategories: subcategories
@@ -200,12 +202,12 @@ const CategoryManager = ({ categories, onUpdate }) => {
       <div className="categories-tab">
         <div className="section">
           <div className="section-header">
-            <h3>📋 Liste des catégories</h3>
+            <h3>{t('list.title')}</h3>
             <button
               className="btn btn-primary btn-sm"
               onClick={() => openCategoryModal()}
             >
-              ➕ Nouvelle catégorie
+              {t('list.newCategory')}
             </button>
           </div>
 
@@ -213,10 +215,10 @@ const CategoryManager = ({ categories, onUpdate }) => {
             <table className="categories-table">
               <thead>
                 <tr>
-                  <th>Catégorie / Sous-catégorie</th>
-                  <th style={{ width: '100px' }}>Couleur</th>
-                  <th style={{ width: '120px' }}>Transactions</th>
-                  <th style={{ width: '150px' }}>Actions</th>
+                  <th>{t('list.columns.name')}</th>
+                  <th style={{ width: '100px' }}>{t('list.columns.color')}</th>
+                  <th style={{ width: '120px' }}>{t('list.columns.transactions')}</th>
+                  <th style={{ width: '150px' }}>{t('list.columns.actions')}</th>
                 </tr>
               </thead>
               <tbody>
@@ -241,21 +243,21 @@ const CategoryManager = ({ categories, onUpdate }) => {
                         <button
                           onClick={() => openSubcategoryModal(null, category.id)}
                           className="btn btn-outline btn-sm"
-                          title="Ajouter une sous-catégorie"
+                          title={t('list.tooltips.addSubcategory')}
                         >
                           ➕
                         </button>
                         <button
                           onClick={() => openCategoryModal(category)}
                           className="btn btn-outline btn-sm"
-                          title="Modifier"
+                          title={t('list.tooltips.edit')}
                         >
                           ✏️
                         </button>
                         <button
                           onClick={() => handleDeleteCategory(category.id, category.name)}
                           className="btn btn-outline btn-sm"
-                          title="Supprimer"
+                          title={t('list.tooltips.delete')}
                           disabled={category.transaction_count > 0}
                         >
                           ❌
@@ -283,14 +285,14 @@ const CategoryManager = ({ categories, onUpdate }) => {
                           <button
                             onClick={() => openSubcategoryModal(subcategory)}
                             className="btn btn-outline btn-sm"
-                            title="Modifier"
+                            title={t('list.tooltips.edit')}
                           >
                             ✏️
                           </button>
                           <button
                             onClick={() => handleDeleteSubcategory(subcategory.id, subcategory.name)}
                             className="btn btn-outline btn-sm"
-                            title="Supprimer"
+                            title={t('list.tooltips.delete')}
                           >
                             ❌
                           </button>
@@ -308,20 +310,20 @@ const CategoryManager = ({ categories, onUpdate }) => {
         {showCategoryModal && (
           <div className="modal-overlay" onClick={() => setShowCategoryModal(false)}>
             <div className="modal" onClick={(e) => e.stopPropagation()}>
-              <h3>{modalMode === 'create' ? 'Nouvelle catégorie' : 'Modifier la catégorie'}</h3>
+              <h3>{modalMode === 'create' ? t('modal.category.titleCreate') : t('modal.category.titleEdit')}</h3>
               <form onSubmit={handleCategorySubmit}>
                 <div className="form-group">
-                  <label>Nom :</label>
+                  <label>{t('modal.category.nameLabel')}</label>
                   <input
                     type="text"
                     value={categoryForm.name}
                     onChange={(e) => setCategoryForm({ ...categoryForm, name: e.target.value })}
-                    placeholder="Nom de la catégorie"
+                    placeholder={t('modal.category.namePlaceholder')}
                     required
                   />
                 </div>
                 <div className="form-group">
-                  <label>Couleur :</label>
+                  <label>{t('modal.category.colorLabel')}</label>
                   <div className="color-picker">
                     <input
                       type="color"
@@ -343,14 +345,14 @@ const CategoryManager = ({ categories, onUpdate }) => {
                 </div>
                 <div className="modal-actions">
                   <button type="submit" className="btn btn-primary">
-                    {modalMode === 'create' ? 'Créer' : 'Sauvegarder'}
+                    {modalMode === 'create' ? t('modal.actions.create') : t('modal.actions.save')}
                   </button>
                   <button
                     type="button"
                     onClick={() => setShowCategoryModal(false)}
                     className="btn btn-secondary"
                   >
-                    Annuler
+                    {t('modal.actions.cancel')}
                   </button>
                 </div>
               </form>
@@ -362,17 +364,17 @@ const CategoryManager = ({ categories, onUpdate }) => {
         {showSubcategoryModal && (
           <div className="modal-overlay" onClick={() => setShowSubcategoryModal(false)}>
             <div className="modal" onClick={(e) => e.stopPropagation()}>
-              <h3>{modalMode === 'create' ? 'Nouvelle sous-catégorie' : 'Modifier la sous-catégorie'}</h3>
+              <h3>{modalMode === 'create' ? t('modal.subcategory.titleCreate') : t('modal.subcategory.titleEdit')}</h3>
               <form onSubmit={handleSubcategorySubmit}>
                 {modalMode === 'create' && (
                   <div className="form-group">
-                    <label>Catégorie parente :</label>
+                    <label>{t('modal.subcategory.parentLabel')}</label>
                     <select
                       value={subcategoryForm.category_id}
                       onChange={(e) => setSubcategoryForm({ ...subcategoryForm, category_id: e.target.value })}
                       required
                     >
-                      <option value="">Choisir une catégorie</option>
+                      <option value="">{t('modal.subcategory.parentPlaceholder')}</option>
                       {categories.map(cat => (
                         <option key={cat.id} value={cat.id}>{cat.name}</option>
                       ))}
@@ -380,26 +382,26 @@ const CategoryManager = ({ categories, onUpdate }) => {
                   </div>
                 )}
                 <div className="form-group">
-                  <label>Nom :</label>
+                  <label>{t('modal.subcategory.nameLabel')}</label>
                   <input
                     type="text"
                     value={subcategoryForm.name}
                     onChange={(e) => setSubcategoryForm({ ...subcategoryForm, name: e.target.value })}
-                    placeholder="Nom de la sous-catégorie"
+                    placeholder={t('modal.subcategory.namePlaceholder')}
                     required
                   />
-                  <small>La couleur sera héritée de la catégorie parente</small>
+                  <small>{t('modal.subcategory.colorInherit')}</small>
                 </div>
                 <div className="modal-actions">
                   <button type="submit" className="btn btn-primary">
-                    {modalMode === 'create' ? 'Créer' : 'Sauvegarder'}
+                    {modalMode === 'create' ? t('modal.actions.create') : t('modal.actions.save')}
                   </button>
                   <button
                     type="button"
                     onClick={() => setShowSubcategoryModal(false)}
                     className="btn btn-secondary"
                   >
-                    Annuler
+                    {t('modal.actions.cancel')}
                   </button>
                 </div>
               </form>
@@ -413,29 +415,29 @@ const CategoryManager = ({ categories, onUpdate }) => {
   const renderRulesTab = () => (
     <div className="rules-tab">
       <div className="section">
-        <h3>➕ Nouvelle règle de catégorisation</h3>
+        <h3>{t('rules.newTitle')}</h3>
         <form onSubmit={handleCreateRule} className="rule-form">
           <div className="form-group">
-            <label htmlFor="rule-pattern">Motif de recherche :</label>
+            <label htmlFor="rule-pattern">{t('rules.form.patternLabel')}</label>
             <input
               id="rule-pattern"
               type="text"
               value={newRule.pattern}
               onChange={(e) => setNewRule({ ...newRule, pattern: e.target.value })}
-              placeholder="Ex: CARREFOUR|AUCHAN|LECLERC"
+              placeholder={t('rules.form.patternPlaceholder')}
               required
             />
-            <small>Utilisez | pour séparer plusieurs mots-clés</small>
+            <small>{t('rules.form.patternHelp')}</small>
           </div>
           <div className="form-group">
-            <label htmlFor="rule-category">Catégorie :</label>
+            <label htmlFor="rule-category">{t('rules.form.categoryLabel')}</label>
             <select
               id="rule-category"
               value={newRule.category_id}
               onChange={(e) => setNewRule({ ...newRule, category_id: e.target.value })}
               required
             >
-              <option value="">Choisir une catégorie</option>
+              <option value="">{t('rules.form.categoryPlaceholder')}</option>
               {categories.map(category => (
                 <option key={category.id} value={category.id}>
                   {category.name}
@@ -444,7 +446,7 @@ const CategoryManager = ({ categories, onUpdate }) => {
             </select>
           </div>
           <div className="form-group">
-            <label htmlFor="rule-priority">Priorité :</label>
+            <label htmlFor="rule-priority">{t('rules.form.priorityLabel')}</label>
             <input
               id="rule-priority"
               type="number"
@@ -453,29 +455,29 @@ const CategoryManager = ({ categories, onUpdate }) => {
               min="0"
               max="100"
             />
-            <small>Plus la priorité est élevée, plus la règle sera appliquée en premier</small>
+            <small>{t('rules.form.priorityHelp')}</small>
           </div>
           <button type="submit" className="btn btn-primary">
-            Créer la règle
+            {t('rules.form.submit')}
           </button>
         </form>
       </div>
 
       <div className="section">
-        <h3>⚙️ Règles existantes</h3>
+        <h3>{t('rules.existingTitle')}</h3>
         {loading ? (
-          <p>Chargement des règles...</p>
+          <p>{t('rules.loading')}</p>
         ) : rules.length === 0 ? (
-          <p>Aucune règle de catégorisation définie</p>
+          <p>{t('rules.empty')}</p>
         ) : (
           <div className="table-container">
             <table className="rules-table">
               <thead>
                 <tr>
-                  <th>Pattern</th>
-                  <th>Catégorie</th>
-                  <th>Priorité</th>
-                  <th>Actions</th>
+                  <th>{t('rules.table.pattern')}</th>
+                  <th>{t('rules.table.category')}</th>
+                  <th>{t('rules.table.priority')}</th>
+                  <th>{t('rules.table.actions')}</th>
                 </tr>
               </thead>
               <tbody>
@@ -501,7 +503,7 @@ const CategoryManager = ({ categories, onUpdate }) => {
                       <button
                         onClick={() => handleDeleteRule(rule.id)}
                         className="btn btn-outline btn-sm"
-                        title="Supprimer"
+                        title={t('list.tooltips.delete')}
                       >
                         ❌
                       </button>
@@ -519,19 +521,19 @@ const CategoryManager = ({ categories, onUpdate }) => {
   return (
     <div className="category-manager">
       <div className="category-manager-header">
-        <h2>🏷️ Gestion des catégories</h2>
+        <h2>{t('title')}</h2>
         <div className="tabs">
           <button
             className={activeTab === 'categories' ? 'active' : ''}
             onClick={() => setActiveTab('categories')}
           >
-            Catégories
+            {t('tabs.categories')}
           </button>
           <button
             className={activeTab === 'rules' ? 'active' : ''}
             onClick={() => setActiveTab('rules')}
           >
-            Règles automatiques
+            {t('tabs.rules')}
           </button>
         </div>
       </div>

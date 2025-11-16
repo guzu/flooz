@@ -1,0 +1,144 @@
+{
+  "list": {
+    "title": "Transacciones",
+    "filter": {
+      "label": "Filtrar por etiqueta",
+      "placeholder": "Buscar en etiquetas...",
+      "placeholderFuzzy": "Búsqueda inteligente (tolera errores)...",
+      "fuzzy": "Búsqueda difusa",
+      "fuzzyHint": "Permite encontrar \"CARREFOUR\" escribiendo \"crfr\"",
+      "allHistory": "Todo el historial",
+      "allHistoryHint": "Buscar en todos los años",
+      "uncategorized": "Solo sin categoría",
+      "uncategorizedHint": "Mostrar solo transacciones sin categoría",
+      "createRule": "Crear regla de categorización automática"
+    },
+    "table": {
+      "headers": {
+        "date": "Fecha valor",
+        "operationDate": "Fecha op.",
+        "label": "Etiqueta",
+        "notes": "Notas",
+        "amount": "Monto",
+        "category": "Categoría",
+        "subcategory": "Subcategoría",
+        "actions": "Acciones"
+      }
+    },
+    "summary": {
+      "displayed": "<strong>{{count}}</strong> transacción(es) mostrada(s)",
+      "selected": "<strong>{{count}}</strong> seleccionada(s)",
+      "selectedSum": "(<strong style=\"color: {{color}}\">{{sum}} €</strong>)",
+      "total": "de <strong>{{count}}</strong> en total"
+    },
+    "loading": "Cargando transacciones...",
+    "empty": "No se encontraron transacciones para este período.",
+    "emptyImport": "¡Importe un archivo CSV para comenzar!",
+    "emptyFilter": "Ninguna transacción coincide con el filtro \"<strong>{{filter}}</strong>\".",
+    "clearFilter": "Borrar filtro",
+    "deleteConfirm": "¿Está seguro de que desea eliminar esta transacción?"
+  },
+  "categorize": {
+    "title": "Categorizar transacción",
+    "info": {
+      "label": "Etiqueta:",
+      "amount": "Monto:",
+      "date": "Fecha:"
+    },
+    "category": "Categoría:",
+    "subcategory": "Subcategoría:",
+    "noCategoryOption": "Sin categoría",
+    "noSubcategoryOption": "-",
+    "errorSingle": "Error al categorizar la transacción",
+    "errorBulk": "Error al categorizar en masa"
+  },
+  "bulk": {
+    "title": "Categorizar en masa",
+    "message": "Categorizar <strong>{{count}}</strong> transacción(es){{context}}",
+    "contextSelected": " seleccionada(s)",
+    "contextFilter": " que coinciden con \"{{filter}}\"",
+    "batch": "Lote ({{count}})",
+    "deselectAll": "Deseleccionar ({{count}})",
+    "noTransactions": "No hay transacciones para categorizar",
+    "newCategory": "Nueva categoría:",
+    "newCategoryPlaceholder": "Nombre de categoría",
+    "newCategoryColor": "Color:",
+    "newCategoryError": "Por favor ingrese un nombre de categoría",
+    "newCategoryCreateError": "Error al crear la categoría"
+  },
+  "rule": {
+    "title": "Crear regla de categorización",
+    "message": "Crear una regla para categorizar automáticamente transacciones que contengan \"<strong>{{pattern}}</strong>\" durante futuras importaciones.",
+    "category": "Categoría:",
+    "selectCategory": "Seleccionar una categoría",
+    "noFilter": "No hay filtro activo para crear una regla",
+    "selectCategoryError": "Por favor seleccione una categoría",
+    "createError": "Error al crear la regla"
+  },
+  "shortcuts": {
+    "title": "Atajos de teclado",
+    "slash": "Ir al campo de filtro",
+    "escape": "Borrar filtro actual / Cerrar esta ayuda",
+    "question": "Mostrar esta ayuda",
+    "ctrlA": "Seleccionar todas las transacciones visibles"
+  },
+  "addTransaction": {
+    "title": "Añadir transacción",
+    "date": "Fecha valor:",
+    "operationDate": "Fecha operación:",
+    "label": "Etiqueta *:",
+    "labelPlaceholder": "Descripción de la transacción",
+    "amount": "Monto *:",
+    "amountPlaceholder": "0.00",
+    "isCredit": "Crédito",
+    "category": "Categoría:",
+    "subcategory": "Subcategoría:",
+    "notes": "Notas:",
+    "notesPlaceholder": "Notas opcionales",
+    "noCategoryOption": "Sin categoría",
+    "noSubcategoryOption": "-",
+    "addButton": "Añadir transacción manualmente",
+    "validationError": "Por favor complete al menos la etiqueta y el monto",
+    "createError": "Error al crear la transacción"
+  },
+  "checkpoint": {
+    "title": "Punto de control bancario",
+    "addButton": "Añadir punto de control bancario",
+    "addTitle": "Añadir punto de control",
+    "editTitle": "Modificar punto de control",
+    "date": "Fecha *:",
+    "balance": "Saldo bancario *:",
+    "balancePlaceholder": "123.45",
+    "balanceHint": "Monto del saldo tal como lo muestra su banco",
+    "notes": "Notas:",
+    "notesPlaceholder": "Notas opcionales (ej: extracto de enero)",
+    "validationError": "Por favor complete todos los campos requeridos",
+    "saveError": "Error al guardar el punto de control",
+    "deleteError": "Error al eliminar el punto de control"
+  },
+  "columns": {
+    "title": "Columnas mostradas",
+    "dateValue": "Fecha valor",
+    "operationDate": "Fecha operación",
+    "label": "Etiqueta",
+    "notes": "Notas",
+    "amount": "Monto",
+    "category": "Categoría",
+    "subcategory": "Subcategoría",
+    "requiredBadge": "Obligatorio"
+  },
+  "row": {
+    "notesPlaceholder": "Añadir una nota...",
+    "actions": "Acciones",
+    "uncategorized": "Sin categoría",
+    "noSubcategory": "-",
+    "contextMenu": {
+      "categorize": "Categorizar",
+      "filter": "Filtrar",
+      "delete": "Eliminar"
+    }
+  },
+  "yearSelector": {
+    "label": "Año:"
+  }
+}

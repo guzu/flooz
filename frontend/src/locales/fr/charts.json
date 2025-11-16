@@ -1,0 +1,60 @@
+{
+  "months": {
+    "short": {
+      "jan": "Jan",
+      "feb": "Fév",
+      "mar": "Mar",
+      "apr": "Avr",
+      "may": "Mai",
+      "jun": "Jun",
+      "jul": "Jul",
+      "aug": "Aoû",
+      "sep": "Sep",
+      "oct": "Oct",
+      "nov": "Nov",
+      "dec": "Déc"
+    },
+    "full": {
+      "january": "Janvier",
+      "february": "Février",
+      "march": "Mars",
+      "april": "Avril",
+      "may": "Mai",
+      "june": "Juin",
+      "july": "Juillet",
+      "august": "Août",
+      "september": "Septembre",
+      "october": "Octobre",
+      "november": "Novembre",
+      "december": "Décembre"
+    }
+  },
+  "stats": {
+    "title": "Statistiques",
+    "flowTitle": "Flux des dépenses",
+    "monthlyTitle": "Dépenses mensuelles",
+    "categoryTitle": "Répartition par catégorie",
+    "totalYear": "Total annuel",
+    "totalExpenses": "Total des dépenses",
+    "monthlyAverage": "Moyenne mensuelle",
+    "loading": "Chargement des données...",
+    "error": "Erreur lors du chargement des statistiques",
+    "noData": "Aucune dépense enregistrée pour cette période"
+  },
+  "comparison": {
+    "title": "Comparaison d'années",
+    "vs": "VS",
+    "specificPeriod": "Période spécifique",
+    "from": "De :",
+    "to": "À :",
+    "monthlyTitle": "Comparaison mensuelle",
+    "cumulativeTitle": "Évolution cumulée",
+    "categoryTitle": "Comparaison par catégorie (Top 10)",
+    "kpi": {
+      "total": "Total {{year}}",
+      "variation": "Variation",
+      "monthlyAverage": "Moyenne mensuelle {{year}}"
+    },
+    "loading": "Chargement des données de comparaison..."
+  }
+}

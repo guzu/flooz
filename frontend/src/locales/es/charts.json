@@ -1,0 +1,60 @@
+{
+  "months": {
+    "short": {
+      "jan": "Ene",
+      "feb": "Feb",
+      "mar": "Mar",
+      "apr": "Abr",
+      "may": "Mayo",
+      "jun": "Jun",
+      "jul": "Jul",
+      "aug": "Ago",
+      "sep": "Sep",
+      "oct": "Oct",
+      "nov": "Nov",
+      "dec": "Dic"
+    },
+    "full": {
+      "january": "Enero",
+      "february": "Febrero",
+      "march": "Marzo",
+      "april": "Abril",
+      "may": "Mayo",
+      "june": "Junio",
+      "july": "Julio",
+      "august": "Agosto",
+      "september": "Septiembre",
+      "october": "Octubre",
+      "november": "Noviembre",
+      "december": "Diciembre"
+    }
+  },
+  "stats": {
+    "title": "Estadísticas",
+    "flowTitle": "Flujo de gastos (Categorías → Subcategorías)",
+    "monthlyTitle": "Gastos mensuales",
+    "categoryTitle": "Distribución por categoría",
+    "totalYear": "Total anual",
+    "totalExpenses": "Total de gastos",
+    "monthlyAverage": "Promedio mensual",
+    "loading": "Cargando datos...",
+    "error": "Error al cargar estadísticas",
+    "noData": "No hay gastos registrados para este período"
+  },
+  "comparison": {
+    "title": "Comparación de años",
+    "vs": "VS",
+    "specificPeriod": "Período específico",
+    "from": "Desde:",
+    "to": "Hasta:",
+    "monthlyTitle": "Comparación mensual",
+    "cumulativeTitle": "Evolución acumulada",
+    "categoryTitle": "Comparación por categoría (Top 10)",
+    "kpi": {
+      "total": "Total {{year}}",
+      "variation": "Variación",
+      "monthlyAverage": "Promedio mensual {{year}}"
+    },
+    "loading": "Cargando datos de comparación..."
+  }
+}

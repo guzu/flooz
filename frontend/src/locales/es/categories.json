@@ -1,0 +1,85 @@
+{
+  "title": "🏷️ Gestión de Categorías",
+  "tabs": {
+    "categories": "Categorías",
+    "rules": "Reglas Automáticas"
+  },
+  "list": {
+    "title": "📋 Lista de Categorías",
+    "newCategory": "➕ Nueva Categoría",
+    "columns": {
+      "name": "Categoría / Subcategoría",
+      "color": "Color",
+      "transactions": "Transacciones",
+      "actions": "Acciones"
+    },
+    "tooltips": {
+      "addSubcategory": "Agregar subcategoría",
+      "edit": "Modificar",
+      "delete": "Eliminar"
+    },
+    "uncategorized": "Sin categorizar"
+  },
+  "modal": {
+    "category": {
+      "titleCreate": "Nueva Categoría",
+      "titleEdit": "Modificar Categoría",
+      "nameLabel": "Nombre:",
+      "namePlaceholder": "Nombre de la categoría",
+      "colorLabel": "Color:"
+    },
+    "subcategory": {
+      "titleCreate": "Nueva Subcategoría",
+      "titleEdit": "Modificar Subcategoría",
+      "parentLabel": "Categoría Padre:",
+      "parentPlaceholder": "Elegir una categoría",
+      "nameLabel": "Nombre:",
+      "namePlaceholder": "Nombre de la subcategoría",
+      "colorInherit": "El color se heredará de la categoría padre"
+    },
+    "actions": {
+      "create": "Crear",
+      "save": "Guardar",
+      "cancel": "Cancelar"
+    }
+  },
+  "rules": {
+    "newTitle": "➕ Nueva Regla de Categorización",
+    "existingTitle": "⚙️ Reglas Existentes",
+    "form": {
+      "patternLabel": "Patrón de Búsqueda:",
+      "patternPlaceholder": "Ej: CARREFOUR|MERCADONA|ALCAMPO",
+      "patternHelp": "Use | para separar múltiples palabras clave",
+      "categoryLabel": "Categoría:",
+      "categoryPlaceholder": "Elegir una categoría",
+      "priorityLabel": "Prioridad:",
+      "priorityHelp": "Las reglas con mayor prioridad se aplican primero",
+      "submit": "Crear Regla"
+    },
+    "table": {
+      "pattern": "Patrón",
+      "category": "Categoría",
+      "priority": "Prioridad",
+      "actions": "Acciones"
+    },
+    "loading": "Cargando reglas...",
+    "empty": "No hay reglas de categorización definidas"
+  },
+  "alerts": {
+    "category": {
+      "saveError": "Error al guardar la categoría",
+      "deleteConfirm": "¿Está seguro de que desea eliminar la categoría \"{{name}}\"?",
+      "deleteError": "Error al eliminar: {{error}}"
+    },
+    "subcategory": {
+      "saveError": "Error al guardar la subcategoría",
+      "deleteConfirm": "¿Está seguro de que desea eliminar la subcategoría \"{{name}}\"?",
+      "deleteError": "Error al eliminar: {{error}}"
+    },
+    "rule": {
+      "createError": "Error al crear la regla",
+      "deleteConfirm": "¿Está seguro de que desea eliminar esta regla?",
+      "deleteError": "Error al eliminar la regla"
+    }
+  }
+}

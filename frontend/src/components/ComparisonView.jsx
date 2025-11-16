@@ -1,8 +1,10 @@
 import React, { useState, useEffect } from 'react'
+import { useTranslation } from 'react-i18next'
 import { BarChart, Bar, LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts'
 import { apiService } from '../services/api'
 
 const ComparisonView = ({ availableYears }) => {
+  const { t } = useTranslation(['charts'])
   const currentYear = new Date().getFullYear()
   const [year1, setYear1] = useState(availableYears?.includes(currentYear - 1) ? currentYear - 1 : availableYears?.[0] || currentYear)
   const [year2, setYear2] = useState(availableYears?.includes(currentYear) ? currentYear : availableYears?.[1] || currentYear)
@@ -57,13 +59,47 @@ const ComparisonView = ({ availableYears }) => {
     }
   }
 
+  const getMonthNames = () => {
+    return [
+      t('months.short.jan'),
+      t('months.short.feb'),
+      t('months.short.mar'),
+      t('months.short.apr'),
+      t('months.short.may'),
+      t('months.short.jun'),
+      t('months.short.jul'),
+      t('months.short.aug'),
+      t('months.short.sep'),
+      t('months.short.oct'),
+      t('months.short.nov'),
+      t('months.short.dec')
+    ]
+  }
+
+  const getFullMonthNames = () => {
+    return [
+      t('months.full.january'),
+      t('months.full.february'),
+      t('months.full.march'),
+      t('months.full.april'),
+      t('months.full.may'),
+      t('months.full.june'),
+      t('months.full.july'),
+      t('months.full.august'),
+      t('months.full.september'),
+      t('months.full.october'),
+      t('months.full.november'),
+      t('months.full.december')
+    ]
+  }
+
   const getMonthlyComparisonData = () => {
     const filtered1 = filterByMonthRange(data1)
     const filtered2 = filterByMonthRange(data2)
 
     if (!filtered1?.monthly || !filtered2?.monthly) return []
 
-    const months = ['Jan', 'Fév', 'Mar', 'Avr', 'Mai', 'Jun', 'Jul', 'Aoû', 'Sep', 'Oct', 'Nov', 'Déc']
+    const months = getMonthNames()
     const result = []
 
     for (let i = (useDateRange ? startMonth : 1); i <= (useDateRange ? endMonth : 12); i++) {
@@ -86,7 +122,7 @@ const ComparisonView = ({ availableYears }) => {
 
     if (!filtered1?.monthly || !filtered2?.monthly) return []
 
-    const months = ['Jan', 'Fév', 'Mar', 'Avr', 'Mai', 'Jun', 'Jul', 'Aoû', 'Sep', 'Oct', 'Nov', 'Déc']
+    const months = getMonthNames()
     const result = []
     let cumul1 = 0
     let cumul2 = 0
@@ -176,7 +212,7 @@ const ComparisonView = ({ availableYears }) => {
   if (loading) {
     return (
       <div className="loading">
-        <p>Chargement des données de comparaison...</p>
+        <p>{t('comparison.loading')}</p>
       </div>
     )
   }
@@ -189,7 +225,7 @@ const ComparisonView = ({ availableYears }) => {
   return (
     <div className="stats-container">
       <div className="stats-header">
-        <h2>Comparaison d'années</h2>
+        <h2>{t('comparison.title')}</h2>
       </div>
 
       {/* Sélecteurs */}
@@ -203,7 +239,7 @@ const ComparisonView = ({ availableYears }) => {
                 ))}
               </select>
             </div>
-            <span className="vs-label">VS</span>
+            <span className="vs-label">{t('comparison.vs')}</span>
             <div className="year-selector-group">
               <select value={year2} onChange={(e) => setYear2(parseInt(e.target.value))} className="year-select">
                 {availableYears?.map(year => (
@@ -220,7 +256,7 @@ const ComparisonView = ({ availableYears }) => {
                 checked={useDateRange}
                 onChange={(e) => setUseDateRange(e.target.checked)}
               />
-              <span>Période spécifique</span>
+              <span>{t('comparison.specificPeriod')}</span>
             </label>
           </div>
         </div>
@@ -228,21 +264,21 @@ const ComparisonView = ({ availableYears }) => {
         {useDateRange && (
           <div className="month-range-selectors">
             <div className="month-selector-group">
-              <label>De :</label>
+              <label>{t('comparison.from')}</label>
               <select value={startMonth} onChange={(e) => setStartMonth(parseInt(e.target.value))} className="year-select">
                 {Array.from({length: 12}, (_, i) => i + 1).map(m => (
                   <option key={m} value={m}>
-                    {['Janvier', 'Février', 'Mars', 'Avril', 'Mai', 'Juin', 'Juillet', 'Août', 'Septembre', 'Octobre', 'Novembre', 'Décembre'][m - 1]}
+                    {getFullMonthNames()[m - 1]}
                   </option>
                 ))}
               </select>
             </div>
             <div className="month-selector-group">
-              <label>À :</label>
+              <label>{t('comparison.to')}</label>
               <select value={endMonth} onChange={(e) => setEndMonth(parseInt(e.target.value))} className="year-select">
                 {Array.from({length: 12}, (_, i) => i + 1).filter(m => m >= startMonth).map(m => (
                   <option key={m} value={m}>
-                    {['Janvier', 'Février', 'Mars', 'Avril', 'Mai', 'Juin', 'Juillet', 'Août', 'Septembre', 'Octobre', 'Novembre', 'Décembre'][m - 1]}
+                    {getFullMonthNames()[m - 1]}
                   </option>
                 ))}
               </select>
@@ -254,32 +290,32 @@ const ComparisonView = ({ availableYears }) => {
       {/* KPIs */}
       <div className="comparison-kpis">
         <div className="kpi-card">
-          <div className="kpi-label">Total {year1}</div>
+          <div className="kpi-label">{t('comparison.kpi.total', { year: year1 })}</div>
           <div className="kpi-value">{formatCurrency(kpis.total1)}</div>
         </div>
         <div className="kpi-card">
-          <div className="kpi-label">Total {year2}</div>
+          <div className="kpi-label">{t('comparison.kpi.total', { year: year2 })}</div>
           <div className="kpi-value">{formatCurrency(kpis.total2)}</div>
         </div>
         <div className="kpi-card">
-          <div className="kpi-label">Variation</div>
+          <div className="kpi-label">{t('comparison.kpi.variation')}</div>
           <div className={`kpi-value ${kpis.variation > 0 ? 'negative' : 'positive'}`}>
             {kpis.variation > 0 ? '+' : ''}{kpis.variation.toFixed(1)}%
           </div>
         </div>
         <div className="kpi-card">
-          <div className="kpi-label">Moyenne mensuelle {year1}</div>
+          <div className="kpi-label">{t('comparison.kpi.monthlyAverage', { year: year1 })}</div>
           <div className="kpi-value">{formatCurrency(kpis.avg1)}</div>
         </div>
         <div className="kpi-card">
-          <div className="kpi-label">Moyenne mensuelle {year2}</div>
+          <div className="kpi-label">{t('comparison.kpi.monthlyAverage', { year: year2 })}</div>
           <div className="kpi-value">{formatCurrency(kpis.avg2)}</div>
         </div>
       </div>
 
       {/* Graphique mensuel */}
       <div className="chart-section">
-        <h3>Comparaison mensuelle</h3>
+        <h3>{t('comparison.monthlyTitle')}</h3>
         <ResponsiveContainer width="100%" height={350}>
           <BarChart data={monthlyData}>
             <CartesianGrid strokeDasharray="3 3" />
@@ -295,7 +331,7 @@ const ComparisonView = ({ availableYears }) => {
 
       {/* Graphique cumulé */}
       <div className="chart-section">
-        <h3>Évolution cumulée</h3>
+        <h3>{t('comparison.cumulativeTitle')}</h3>
         <ResponsiveContainer width="100%" height={350}>
           <LineChart data={cumulativeData}>
             <CartesianGrid strokeDasharray="3 3" />
@@ -337,7 +373,7 @@ const ComparisonView = ({ availableYears }) => {
 
       {/* Comparaison par catégorie */}
       <div className="chart-section">
-        <h3>Comparaison par catégorie (Top 10)</h3>
+        <h3>{t('comparison.categoryTitle')}</h3>
         <ResponsiveContainer width="100%" height={400}>
           <BarChart data={categoryData} layout="vertical">
             <CartesianGrid strokeDasharray="3 3" />

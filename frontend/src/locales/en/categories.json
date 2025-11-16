@@ -1,0 +1,85 @@
+{
+  "title": "🏷️ Category Management",
+  "tabs": {
+    "categories": "Categories",
+    "rules": "Automatic Rules"
+  },
+  "list": {
+    "title": "📋 Category List",
+    "newCategory": "➕ New Category",
+    "columns": {
+      "name": "Category / Subcategory",
+      "color": "Color",
+      "transactions": "Transactions",
+      "actions": "Actions"
+    },
+    "tooltips": {
+      "addSubcategory": "Add a subcategory",
+      "edit": "Edit",
+      "delete": "Delete"
+    },
+    "uncategorized": "Uncategorized"
+  },
+  "modal": {
+    "category": {
+      "titleCreate": "New Category",
+      "titleEdit": "Edit Category",
+      "nameLabel": "Name:",
+      "namePlaceholder": "Category name",
+      "colorLabel": "Color:"
+    },
+    "subcategory": {
+      "titleCreate": "New Subcategory",
+      "titleEdit": "Edit Subcategory",
+      "parentLabel": "Parent Category:",
+      "parentPlaceholder": "Choose a category",
+      "nameLabel": "Name:",
+      "namePlaceholder": "Subcategory name",
+      "colorInherit": "Color will be inherited from parent category"
+    },
+    "actions": {
+      "create": "Create",
+      "save": "Save",
+      "cancel": "Cancel"
+    }
+  },
+  "rules": {
+    "newTitle": "➕ New Categorization Rule",
+    "existingTitle": "⚙️ Existing Rules",
+    "form": {
+      "patternLabel": "Search Pattern:",
+      "patternPlaceholder": "Ex: WALMART|TARGET|COSTCO",
+      "patternHelp": "Use | to separate multiple keywords",
+      "categoryLabel": "Category:",
+      "categoryPlaceholder": "Choose a category",
+      "priorityLabel": "Priority:",
+      "priorityHelp": "Higher priority rules are applied first",
+      "submit": "Create Rule"
+    },
+    "table": {
+      "pattern": "Pattern",
+      "category": "Category",
+      "priority": "Priority",
+      "actions": "Actions"
+    },
+    "loading": "Loading rules...",
+    "empty": "No categorization rules defined"
+  },
+  "alerts": {
+    "category": {
+      "saveError": "Error saving category",
+      "deleteConfirm": "Are you sure you want to delete the category \"{{name}}\"?",
+      "deleteError": "Error during deletion: {{error}}"
+    },
+    "subcategory": {
+      "saveError": "Error saving subcategory",
+      "deleteConfirm": "Are you sure you want to delete the subcategory \"{{name}}\"?",
+      "deleteError": "Error during deletion: {{error}}"
+    },
+    "rule": {
+      "createError": "Error creating rule",
+      "deleteConfirm": "Are you sure you want to delete this rule?",
+      "deleteError": "Error deleting rule"
+    }
+  }
+}

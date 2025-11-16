@@ -1,0 +1,85 @@
+{
+  "title": "🏷️ Gestion des catégories",
+  "tabs": {
+    "categories": "Catégories",
+    "rules": "Règles automatiques"
+  },
+  "list": {
+    "title": "📋 Liste des catégories",
+    "newCategory": "➕ Nouvelle catégorie",
+    "columns": {
+      "name": "Catégorie / Sous-catégorie",
+      "color": "Couleur",
+      "transactions": "Transactions",
+      "actions": "Actions"
+    },
+    "tooltips": {
+      "addSubcategory": "Ajouter une sous-catégorie",
+      "edit": "Modifier",
+      "delete": "Supprimer"
+    },
+    "uncategorized": "Non catégorisé"
+  },
+  "modal": {
+    "category": {
+      "titleCreate": "Nouvelle catégorie",
+      "titleEdit": "Modifier la catégorie",
+      "nameLabel": "Nom :",
+      "namePlaceholder": "Nom de la catégorie",
+      "colorLabel": "Couleur :"
+    },
+    "subcategory": {
+      "titleCreate": "Nouvelle sous-catégorie",
+      "titleEdit": "Modifier la sous-catégorie",
+      "parentLabel": "Catégorie parente :",
+      "parentPlaceholder": "Choisir une catégorie",
+      "nameLabel": "Nom :",
+      "namePlaceholder": "Nom de la sous-catégorie",
+      "colorInherit": "La couleur sera héritée de la catégorie parente"
+    },
+    "actions": {
+      "create": "Créer",
+      "save": "Sauvegarder",
+      "cancel": "Annuler"
+    }
+  },
+  "rules": {
+    "newTitle": "➕ Nouvelle règle de catégorisation",
+    "existingTitle": "⚙️ Règles existantes",
+    "form": {
+      "patternLabel": "Motif de recherche :",
+      "patternPlaceholder": "Ex: CARREFOUR|AUCHAN|LECLERC",
+      "patternHelp": "Utilisez | pour séparer plusieurs mots-clés",
+      "categoryLabel": "Catégorie :",
+      "categoryPlaceholder": "Choisir une catégorie",
+      "priorityLabel": "Priorité :",
+      "priorityHelp": "Plus la priorité est élevée, plus la règle sera appliquée en premier",
+      "submit": "Créer la règle"
+    },
+    "table": {
+      "pattern": "Pattern",
+      "category": "Catégorie",
+      "priority": "Priorité",
+      "actions": "Actions"
+    },
+    "loading": "Chargement des règles...",
+    "empty": "Aucune règle de catégorisation définie"
+  },
+  "alerts": {
+    "category": {
+      "saveError": "Erreur lors de la sauvegarde de la catégorie",
+      "deleteConfirm": "Êtes-vous sûr de vouloir supprimer la catégorie \"{{name}}\" ?",
+      "deleteError": "Erreur lors de la suppression : {{error}}"
+    },
+    "subcategory": {
+      "saveError": "Erreur lors de la sauvegarde de la sous-catégorie",
+      "deleteConfirm": "Êtes-vous sûr de vouloir supprimer la sous-catégorie \"{{name}}\" ?",
+      "deleteError": "Erreur lors de la suppression : {{error}}"
+    },
+    "rule": {
+      "createError": "Erreur lors de la création de la règle",
+      "deleteConfirm": "Êtes-vous sûr de vouloir supprimer cette règle ?",
+      "deleteError": "Erreur lors de la suppression de la règle"
+    }
+  }
+}

@@ -1,0 +1,77 @@
+{
+  "tabs": {
+    "import": "Import",
+    "export": "Export"
+  },
+  "import": {
+    "title": "Importer des transactions",
+    "bankType": {
+      "label": "Format bancaire :",
+      "auto": "Détection automatique",
+      "boursorama": "Boursorama",
+      "banquePopulaire": "Banque Populaire",
+      "standard": "Format standard"
+    },
+    "dropzone": {
+      "instruction": "Glissez-déposez votre fichier CSV ou QIF ici",
+      "or": "ou",
+      "selectFile": "Sélectionner un fichier",
+      "changeFile": "Changer de fichier"
+    },
+    "validation": {
+      "title": "Validation des transactions",
+      "message": "<strong>{{imported}}</strong> à importer | <strong>{{duplicates}}</strong> doublons | <strong>{{excluded}}</strong> exclus",
+      "editCategory": "Modifier la catégorie",
+      "categoryPlaceholder": "Choisir...",
+      "confirmImport": "Confirmer l'import",
+      "error": "Erreur de validation"
+    },
+    "preview": {
+      "title": "Prévisualisation des transactions",
+      "table": {
+        "date": "Date",
+        "label": "Libellé",
+        "amount": "Montant",
+        "category": "Catégorie",
+        "notes": "Notes"
+      }
+    },
+    "results": {
+      "success": "Import réussi ! <strong>{{count}}</strong> transaction(s) importée(s).",
+      "partial": "Import partiel : <strong>{{imported}}</strong> importées, <strong>{{duplicates}}</strong> doublons ignorés.",
+      "error": "Erreur lors de l'import : {{message}}"
+    },
+    "errors": {
+      "noFile": "Aucun fichier sélectionné",
+      "invalidFormat": "Format de fichier invalide",
+      "uploadError": "Erreur lors du téléchargement",
+      "validationError": "Erreur lors de la validation"
+    }
+  },
+  "export": {
+    "title": "Exporter les données",
+    "database": {
+      "title": "Base de données complète",
+      "description": "Télécharger la base de données SQLite complète (toutes les données)",
+      "button": "Télécharger la base (.db)"
+    },
+    "json": {
+      "title": "Export JSON",
+      "description": "Exporter toutes les données au format JSON",
+      "button": "Télécharger JSON"
+    },
+    "csvTransactions": {
+      "title": "Export CSV - Transactions",
+      "description": "Exporter toutes les transactions au format CSV",
+      "button": "Télécharger CSV"
+    },
+    "csvCategories": {
+      "title": "Export CSV - Catégories",
+      "description": "Consolider les dépenses par catégorie et sous-catégorie",
+      "button": "Télécharger Consolidé"
+    },
+    "errors": {
+      "download": "Erreur lors du téléchargement"
+    }
+  }
+}

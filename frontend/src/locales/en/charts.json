@@ -1,0 +1,60 @@
+{
+  "months": {
+    "short": {
+      "jan": "Jan",
+      "feb": "Feb",
+      "mar": "Mar",
+      "apr": "Apr",
+      "may": "May",
+      "jun": "Jun",
+      "jul": "Jul",
+      "aug": "Aug",
+      "sep": "Sep",
+      "oct": "Oct",
+      "nov": "Nov",
+      "dec": "Dec"
+    },
+    "full": {
+      "january": "January",
+      "february": "February",
+      "march": "March",
+      "april": "April",
+      "may": "May",
+      "june": "June",
+      "july": "July",
+      "august": "August",
+      "september": "September",
+      "october": "October",
+      "november": "November",
+      "december": "December"
+    }
+  },
+  "stats": {
+    "title": "Statistics",
+    "flowTitle": "Expense Flow (Categories → Subcategories)",
+    "monthlyTitle": "Monthly Expenses",
+    "categoryTitle": "Distribution by Category",
+    "totalYear": "Annual Total",
+    "totalExpenses": "Total Expenses",
+    "monthlyAverage": "Monthly Average",
+    "loading": "Loading data...",
+    "error": "Error loading statistics",
+    "noData": "No expenses recorded for this period"
+  },
+  "comparison": {
+    "title": "Year Comparison",
+    "vs": "VS",
+    "specificPeriod": "Specific Period",
+    "from": "From:",
+    "to": "To:",
+    "monthlyTitle": "Monthly Comparison",
+    "cumulativeTitle": "Cumulative Evolution",
+    "categoryTitle": "Category Comparison (Top 10)",
+    "kpi": {
+      "total": "Total {{year}}",
+      "variation": "Variation",
+      "monthlyAverage": "Monthly Average {{year}}"
+    },
+    "loading": "Loading comparison data..."
+  }
+}

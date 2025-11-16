@@ -1,6 +1,8 @@
 import React from 'react'
+import { useTranslation } from 'react-i18next'
 
 const YearSelector = ({ years, selectedYear, onYearChange, variant = 'dropdown' }) => {
+  const { t } = useTranslation(['transactions'])
   if (!years || years.length === 0) {
     return null
   }
@@ -28,7 +30,7 @@ const YearSelector = ({ years, selectedYear, onYearChange, variant = 'dropdown' 
   // Default dropdown variant
   return (
     <div className="year-selector">
-      <label htmlFor="year-select">Année :</label>
+      <label htmlFor="year-select">{t('yearSelector.label')}</label>
       <select
         id="year-select"
         value={selectedYear}
