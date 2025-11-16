@@ -91,7 +91,17 @@ const ComparisonView = ({ availableYears }) => {
     let cumul1 = 0
     let cumul2 = 0
 
-    for (let i = (useDateRange ? startMonth : 1); i <= (useDateRange ? endMonth : 12); i++) {
+    const startIdx = useDateRange ? startMonth : 1
+    const endIdx = useDateRange ? endMonth : 12
+
+    // Add initial point at 0 with empty label
+    result.push({
+      month: '',
+      [year1]: 0,
+      [year2]: 0
+    })
+
+    for (let i = startIdx; i <= endIdx; i++) {
       const month1 = filtered1.monthly.find(m => m.month_num === i)
       const month2 = filtered2.monthly.find(m => m.month_num === i)
 
@@ -289,12 +299,38 @@ const ComparisonView = ({ availableYears }) => {
         <ResponsiveContainer width="100%" height={350}>
           <LineChart data={cumulativeData}>
             <CartesianGrid strokeDasharray="3 3" />
-            <XAxis dataKey="month" />
+            <XAxis
+              dataKey="month"
+              interval={0}
+              tick={{ fontSize: 12 }}
+              tickLine={false}
+            />
             <YAxis />
-            <Tooltip formatter={(value) => formatCurrency(value)} />
+            <Tooltip
+              formatter={(value) => formatCurrency(value)}
+              labelFormatter={(label) => label}
+              content={({ active, payload }) => {
+                if (active && payload && payload.length) {
+                  const value1 = payload[0].value
+                  const value2 = payload[1].value
+                  const diff = value2 - value1
+                  return (
+                    <div style={{ backgroundColor: 'white', padding: '10px', border: '1px solid #ccc', borderRadius: '4px' }}>
+                      <p style={{ margin: '0 0 5px 0', fontWeight: 'bold' }}>{payload[0].payload.month}</p>
+                      <p style={{ margin: '5px 0', color: '#a78bfa' }}>{year1}: {formatCurrency(value1)}</p>
+                      <p style={{ margin: '5px 0', color: '#6ee7b7' }}>{year2}: {formatCurrency(value2)}</p>
+                      <p style={{ margin: '5px 0 0 0', fontWeight: 'bold', color: diff > 0 ? '#f87171' : '#4ade80' }}>
+                        {diff > 0 ? '+' : ''}{formatCurrency(diff)}
+                      </p>
+                    </div>
+                  )
+                }
+                return null
+              }}
+            />
             <Legend />
-            <Line type="monotone" dataKey={year1} stroke="#a78bfa" strokeWidth={2} name={`${year1}`} />
-            <Line type="monotone" dataKey={year2} stroke="#6ee7b7" strokeWidth={2} name={`${year2}`} />
+            <Line type="monotone" dataKey={year1} stroke="#a78bfa" strokeWidth={2} name={`${year1}`} dot={false} />
+            <Line type="monotone" dataKey={year2} stroke="#6ee7b7" strokeWidth={2} name={`${year2}`} dot={false} />
           </LineChart>
         </ResponsiveContainer>
       </div>
