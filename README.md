@@ -4,6 +4,9 @@
 
 # Flooz
 
+<div align="right">
+  <a href="README.en.md">🇬🇧 English version</a>
+</div>
 
 Flooz est une application web simple et rapide pour suivre vos dépenses.<br>
 Import automatique depuis vos relevés bancaires, catégorisation intelligente, et visualisations claires pour comprendre où va votre argent.
